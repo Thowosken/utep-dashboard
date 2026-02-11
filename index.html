@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,124 +5,204 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Acompanhamento UTEP</title>
 
+  <!-- evita cache forte em alguns celulares -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-    }
-
-    input, textarea, button {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: none;
-    }
-
-    button {
-      background: #22c55e;
-      color: white;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .nota {
-      background: #334155;
-      padding: 8px;
-      border-radius: 6px;
-      margin-top: 5px;
-    }
+    body{font-family:Arial, sans-serif;background:#0f172a;color:#fff;margin:0;padding:16px}
+    h1{margin:0 0 12px 0;text-align:center}
+    .topbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:12px}
+    .btn{background:#22c55e;color:#04210f;font-weight:900;border:none;border-radius:10px;padding:10px 12px;cursor:pointer}
+    .btn2{background:#334155;color:#fff;font-weight:900;border:none;border-radius:10px;padding:10px 12px;cursor:pointer}
+    .card{background:#1e293b;padding:14px;border-radius:14px;margin-bottom:12px;border:1px solid #334155}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .field{flex:1 1 260px}
+    input,textarea,select{width:100%;padding:10px;margin-top:6px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;box-sizing:border-box}
+    textarea{min-height:90px;resize:vertical}
+    .meta{color:#cbd5e1;font-size:12px;margin-top:6px;line-height:1.35}
+    .notaBox{background:#0b1220;border:1px solid #334155;border-radius:12px;padding:10px;margin-top:10px}
+    .notaTop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .error{background:#7f1d1d;border:1px solid #ef4444;color:#fff;padding:10px;border-radius:12px;margin:12px 0;display:none;white-space:pre-wrap}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#111b2e;border:1px solid #334155;font-size:12px;color:#cbd5e1}
+    .footer{padding:12px;text-align:center;color:#cbd5e1;font-size:12px}
+    @media (max-width:720px){ body{padding:12px} input,textarea,select{font-size:16px} }
   </style>
 </head>
 <body>
 
 <h1>Acompanhamento de Obras</h1>
 
+<div class="topbar">
+  <span class="pill">Versão: <b id="ver">V2.2</b></span>
+  <button class="btn2" id="reload">Recarregar</button>
+</div>
+
+<div id="err" class="error"></div>
 <div id="lista"></div>
 
+<div class="footer">UTEP Nordeste • Supabase + GitHub Pages</div>
+
 <script>
-const supabase = window.supabase.createClient(
-  "https://yyfhnuaffwzeglwcpnmkd.supabase.co",
-  "sb_publishable_7rmfNL9N6limSSFxFcl2Og_MV9xkbjx"
-);
+  // ✅ URL correta do seu Supabase
+  const SUPABASE_URL = "https://yyfhnuafwzeglwcpnmkd.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_7rmfNL9N6limSSFxFcl2Og_MV9xkbjx";
 
-async function carregarObras() {
-  const { data } = await supabase.from("obras").select("*").limit(20);
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const lista = document.getElementById("lista");
-  lista.innerHTML = "";
+  function showErr(msg){
+    const el=document.getElementById("err");
+    el.style.display="block";
+    el.textContent=String(msg);
+  }
+  function clearErr(){
+    const el=document.getElementById("err");
+    el.style.display="none";
+    el.textContent="";
+  }
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;");
+  }
+  function pick(obj, keys){
+    for(const k of keys){
+      if(obj && obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== "") return obj[k];
+    }
+    return "";
+  }
 
-  data.forEach(obra => {
-    const div = document.createElement("div");
-    div.className = "card";
+  async function carregarObras(){
+    clearErr();
+    const lista=document.getElementById("lista");
+    lista.innerHTML = `<div class="meta" style="text-align:center">Carregando obras...</div>`;
 
-    div.innerHTML = `
-      <b>Nota:</b> ${obra.NOTA || "-"}<br>
-      <b>Projeto:</b> ${obra.PROJETO || "-"}<br><br>
+    const { data, error } = await supabase
+      .from("obras")
+      .select("*")
+      .limit(2000);
 
-      <input placeholder="Seu nome" id="nome-${obra.NOTA}">
-      <textarea placeholder="Adicionar anotação" id="texto-${obra.NOTA}"></textarea>
-      <button onclick="salvarNota('${obra.NOTA}')">Salvar nota</button>
+    if(error){
+      showErr("Erro ao carregar obras (provável policy/RLS):\n" + JSON.stringify(error, null, 2));
+      lista.innerHTML = "";
+      return;
+    }
 
-      <div id="notas-${obra.NOTA}"></div>
-    `;
+    if(!data || data.length === 0){
+      lista.innerHTML = `<div class="meta" style="text-align:center">Nenhuma obra encontrada na tabela <b>obras</b>.</div>`;
+      return;
+    }
 
-    lista.appendChild(div);
+    lista.innerHTML = "";
 
-    carregarNotas(obra.NOTA);
-  });
-}
+    for(const obra of data){
+      const nota = pick(obra, ["nota","NOTA"]);
+      const projeto = pick(obra, ["projeto","PROJETO"]);
+      const titulo = pick(obra, ["titulo","TITULO"]);
+      const criterio = pick(obra, ["criterio","CRITERIO"]);
+      const localidade = pick(obra, ["localidade","LOCALIDADE"]);
+      const ar = pick(obra, ["agente_responsavel","AGENTE_RESPONSAVEL"]);
 
-async function carregarNotas(nota) {
-  const { data } = await supabase
-    .from("notes")
-    .select("*")
-    .eq("nota", nota)
-    .order("created_at", { ascending: false });
+      const div=document.createElement("div");
+      div.className="card";
 
-  const container = document.getElementById(`notas-${nota}`);
-  container.innerHTML = "";
+      div.innerHTML = `
+        <div><b>Nota:</b> ${escapeHtml(nota || "-")}</div>
+        <div><b>Projeto:</b> ${escapeHtml(projeto || "-")}</div>
+        <div class="meta"><b>Título:</b> ${escapeHtml(titulo || "-")}</div>
+        <div class="meta">${escapeHtml(criterio || "")} • ${escapeHtml(localidade || "")} • ${escapeHtml(ar || "")}</div>
 
-  data.forEach(n => {
-    const el = document.createElement("div");
-    el.className = "nota";
-    el.innerHTML = `<b>${n.autor}</b> (${new Date(n.created_at).toLocaleString()})<br>${n.texto}`;
-    container.appendChild(el);
-  });
-}
+        <div class="row" style="margin-top:10px">
+          <div class="field">
+            <label class="meta">Seu nome</label>
+            <input placeholder="Ex.: João Silva" id="nome-${escapeHtml(nota)}">
+          </div>
+        </div>
 
-async function salvarNota(nota) {
-  const nome = document.getElementById(`nome-${nota}`).value;
-  const texto = document.getElementById(`texto-${nota}`).value;
+        <div class="row">
+          <div class="field">
+            <label class="meta">Adicionar anotação</label>
+            <textarea placeholder="Escreva a observação desta obra..." id="texto-${escapeHtml(nota)}"></textarea>
+            <button class="btn" style="margin-top:10px" onclick="salvarNota('${String(nota).replace(/'/g,"\\'")}')">Salvar nota</button>
+          </div>
+        </div>
 
-  if (!nome || !texto) return alert("Preencha nome e nota");
+        <div id="notas-${escapeHtml(nota)}" class="notaBox">
+          <div class="meta">Carregando notas...</div>
+        </div>
+      `;
+      lista.appendChild(div);
 
-  await supabase.from("notes").insert({
-    nota,
-    autor: nome,
-    texto
-  });
+      if(nota) carregarNotas(nota);
+    }
+  }
 
-  carregarNotas(nota);
-}
+  async function carregarNotas(nota){
+    const box = document.getElementById(`notas-${nota}`);
+    if(!box) return;
 
-carregarObras();
+    const { data, error } = await supabase
+      .from("notes")
+      .select("id,nota,autor,texto,created_at")
+      .eq("nota", String(nota))
+      .order("created_at", { ascending:false });
+
+    if(error){
+      box.innerHTML = `<div class="meta">Erro ao carregar notas:<br>${escapeHtml(JSON.stringify(error))}</div>`;
+      return;
+    }
+
+    if(!data || data.length===0){
+      box.innerHTML = `<div class="meta">Sem notas ainda.</div>`;
+      return;
+    }
+
+    box.innerHTML = data.map(n => {
+      const dt = n.created_at ? new Date(n.created_at).toLocaleString("pt-BR") : "-";
+      return `
+        <div style="padding:10px;border:1px solid #334155;border-radius:12px;margin-top:10px;background:#111b2e">
+          <div class="notaTop">
+            <div><b>${escapeHtml(n.autor || "(sem autor)")}</b></div>
+            <div class="meta">${escapeHtml(dt)}</div>
+          </div>
+          <div style="margin-top:8px;white-space:pre-wrap;line-height:1.35">${escapeHtml(n.texto || "")}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function salvarNota(nota){
+    clearErr();
+    const nomeEl = document.getElementById(`nome-${nota}`);
+    const textoEl = document.getElementById(`texto-${nota}`);
+    const autor = (nomeEl?.value || "").trim();
+    const texto = (textoEl?.value || "").trim();
+
+    if(!autor || !texto){
+      showErr("Preencha seu nome e a anotação antes de salvar.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("notes")
+      .insert({ nota: String(nota), autor, texto });
+
+    if(error){
+      showErr("Erro ao salvar nota (provável policy/RLS):\n" + JSON.stringify(error, null, 2));
+      return;
+    }
+
+    textoEl.value = "";
+    await carregarNotas(nota);
+  }
+
+  document.getElementById("reload").addEventListener("click", carregarObras);
+  carregarObras();
 </script>
 
 </body>
