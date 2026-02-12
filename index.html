@@ -18,15 +18,14 @@
       --dark:#020617;
     }
     body{font-family:Arial, sans-serif;background:var(--bg);color:var(--text);margin:0;padding:14px}
-    h1{margin:6px 0 12px;text-align:center;font-size:24px}
+    h1{margin:6px 0 8px;text-align:center;font-size:24px}
+    .sub{max-width:980px;margin:0 auto 12px;text-align:center;color:var(--muted);font-size:13px}
     .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-bottom:12px}
-    .pill{display:inline-flex;gap:8px;align-items:center;padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
     .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
     .btn-green{background:var(--green);color:#06210f}
     .btn-gray{background:#334155;color:#fff}
     .btn-ghost{background:transparent;color:#fff;border:1px solid var(--line)}
-    .input, select{background:var(--dark);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px}
-    .input{min-width:170px}
+    select{background:var(--dark);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px;width:100%}
     .filters{max-width:980px;margin:0 auto 12px;display:none}
     .filters.on{display:block}
     .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -34,8 +33,8 @@
     .card{max-width:980px;margin:0 auto 12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
     .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
     .meta{color:var(--muted);font-size:13px;line-height:1.35}
-    .title{font-size:16px;font-weight:900;margin-top:8px}
-    .kvs{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+    .title{font-size:16px;font-weight:900;margin-top:6px}
+    .kvs{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
     .kv{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
     .kv b{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
     .kv span{font-weight:900}
@@ -49,7 +48,16 @@
     .modal{width:min(900px,100%);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
     .modalHead{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
     .modalTitle{font-weight:900;font-size:18px;margin:0}
-    textarea{width:100%;background:var(--dark);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px;min-height:84px;resize:vertical}
+    input, textarea{
+      width:100%;
+      background:var(--dark);
+      border:1px solid var(--line);
+      color:#fff;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:16px;
+    }
+    textarea{min-height:84px;resize:vertical}
     .noteItem{background:var(--dark);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px}
     .noteTop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
     .noteText{margin-top:8px;white-space:pre-wrap;line-height:1.35}
@@ -58,7 +66,6 @@
     @media (max-width:560px){
       body{padding:12px}
       .grid{grid-template-columns:1fr}
-      .input, select{width:100%;min-width:0;font-size:16px}
       .btn{width:auto}
     }
   </style>
@@ -66,14 +73,11 @@
 
 <body>
   <h1>Acompanhamento de Obras</h1>
+  <div class="sub" id="subtitle">Carregando...</div>
 
   <div class="toolbar">
-    <span class="pill">
-      <span class="meta">Dia</span>
-      <input class="input" id="dayPicker" type="date"/>
-    </span>
-
     <button class="btn btn-gray" id="toggleFilters">Mostrar filtros</button>
+    <button class="btn btn-ghost" id="clearFilters">Limpar filtros</button>
     <button class="btn btn-green" id="reload">Recarregar</button>
   </div>
 
@@ -82,8 +86,7 @@
   <div id="filters" class="filters">
     <div class="card">
       <div class="row">
-        <div class="meta"><b>Filtros</b> (selecione e a lista atualiza)</div>
-        <button class="btn btn-ghost" id="clearFilters">Limpar filtros</button>
+        <div class="meta"><b>Filtros</b> (selecionou → atualiza)</div>
       </div>
 
       <div style="height:12px"></div>
@@ -111,7 +114,7 @@
 
   <div id="lista"></div>
 
-  <div class="footer">UTEP Nordeste • Supabase • Calendário + Filtros + Notas</div>
+  <div class="footer">UTEP Nordeste • Supabase • Filtros + Notas</div>
 
   <!-- MODAL NOTAS -->
   <div id="modalBack" class="modalBack">
@@ -129,7 +132,7 @@
       <div class="grid" style="grid-template-columns:1fr 2fr;gap:10px">
         <div>
           <div class="label">Seu nome</div>
-          <input class="input" id="noteAuthor" placeholder="Ex.: João Silva"/>
+          <input id="noteAuthor" placeholder="Ex.: João Silva"/>
         </div>
         <div>
           <div class="label">Adicionar nota</div>
@@ -178,8 +181,6 @@ function pick(obj, keys){
   }
   return "";
 }
-
-// aceita "DD/MM/AAAA", "AAAA-MM-DD", ISO etc.
 function parseAnyDate(v){
   if(!v) return null;
   const s = String(v).trim();
@@ -202,21 +203,20 @@ function parseAnyDate(v){
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
-
-function toISODate(d){
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const day = String(d.getDate()).padStart(2,"0");
-  return `${y}-${m}-${day}`;
+function startOfDay(d){
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
-
+function addDays(d, n){
+  const x = new Date(d);
+  x.setDate(x.getDate()+n);
+  return x;
+}
 function sameDay(a,b){
   return a && b &&
     a.getFullYear()===b.getFullYear() &&
     a.getMonth()===b.getMonth() &&
     a.getDate()===b.getDate();
 }
-
 function fmtBR(d){
   if(!d) return "-";
   const dd = String(d.getDate()).padStart(2,"0");
@@ -232,17 +232,20 @@ let FILTERS = { criterio:"", municipio:"", ar:"", unidade:"" };
 let currentNota = null;
 let currentMeta = null;
 
-/* ====== CARREGAR OBRAS ====== */
+/* ====== OBRAS ====== */
 async function fetchObras(){
   clearErr();
-  $("lista").innerHTML = `<div class="empty">Carregando obras...</div>`;
+  $("subtitle").textContent = "Carregando obras...";
+  $("lista").innerHTML = `<div class="empty">Carregando...</div>`;
 
   const { data, error } = await sb.from("obras").select("*").limit(5000);
   if(error){
     showErr("Erro ao carregar obras:\n" + JSON.stringify(error, null, 2));
     $("lista").innerHTML = "";
+    $("subtitle").textContent = "Erro ao carregar.";
     return;
   }
+
   ALL = data || [];
   buildFilterOptions();
   render();
@@ -261,28 +264,16 @@ function normalizeObra(o){
 
   const fimRaw = pick(o, ["previsao_execucao_fim","PREVISAO_EXECUCAO_FIM"]);
   const iniRaw = pick(o, ["previsao_execucao_inicio","PREVISAO_EXECUCAO_INICIO"]);
-
   const dtFim = parseAnyDate(fimRaw);
   const dtIni = parseAnyDate(iniRaw);
 
   return { raw:o, nota, projeto, titulo, criterio, municipio, ar, unidade, localidade, gerencia, dtFim, dtIni };
 }
 
-function buildFilterOptions(){
-  const norm = ALL.map(normalizeObra);
-
-  const uniq = (arr)=>Array.from(new Set(arr.filter(Boolean).map(x=>String(x).trim()))).sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  const criterios = uniq(norm.map(x=>x.criterio));
-  const municipios = uniq(norm.map(x=>x.municipio));
-  const ars = uniq(norm.map(x=>x.ar));
-  const unidades = uniq(norm.map(x=>x.unidade));
-
-  fillSelect($("fCriterio"), ["", ...criterios], "Todos");
-  fillSelect($("fMunicipio"), ["", ...municipios], "Todos");
-  fillSelect($("fAR"), ["", ...ars], "Todos");
-  fillSelect($("fUnidade"), ["", ...unidades], "Todos");
+function uniqSorted(arr){
+  return Array.from(new Set(arr.filter(Boolean).map(x=>String(x).trim())))
+    .sort((a,b)=>a.localeCompare(b,"pt-BR"));
 }
-
 function fillSelect(sel, values, allLabel){
   const cur = sel.value;
   sel.innerHTML = "";
@@ -292,56 +283,64 @@ function fillSelect(sel, values, allLabel){
     opt.textContent = v ? v : allLabel;
     sel.appendChild(opt);
   });
-  // tenta manter seleção
   if(values.includes(cur)) sel.value = cur;
 }
 
-/* ====== RENDER ====== */
-function render(){
-  const day = parseAnyDate($("dayPicker").value);
-  const today = day || new Date();
-
+function buildFilterOptions(){
   const norm = ALL.map(normalizeObra);
 
-  // aplica filtros
-  const filtered = norm.filter(x=>{
+  fillSelect($("fCriterio"), ["", ...uniqSorted(norm.map(x=>x.criterio))], "Todos");
+  fillSelect($("fMunicipio"), ["", ...uniqSorted(norm.map(x=>x.municipio))], "Todos");
+  fillSelect($("fAR"), ["", ...uniqSorted(norm.map(x=>x.ar))], "Todos");
+  fillSelect($("fUnidade"), ["", ...uniqSorted(norm.map(x=>x.unidade))], "Todos");
+}
+
+function applyFilters(list){
+  return list.filter(x=>{
     if(FILTERS.criterio && String(x.criterio) !== FILTERS.criterio) return false;
     if(FILTERS.municipio && String(x.municipio) !== FILTERS.municipio) return false;
     if(FILTERS.ar && String(x.ar) !== FILTERS.ar) return false;
     if(FILTERS.unidade && String(x.unidade) !== FILTERS.unidade) return false;
     return true;
   });
+}
 
-  // obras do dia (prazo final = dia escolhido)
-  const doDia = filtered
-    .filter(x=>x.dtFim && sameDay(x.dtFim, today))
+/* ====== RENDER: HOJE OU PRÓXIMOS 5 DIAS ====== */
+function render(){
+  const today = startOfDay(new Date());
+  const end5 = startOfDay(addDays(today, 5)); // inclusive até +5
+
+  const norm = applyFilters(ALL.map(normalizeObra)).filter(x=>x.dtFim);
+
+  // 1) obras do dia (prazo final hoje)
+  const doDia = norm
+    .filter(x => sameDay(x.dtFim, today))
     .sort((a,b)=>a.dtFim - b.dtFim);
 
   let list = doDia;
-  let header = `Obras com prazo final em <b>${fmtBR(today)}</b>`;
+  let header = `Obras com prazo final <b>HOJE (${fmtBR(today)})</b>`;
 
-  // fallback: próximas a vencer (>= dia escolhido)
+  // 2) se não tiver, próximos 5 dias (amanhã até +5, ou hoje até +5 — você pediu próximos dentro de 5 dias)
   if(list.length === 0){
-    const futuras = filtered
-      .filter(x=>x.dtFim && x.dtFim >= new Date(today.getFullYear(), today.getMonth(), today.getDate()))
-      .sort((a,b)=>a.dtFim - b.dtFim)
-      .slice(0, 12);
+    const proximas = norm
+      .filter(x => {
+        const d = startOfDay(x.dtFim);
+        return d >= today && d <= end5;
+      })
+      .sort((a,b)=>a.dtFim - b.dtFim);
 
-    list = futuras;
-    header = `Nenhuma obra vence em <b>${fmtBR(today)}</b>. Mostrando as <b>próximas a vencer</b>`;
+    list = proximas;
+    header = `Nenhuma obra vence hoje. Mostrando as que vencem nos <b>próximos 5 dias</b> (até ${fmtBR(end5)})`;
   }
+
+  $("subtitle").innerHTML = header;
 
   if(list.length === 0){
     $("lista").innerHTML = `<div class="empty">Sem obras para mostrar com os filtros atuais.</div>`;
     return;
   }
 
-  let html = `<div class="card"><div class="row">
-    <div class="meta">${header}</div>
-    <div class="meta">Total exibido: <b>${list.length}</b></div>
-  </div></div>`;
-
-  html += list.map(x=>{
+  $("lista").innerHTML = list.map(x=>{
     const prazo = x.dtFim ? fmtBR(x.dtFim) : "-";
     const ini = x.dtIni ? fmtBR(x.dtIni) : "-";
 
@@ -369,18 +368,16 @@ function render(){
       </div>
     `;
   }).join("");
-
-  $("lista").innerHTML = html;
 }
 
 /* ====== NOTAS (MODAL) ====== */
 async function openNotes(nota){
   currentNota = String(nota);
+
   $("modalBack").classList.add("on");
   $("notesList").innerHTML = `<div class="meta">Carregando notas...</div>`;
   $("noteText").value = "";
 
-  // pega meta da obra atual pra mostrar no cabeçalho
   const found = ALL.map(normalizeObra).find(x=>String(x.nota) === currentNota);
   currentMeta = found || null;
 
@@ -391,7 +388,6 @@ async function openNotes(nota){
 
   await loadNotes();
 }
-
 function closeNotes(){
   $("modalBack").classList.remove("on");
   currentNota = null;
@@ -485,16 +481,11 @@ $("closeModal").addEventListener("click", closeNotes);
 $("modalBack").addEventListener("click", (e)=>{ if(e.target.id==="modalBack") closeNotes(); });
 $("saveNote").addEventListener("click", saveNote);
 
-// calendário default hoje
-(function init(){
-  const d = new Date();
-  $("dayPicker").value = toISODate(d);
-  $("dayPicker").addEventListener("change", render);
-  fetchObras();
-})();
-
-// expõe função pro botão
+// expõe pro botão
 window.openNotes = openNotes;
+
+// init
+fetchObras();
 </script>
 
 </body>
