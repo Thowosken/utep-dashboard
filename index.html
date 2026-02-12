@@ -160,6 +160,7 @@
     <button class="btn btn-ghost" id="clearFilters">Limpar filtros</button>
     <button class="btn btn-gray" id="toggleCols">Mostrar mais colunas</button>
     <button class="btn btn-gray" id="exportCsv">Exportar CSV</button>
+    <button class="btn btn-gray" id="waToday">WhatsApp (obras do dia)</button>
     <button class="btn btn-green" id="reload">Recarregar</button>
   </div>
 
@@ -195,7 +196,7 @@
   </div>
 
   <div id="lista"></div>
-  <div class="footer">UTEP Nordeste • Supabase • Calendário + Filtros + Notas + Busca + CSV</div>
+  <div class="footer">UTEP Nordeste • Supabase • Calendário + Filtros + Notas + WhatsApp</div>
 
   <!-- MODAL NOTAS -->
   <div id="modalBack" class="modalBack">
@@ -331,14 +332,12 @@ let selectedDate = startOfDay(new Date());
 let viewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
 let showMoreCols = false;
 
-// cache: último status por nota (pega a última nota)
 let LAST_STATUS_BY_NOTA = new Map();
-
 let currentNota = null;
 let currentMeta = null;
 
-// lista atual exibida (para exportar CSV)
-let CURRENT_LIST = [];
+let CURRENT_LIST = [];      // lista atual exibida (com fallback)
+let CURRENT_TODAY = [];     // somente obras do dia selecionado (sem fallback)
 
 /* ====== CALENDÁRIO ====== */
 const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
@@ -455,7 +454,6 @@ function applyFilters(list){
     return true;
   });
 }
-
 function applySearch(list){
   const q = ($("q").value || "").trim().toLowerCase();
   if(!q) return list;
@@ -466,13 +464,12 @@ function applySearch(list){
   });
 }
 
-/* ====== pegar último status por nota (pra mostrar no card) ====== */
+/* ====== último status por nota (pra badge no card) ====== */
 async function hydrateLastStatus(notas){
   LAST_STATUS_BY_NOTA = new Map();
   const unique = Array.from(new Set((notas||[]).filter(Boolean).map(String)));
   if(unique.length === 0) return;
 
-  // limita pra não explodir URL (se tiver 1000+ notas exibidas, a gente ajusta depois)
   const slice = unique.slice(0, 250);
 
   const { data, error } = await sb
@@ -497,50 +494,39 @@ async function render(){
   const base = startOfDay(selectedDate);
   const end5 = startOfDay(addDays(base, 5));
 
-  let norm = applyFilters(ALL.map(normalizeObra)).filter(x=>x.dtFim);
+  let norm = applyFilters(ALL.map(normalizeObra));
   norm = applySearch(norm);
 
-  const doDia = norm
-    .filter(x => sameDay(startOfDay(x.dtFim), base))
+  // SOMENTE do dia selecionado (sem fallback)
+  const doDiaOnly = norm
+    .filter(x => x.dtFim && sameDay(startOfDay(x.dtFim), base))
     .sort((a,b)=>a.dtFim - b.dtFim);
 
-  let list = doDia;
+  CURRENT_TODAY = doDiaOnly;
+
+  // lista principal: se não tiver no dia, fallback +5 dias
+  let list = doDiaOnly;
   let header = `Obras com prazo final em <b>${fmtBR(base)}</b>`;
 
   if(list.length === 0){
     const proximas = norm
-      .filter(x => {
-        const d = startOfDay(x.dtFim);
-        return d >= base && d <= end5;
-      })
+      .filter(x => x.dtFim && startOfDay(x.dtFim) >= base && startOfDay(x.dtFim) <= end5)
       .sort((a,b)=>a.dtFim - b.dtFim);
 
     list = proximas;
     header = `Nenhuma obra vence em <b>${fmtBR(base)}</b>. Mostrando as que vencem nos <b>próximos 5 dias</b> (até ${fmtBR(end5)})`;
   }
 
-  // guarda lista atual para exportar
   CURRENT_LIST = list;
 
-  // resumo numérico (interessante pro chefe)
-  const allFiltered = applySearch(applyFilters(ALL.map(normalizeObra)));
-  const totalHoje = allFiltered.filter(x=>x.dtFim && sameDay(startOfDay(x.dtFim), base)).length;
-  const total5 = allFiltered.filter(x=>{
-    if(!x.dtFim) return false;
-    const d = startOfDay(x.dtFim);
-    return d >= base && d <= end5;
-  }).length;
-  const semData = allFiltered.filter(x=>!x.dtFim).length;
-
   $("subtitle").innerHTML = `${header}<br/>
-    <span class="meta">Resumo: <b>${totalHoje}</b> vencem no dia • <b>${total5}</b> até +5 dias • <b>${semData}</b> sem data (após filtros/busca)</span>`;
+    <span class="meta">WhatsApp envia <b>somente</b> as obras do dia selecionado (${fmtBR(base)}).</span>`;
 
   if(list.length === 0){
     $("lista").innerHTML = `<div class="empty">Sem obras para mostrar com os filtros atuais.</div>`;
     return;
   }
 
-  // pré-carrega último status para os cards (aparece sem abrir modal)
   await hydrateLastStatus(list.map(x=>x.nota));
 
   const moreClass = showMoreCols ? "moreOn" : "";
@@ -563,7 +549,6 @@ async function render(){
           </div>
         </div>
 
-        <!-- FIXAS -->
         <div class="kvs">
           <div class="kv"><b>NOTA</b><span>${escapeHtml(x.nota || "-")}</span></div>
           <div class="kv"><b>PROJETO</b><span>${escapeHtml(x.projeto || "-")}</span></div>
@@ -572,7 +557,6 @@ async function render(){
           <div class="kv"><b>UNIDADE</b><span>${escapeHtml(x.unidade || "-")}</span></div>
         </div>
 
-        <!-- OPCIONAIS -->
         <div class="kvs moreCols">
           <div class="kv"><b>LOCALIDADE</b><span>${escapeHtml(x.localidade || "-")}</span></div>
           <div class="kv"><b>GERÊNCIA</b><span>${escapeHtml(x.gerencia || "-")}</span></div>
@@ -580,6 +564,29 @@ async function render(){
       </div>
     `;
   }).join("");
+}
+
+/* ====== WHATSAPP: somente obras do dia ====== */
+function buildWhatsAppMessage(){
+  const base = startOfDay(selectedDate);
+  const dataStr = fmtBR(base);
+
+  if(!CURRENT_TODAY || CURRENT_TODAY.length === 0){
+    return `📌 Acompanhamento UTEP\n\nNenhuma obra com prazo final em *${dataStr}* (de acordo com os filtros/busca atuais).`;
+  }
+
+  const linhas = CURRENT_TODAY.map((o, i)=>{
+    const prazo = o.dtFim ? fmtBR(o.dtFim) : "-";
+    return `• ${i+1}) *Nota:* ${o.nota || "-"} | *Projeto:* ${o.projeto || "-"}\n  *Título:* ${o.titulo || "-"}\n  *Município:* ${o.municipio || "-"} | *AR:* ${o.ar || "-"} | *Prazo:* ${prazo}`;
+  });
+
+  return `📌 *Acompanhamento UTEP — Obras do dia*\n📅 *${dataStr}*\n\n${linhas.join("\n\n")}`;
+}
+
+function exportWhatsAppToday(){
+  const msg = buildWhatsAppMessage();
+  const url = "https://wa.me/?text=" + encodeURIComponent(msg);
+  window.open(url, "_blank");
 }
 
 /* ====== NOTAS (MODAL) ====== */
@@ -654,7 +661,7 @@ async function saveNote(){
   }
   clearErr();
 
-  const textoFinal = packStatus(status, texto);
+  const textoFinal = `[[STATUS:${status}]]\n${texto}`;
 
   const { error } = await sb.from("notes").insert({
     nota: currentNota,
@@ -669,8 +676,6 @@ async function saveNote(){
 
   $("noteText").value = "";
   await loadNotes();
-
-  // atualiza badges na lista
   await render();
 }
 
@@ -739,6 +744,7 @@ $("toggleCols").addEventListener("click", ()=>{
 });
 
 $("exportCsv").addEventListener("click", exportCsv);
+$("waToday").addEventListener("click", exportWhatsAppToday);
 
 $("fCriterio").addEventListener("change", (e)=>{ FILTERS.criterio = e.target.value; render(); });
 $("fMunicipio").addEventListener("change", (e)=>{ FILTERS.municipio = e.target.value; render(); });
@@ -746,7 +752,6 @@ $("fAR").addEventListener("change", (e)=>{ FILTERS.ar = e.target.value; render()
 $("fUnidade").addEventListener("change", (e)=>{ FILTERS.unidade = e.target.value; render(); });
 
 $("q").addEventListener("input", ()=>{
-  // pequeno debounce “manual” simples
   window.clearTimeout(window.__tq);
   window.__tq = window.setTimeout(()=>render(), 150);
 });
@@ -772,7 +777,6 @@ $("todayBtn").addEventListener("click", ()=>{
 
 window.openNotes = openNotes;
 
-/* ====== INIT ====== */
 (function init(){
   renderCalendar();
   fetchObras();
