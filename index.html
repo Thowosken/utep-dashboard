@@ -14,7 +14,7 @@
       --line:#1f4d31;
       --text:#eafff1;
       --muted:#a6d7bb;
-      --accent:#6fbf4a;
+      --accent:#6fbf4a;     /* verde cana */
       --dark:#07140d;
 
       --ok:#22c55e;
@@ -23,14 +23,23 @@
     }
 
     body{font-family:Arial, sans-serif;background:var(--bg);color:var(--text);margin:0;padding:14px}
-    h1{margin:6px 0 10px;text-align:center;font-size:24px}
-    .sub{max-width:980px;margin:0 auto 12px;text-align:center;color:var(--muted);font-size:13px}
+    h1{margin:6px 0 8px;text-align:center;font-size:24px}
+    .sub{max-width:980px;margin:0 auto 12px;text-align:center;color:var(--muted);font-size:13px;line-height:1.35}
 
     .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-bottom:12px}
     .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
     .btn-green{background:var(--accent);color:#07210f}
     .btn-gray{background:#1e3a2a;color:#fff}
     .btn-ghost{background:transparent;color:#fff;border:1px solid var(--line)}
+    .input{
+      background:var(--dark);
+      border:1px solid var(--line);
+      color:#fff;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:16px;
+      min-width:260px;
+    }
     select{background:var(--dark);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px;width:100%}
 
     .filters{max-width:980px;margin:0 auto 12px;display:none}
@@ -42,6 +51,7 @@
     .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
     .meta{color:var(--muted);font-size:13px;line-height:1.35}
     .title{font-size:16px;font-weight:900;margin-top:6px}
+    .topRight{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 
     .kvs{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
     .kv{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
@@ -104,15 +114,18 @@
       padding:6px 10px;border-radius:999px;
       font-weight:900;font-size:12px;border:1px solid var(--line);
       background:rgba(255,255,255,.03);
+      white-space:nowrap;
     }
     .b-ok{border-color:rgba(34,197,94,.55); background:rgba(34,197,94,.12)}
     .b-warn{border-color:rgba(245,158,11,.55); background:rgba(245,158,11,.12)}
     .b-bad{border-color:rgba(239,68,68,.55); background:rgba(239,68,68,.12)}
+    .b-none{opacity:.9}
 
     @media (max-width:920px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
     @media (max-width:560px){
       body{padding:12px}
       .grid{grid-template-columns:1fr}
+      .input{min-width:0;width:100%}
     }
   </style>
 </head>
@@ -142,9 +155,11 @@
   </div>
 
   <div class="toolbar">
+    <input class="input" id="q" placeholder="Buscar (nota, projeto, título)..." />
     <button class="btn btn-gray" id="toggleFilters">Mostrar filtros</button>
     <button class="btn btn-ghost" id="clearFilters">Limpar filtros</button>
     <button class="btn btn-gray" id="toggleCols">Mostrar mais colunas</button>
+    <button class="btn btn-gray" id="exportCsv">Exportar CSV</button>
     <button class="btn btn-green" id="reload">Recarregar</button>
   </div>
 
@@ -180,7 +195,7 @@
   </div>
 
   <div id="lista"></div>
-  <div class="footer">UTEP Nordeste • Supabase • Calendário + Filtros + Notas</div>
+  <div class="footer">UTEP Nordeste • Supabase • Calendário + Filtros + Notas + Busca + CSV</div>
 
   <!-- MODAL NOTAS -->
   <div id="modalBack" class="modalBack">
@@ -289,7 +304,7 @@ function fmtBR(d){
   return `${dd}/${mm}/${yyyy}`;
 }
 
-/* ====== STATUS EMBUTIDO NO TEXTO ====== */
+/* ====== STATUS (embutido no texto) ====== */
 function packStatus(status, texto){
   return `[[STATUS:${status}]]\n${texto}`;
 }
@@ -304,9 +319,9 @@ function unpackStatus(texto){
 function statusBadge(status){
   const st = (status||"").toLowerCase();
   if(st.includes("executada")) return `<span class="badge b-ok">✅ Executada</span>`;
-  if(st.includes("problema")) return `<span class="badge b-warn">⚠️ Houve problemas</span>`;
-  if(st.includes("não") || st.includes("nao")) return `<span class="badge b-bad">❌ Não foi executada</span>`;
-  return `<span class="badge">ℹ️ Sem status</span>`;
+  if(st.includes("problema")) return `<span class="badge b-warn">⚠️ Problemas</span>`;
+  if(st.includes("não") || st.includes("nao")) return `<span class="badge b-bad">❌ Não executada</span>`;
+  return `<span class="badge b-none">ℹ️ Sem status</span>`;
 }
 
 /* ====== STATE ====== */
@@ -314,11 +329,16 @@ let ALL = [];
 let FILTERS = { criterio:"", municipio:"", ar:"", unidade:"" };
 let selectedDate = startOfDay(new Date());
 let viewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-
 let showMoreCols = false;
+
+// cache: último status por nota (pega a última nota)
+let LAST_STATUS_BY_NOTA = new Map();
 
 let currentNota = null;
 let currentMeta = null;
+
+// lista atual exibida (para exportar CSV)
+let CURRENT_LIST = [];
 
 /* ====== CALENDÁRIO ====== */
 const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
@@ -436,12 +456,49 @@ function applyFilters(list){
   });
 }
 
-/* ====== RENDER: DIA SELECIONADO OU PRÓXIMOS 5 DIAS ====== */
-function render(){
+function applySearch(list){
+  const q = ($("q").value || "").trim().toLowerCase();
+  if(!q) return list;
+
+  return list.filter(x=>{
+    const a = `${x.nota||""} ${x.projeto||""} ${x.titulo||""}`.toLowerCase();
+    return a.includes(q);
+  });
+}
+
+/* ====== pegar último status por nota (pra mostrar no card) ====== */
+async function hydrateLastStatus(notas){
+  LAST_STATUS_BY_NOTA = new Map();
+  const unique = Array.from(new Set((notas||[]).filter(Boolean).map(String)));
+  if(unique.length === 0) return;
+
+  // limita pra não explodir URL (se tiver 1000+ notas exibidas, a gente ajusta depois)
+  const slice = unique.slice(0, 250);
+
+  const { data, error } = await sb
+    .from("notes")
+    .select("nota,texto,created_at")
+    .in("nota", slice)
+    .order("created_at", { ascending:false });
+
+  if(error || !data) return;
+
+  for(const n of data){
+    const key = String(n.nota);
+    if(!LAST_STATUS_BY_NOTA.has(key)){
+      const parsed = unpackStatus(n.texto);
+      LAST_STATUS_BY_NOTA.set(key, parsed.status || "");
+    }
+  }
+}
+
+/* ====== RENDER ====== */
+async function render(){
   const base = startOfDay(selectedDate);
   const end5 = startOfDay(addDays(base, 5));
 
-  const norm = applyFilters(ALL.map(normalizeObra)).filter(x=>x.dtFim);
+  let norm = applyFilters(ALL.map(normalizeObra)).filter(x=>x.dtFim);
+  norm = applySearch(norm);
 
   const doDia = norm
     .filter(x => sameDay(startOfDay(x.dtFim), base))
@@ -462,17 +519,35 @@ function render(){
     header = `Nenhuma obra vence em <b>${fmtBR(base)}</b>. Mostrando as que vencem nos <b>próximos 5 dias</b> (até ${fmtBR(end5)})`;
   }
 
-  $("subtitle").innerHTML = header;
+  // guarda lista atual para exportar
+  CURRENT_LIST = list;
+
+  // resumo numérico (interessante pro chefe)
+  const allFiltered = applySearch(applyFilters(ALL.map(normalizeObra)));
+  const totalHoje = allFiltered.filter(x=>x.dtFim && sameDay(startOfDay(x.dtFim), base)).length;
+  const total5 = allFiltered.filter(x=>{
+    if(!x.dtFim) return false;
+    const d = startOfDay(x.dtFim);
+    return d >= base && d <= end5;
+  }).length;
+  const semData = allFiltered.filter(x=>!x.dtFim).length;
+
+  $("subtitle").innerHTML = `${header}<br/>
+    <span class="meta">Resumo: <b>${totalHoje}</b> vencem no dia • <b>${total5}</b> até +5 dias • <b>${semData}</b> sem data (após filtros/busca)</span>`;
 
   if(list.length === 0){
     $("lista").innerHTML = `<div class="empty">Sem obras para mostrar com os filtros atuais.</div>`;
     return;
   }
 
+  // pré-carrega último status para os cards (aparece sem abrir modal)
+  await hydrateLastStatus(list.map(x=>x.nota));
+
   const moreClass = showMoreCols ? "moreOn" : "";
 
   $("lista").innerHTML = list.map(x=>{
     const prazo = x.dtFim ? fmtBR(x.dtFim) : "-";
+    const lastSt = LAST_STATUS_BY_NOTA.get(String(x.nota)) || "";
 
     return `
       <div class="card ${moreClass}">
@@ -481,7 +556,9 @@ function render(){
             <div class="title">${escapeHtml(x.titulo || "(Sem título)")}</div>
             <div class="meta">${escapeHtml(x.criterio || "")} • ${escapeHtml(x.municipio || "")}</div>
           </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+
+          <div class="topRight">
+            ${statusBadge(lastSt)}
             <button class="btn btn-gray" onclick="openNotes('${escapeHtml(String(x.nota))}')">Notas</button>
           </div>
         </div>
@@ -592,6 +669,49 @@ async function saveNote(){
 
   $("noteText").value = "";
   await loadNotes();
+
+  // atualiza badges na lista
+  await render();
+}
+
+/* ====== EXPORTAR CSV (lista exibida) ====== */
+function exportCsv(){
+  const rows = (CURRENT_LIST || []).map(x=>({
+    NOTA: x.nota || "",
+    PROJETO: x.projeto || "",
+    TITULO: x.titulo || "",
+    CRITERIO: x.criterio || "",
+    MUNICIPIO: x.municipio || "",
+    AR: x.ar || "",
+    UNIDADE: x.unidade || "",
+    PRAZO_FINAL: x.dtFim ? fmtBR(x.dtFim) : "",
+    LOCALIDADE: x.localidade || "",
+    GERENCIA: x.gerencia || ""
+  }));
+
+  if(rows.length === 0){
+    alert("Nada para exportar.");
+    return;
+  }
+
+  const headers = Object.keys(rows[0]);
+  const esc = (v)=> `"${String(v ?? "").replaceAll('"','""')}"`;
+
+  const csv = [
+    headers.join(";"),
+    ...rows.map(r=>headers.map(h=>esc(r[h])).join(";"))
+  ].join("\n");
+
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `acompanhamento_${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 /* ====== EVENTOS ====== */
@@ -618,10 +738,18 @@ $("toggleCols").addEventListener("click", ()=>{
   render();
 });
 
+$("exportCsv").addEventListener("click", exportCsv);
+
 $("fCriterio").addEventListener("change", (e)=>{ FILTERS.criterio = e.target.value; render(); });
 $("fMunicipio").addEventListener("change", (e)=>{ FILTERS.municipio = e.target.value; render(); });
 $("fAR").addEventListener("change", (e)=>{ FILTERS.ar = e.target.value; render(); });
 $("fUnidade").addEventListener("change", (e)=>{ FILTERS.unidade = e.target.value; render(); });
+
+$("q").addEventListener("input", ()=>{
+  // pequeno debounce “manual” simples
+  window.clearTimeout(window.__tq);
+  window.__tq = window.setTimeout(()=>render(), 150);
+});
 
 $("closeModal").addEventListener("click", closeNotes);
 $("modalBack").addEventListener("click", (e)=>{ if(e.target.id==="modalBack") closeNotes(); });
@@ -644,6 +772,7 @@ $("todayBtn").addEventListener("click", ()=>{
 
 window.openNotes = openNotes;
 
+/* ====== INIT ====== */
 (function init(){
   renderCalendar();
   fetchObras();
