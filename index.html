@@ -9,38 +9,73 @@
 
   <style>
     :root{
-      --bg:#0f172a;
-      --card:#111b2e;
-      --line:#334155;
-      --text:#ffffff;
-      --muted:#94a3b8;
-      --green:#22c55e;
-      --dark:#020617;
+      /* Tema verde cana */
+      --bg:#0b1f13;
+      --card:#0f2a1a;
+      --line:#1f4d31;
+      --text:#eafff1;
+      --muted:#a6d7bb;
+      --accent:#6fbf4a;     /* verde cana */
+      --accent2:#4aa36a;
+      --dark:#07140d;
+
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
     }
+
     body{font-family:Arial, sans-serif;background:var(--bg);color:var(--text);margin:0;padding:14px}
-    h1{margin:6px 0 8px;text-align:center;font-size:24px}
+    h1{margin:6px 0 10px;text-align:center;font-size:24px}
     .sub{max-width:980px;margin:0 auto 12px;text-align:center;color:var(--muted);font-size:13px}
+
     .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-bottom:12px}
-    .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
-    .btn-green{background:var(--green);color:#06210f}
-    .btn-gray{background:#334155;color:#fff}
+    .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
+    .btn-green{background:var(--accent);color:#07210f}
+    .btn-gray{background:#1e3a2a;color:#fff}
     .btn-ghost{background:transparent;color:#fff;border:1px solid var(--line)}
     select{background:var(--dark);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px;width:100%}
+
     .filters{max-width:980px;margin:0 auto 12px;display:none}
     .filters.on{display:block}
     .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .label{color:var(--muted);font-size:12px;margin-bottom:6px}
+
     .card{max-width:980px;margin:0 auto 12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
     .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
     .meta{color:var(--muted);font-size:13px;line-height:1.35}
     .title{font-size:16px;font-weight:900;margin-top:6px}
+
     .kvs{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
     .kv{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
     .kv b{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
     .kv span{font-weight:900}
+
     .empty{max-width:980px;margin:20px auto;text-align:center;color:var(--muted)}
     .error{max-width:980px;margin:0 auto 12px;background:#7f1d1d;border:1px solid #ef4444;color:#fff;padding:10px;border-radius:12px;display:none;white-space:pre-wrap}
     .footer{max-width:980px;margin:22px auto 8px;text-align:center;color:var(--muted);font-size:12px}
+
+    /* CALENDÁRIO VISUAL */
+    .calWrap{max-width:980px;margin:0 auto 12px}
+    .calCard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+    .calHead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .calTitle{font-weight:900}
+    .calBtns{display:flex;gap:10px}
+    .calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:12px}
+    .calDow{color:var(--muted);font-size:12px;text-align:center}
+    .day{
+      text-align:center;
+      padding:10px 0;
+      border-radius:12px;
+      border:1px solid transparent;
+      background:rgba(255,255,255,.03);
+      cursor:pointer;
+      user-select:none;
+    }
+    .day.muted{opacity:.35;cursor:default}
+    .day.today{border-color:rgba(111,191,74,.5)}
+    .day.sel{background:rgba(111,191,74,.35);border-color:var(--accent)}
+    .day:hover{border-color:rgba(111,191,74,.35)}
+    .calInfo{margin-top:10px;color:var(--muted);font-size:13px}
 
     /* Modal */
     .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:9999}
@@ -58,15 +93,25 @@
       font-size:16px;
     }
     textarea{min-height:84px;resize:vertical}
+
     .noteItem{background:var(--dark);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px}
     .noteTop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
     .noteText{margin-top:8px;white-space:pre-wrap;line-height:1.35}
+
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      font-weight:900;font-size:12px;border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    .b-ok{border-color:rgba(34,197,94,.55); background:rgba(34,197,94,.12)}
+    .b-warn{border-color:rgba(245,158,11,.55); background:rgba(245,158,11,.12)}
+    .b-bad{border-color:rgba(239,68,68,.55); background:rgba(239,68,68,.12)}
 
     @media (max-width:920px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
     @media (max-width:560px){
       body{padding:12px}
       .grid{grid-template-columns:1fr}
-      .btn{width:auto}
     }
   </style>
 </head>
@@ -74,6 +119,26 @@
 <body>
   <h1>Acompanhamento de Obras</h1>
   <div class="sub" id="subtitle">Carregando...</div>
+
+  <!-- CALENDÁRIO VISUAL -->
+  <div class="calWrap">
+    <div class="calCard">
+      <div class="calHead">
+        <div>
+          <div class="calTitle" id="calTitle">Calendário</div>
+          <div class="calInfo" id="calInfo">Selecionado: -</div>
+        </div>
+        <div class="calBtns">
+          <button class="btn btn-ghost" id="prevMonth">◀</button>
+          <button class="btn btn-ghost" id="todayBtn">Hoje</button>
+          <button class="btn btn-ghost" id="nextMonth">▶</button>
+        </div>
+      </div>
+
+      <div class="calGrid" id="calDow"></div>
+      <div class="calGrid" id="calDays"></div>
+    </div>
+  </div>
 
   <div class="toolbar">
     <button class="btn btn-gray" id="toggleFilters">Mostrar filtros</button>
@@ -113,8 +178,7 @@
   </div>
 
   <div id="lista"></div>
-
-  <div class="footer">UTEP Nordeste • Supabase • Filtros + Notas</div>
+  <div class="footer">UTEP Nordeste • Supabase • Calendário + Filtros + Notas</div>
 
   <!-- MODAL NOTAS -->
   <div id="modalBack" class="modalBack">
@@ -129,10 +193,18 @@
 
       <div style="height:10px"></div>
 
-      <div class="grid" style="grid-template-columns:1fr 2fr;gap:10px">
+      <div class="grid" style="grid-template-columns:1fr 1fr 2fr;gap:10px">
         <div>
           <div class="label">Seu nome</div>
           <input id="noteAuthor" placeholder="Ex.: João Silva"/>
+        </div>
+        <div>
+          <div class="label">Status da execução</div>
+          <select id="noteStatus">
+            <option value="Executada">✅ Executada</option>
+            <option value="Houve problemas">⚠️ Houve problemas</option>
+            <option value="Não foi executada">❌ Não foi executada</option>
+          </select>
         </div>
         <div>
           <div class="label">Adicionar nota</div>
@@ -192,25 +264,17 @@ function parseAnyDate(v){
     const [_, dd, mm, yyyy] = m;
     return new Date(Number(yyyy), Number(mm)-1, Number(dd));
   }
-
   // AAAA-MM-DD
   const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if(m2){
     const [_, yyyy, mm, dd] = m2;
     return new Date(Number(yyyy), Number(mm)-1, Number(dd));
   }
-
   const d = new Date(s);
   return isNaN(d.getTime()) ? null : d;
 }
-function startOfDay(d){
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-function addDays(d, n){
-  const x = new Date(d);
-  x.setDate(x.getDate()+n);
-  return x;
-}
+function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function addDays(d, n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
 function sameDay(a,b){
   return a && b &&
     a.getFullYear()===b.getFullYear() &&
@@ -225,12 +289,89 @@ function fmtBR(d){
   return `${dd}/${mm}/${yyyy}`;
 }
 
+/* ====== STATUS EMBUTIDO NO TEXTO (SEGURO) ====== */
+function packStatus(status, texto){
+  // Salva status junto sem precisar criar coluna no Supabase
+  return `[[STATUS:${status}]]\n${texto}`;
+}
+function unpackStatus(texto){
+  const s = String(texto ?? "");
+  const m = s.match(/^\s*\[\[STATUS:(.+?)\]\]\s*\n?/);
+  if(m){
+    return { status: m[1].trim(), texto: s.replace(m[0], "").trim() };
+  }
+  return { status: "", texto: s };
+}
+function statusBadge(status){
+  const st = (status||"").toLowerCase();
+  if(st.includes("executada")) return `<span class="badge b-ok">✅ Executada</span>`;
+  if(st.includes("problema")) return `<span class="badge b-warn">⚠️ Houve problemas</span>`;
+  if(st.includes("não") || st.includes("nao")) return `<span class="badge b-bad">❌ Não foi executada</span>`;
+  return `<span class="badge">ℹ️ Sem status</span>`;
+}
+
 /* ====== STATE ====== */
 let ALL = [];
 let FILTERS = { criterio:"", municipio:"", ar:"", unidade:"" };
+let selectedDate = startOfDay(new Date());
+let viewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
 
 let currentNota = null;
 let currentMeta = null;
+
+/* ====== CALENDÁRIO ====== */
+const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+function renderCalendar(){
+  $("calTitle").textContent = viewMonth.toLocaleDateString("pt-BR", { month:"long", year:"numeric" })
+    .replace(/^./, c=>c.toUpperCase());
+  $("calInfo").textContent = `Selecionado: ${fmtBR(selectedDate)}`;
+
+  $("calDow").innerHTML = DOW.map(d=>`<div class="calDow">${d}</div>`).join("");
+
+  const firstDay = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
+  const startIdx = firstDay.getDay(); // 0 domingo
+  const start = new Date(firstDay);
+  start.setDate(start.getDate() - startIdx);
+
+  const days = [];
+  for(let i=0;i<42;i++){
+    const d = new Date(start);
+    d.setDate(start.getDate()+i);
+
+    const inMonth = d.getMonth() === viewMonth.getMonth();
+    const isToday = sameDay(d, startOfDay(new Date()));
+    const isSel = sameDay(d, selectedDate);
+
+    days.push({
+      date:d,
+      label:d.getDate(),
+      inMonth,
+      isToday,
+      isSel
+    });
+  }
+
+  $("calDays").innerHTML = days.map(x=>{
+    const cls = [
+      "day",
+      x.inMonth ? "" : "muted",
+      x.isToday ? "today" : "",
+      x.isSel ? "sel" : ""
+    ].filter(Boolean).join(" ");
+
+    const click = x.inMonth ? `onclick="selectDay('${x.date.toISOString()}')"` : "";
+    return `<div class="${cls}" ${click}>${x.label}</div>`;
+  }).join("");
+}
+
+function selectDay(iso){
+  const d = new Date(iso);
+  selectedDate = startOfDay(d);
+  renderCalendar();
+  render(); // atualiza lista
+}
+window.selectDay = selectDay;
 
 /* ====== OBRAS ====== */
 async function fetchObras(){
@@ -285,16 +426,13 @@ function fillSelect(sel, values, allLabel){
   });
   if(values.includes(cur)) sel.value = cur;
 }
-
 function buildFilterOptions(){
   const norm = ALL.map(normalizeObra);
-
   fillSelect($("fCriterio"), ["", ...uniqSorted(norm.map(x=>x.criterio))], "Todos");
   fillSelect($("fMunicipio"), ["", ...uniqSorted(norm.map(x=>x.municipio))], "Todos");
   fillSelect($("fAR"), ["", ...uniqSorted(norm.map(x=>x.ar))], "Todos");
   fillSelect($("fUnidade"), ["", ...uniqSorted(norm.map(x=>x.unidade))], "Todos");
 }
-
 function applyFilters(list){
   return list.filter(x=>{
     if(FILTERS.criterio && String(x.criterio) !== FILTERS.criterio) return false;
@@ -305,32 +443,30 @@ function applyFilters(list){
   });
 }
 
-/* ====== RENDER: HOJE OU PRÓXIMOS 5 DIAS ====== */
+/* ====== RENDER: DIA SELECIONADO OU PRÓXIMOS 5 DIAS ====== */
 function render(){
-  const today = startOfDay(new Date());
-  const end5 = startOfDay(addDays(today, 5)); // inclusive até +5
+  const base = startOfDay(selectedDate);
+  const end5 = startOfDay(addDays(base, 5));
 
   const norm = applyFilters(ALL.map(normalizeObra)).filter(x=>x.dtFim);
 
-  // 1) obras do dia (prazo final hoje)
   const doDia = norm
-    .filter(x => sameDay(x.dtFim, today))
+    .filter(x => sameDay(startOfDay(x.dtFim), base))
     .sort((a,b)=>a.dtFim - b.dtFim);
 
   let list = doDia;
-  let header = `Obras com prazo final <b>HOJE (${fmtBR(today)})</b>`;
+  let header = `Obras com prazo final em <b>${fmtBR(base)}</b>`;
 
-  // 2) se não tiver, próximos 5 dias (amanhã até +5, ou hoje até +5 — você pediu próximos dentro de 5 dias)
   if(list.length === 0){
     const proximas = norm
       .filter(x => {
         const d = startOfDay(x.dtFim);
-        return d >= today && d <= end5;
+        return d >= base && d <= end5;
       })
       .sort((a,b)=>a.dtFim - b.dtFim);
 
     list = proximas;
-    header = `Nenhuma obra vence hoje. Mostrando as que vencem nos <b>próximos 5 dias</b> (até ${fmtBR(end5)})`;
+    header = `Nenhuma obra vence em <b>${fmtBR(base)}</b>. Mostrando as que vencem nos <b>próximos 5 dias</b> (até ${fmtBR(end5)})`;
   }
 
   $("subtitle").innerHTML = header;
@@ -363,7 +499,6 @@ function render(){
           <div class="kv"><b>INÍCIO</b><span>${escapeHtml(ini)}</span></div>
           <div class="kv"><b>AR</b><span>${escapeHtml(x.ar || "-")}</span></div>
           <div class="kv"><b>UNIDADE</b><span>${escapeHtml(x.unidade || "-")}</span></div>
-          <div class="kv"><b>GERÊNCIA</b><span>${escapeHtml(x.gerencia || "-")}</span></div>
         </div>
       </div>
     `;
@@ -415,13 +550,15 @@ async function loadNotes(){
 
   $("notesList").innerHTML = data.map(n=>{
     const dt = n.created_at ? new Date(n.created_at).toLocaleString("pt-BR") : "-";
+    const parsed = unpackStatus(n.texto);
     return `
       <div class="noteItem">
         <div class="noteTop">
           <div><b>${escapeHtml(n.autor || "(sem autor)")}</b></div>
           <div>${escapeHtml(dt)}</div>
         </div>
-        <div class="noteText">${escapeHtml(n.texto || "")}</div>
+        <div style="margin-top:8px">${statusBadge(parsed.status)}</div>
+        <div class="noteText">${escapeHtml(parsed.texto || "")}</div>
       </div>
     `;
   }).join("");
@@ -432,6 +569,7 @@ async function saveNote(){
 
   const autor = $("noteAuthor").value.trim();
   const texto = $("noteText").value.trim();
+  const status = $("noteStatus").value;
 
   if(!autor || !texto){
     showErr("Preencha seu nome e a anotação antes de salvar.");
@@ -439,10 +577,12 @@ async function saveNote(){
   }
   clearErr();
 
+  const textoFinal = packStatus(status, texto);
+
   const { error } = await sb.from("notes").insert({
     nota: currentNota,
     autor,
-    texto
+    texto: textoFinal
   });
 
   if(error){
@@ -481,11 +621,29 @@ $("closeModal").addEventListener("click", closeNotes);
 $("modalBack").addEventListener("click", (e)=>{ if(e.target.id==="modalBack") closeNotes(); });
 $("saveNote").addEventListener("click", saveNote);
 
+$("prevMonth").addEventListener("click", ()=>{
+  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()-1, 1);
+  renderCalendar();
+});
+$("nextMonth").addEventListener("click", ()=>{
+  viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()+1, 1);
+  renderCalendar();
+});
+$("todayBtn").addEventListener("click", ()=>{
+  selectedDate = startOfDay(new Date());
+  viewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  renderCalendar();
+  render();
+});
+
 // expõe pro botão
 window.openNotes = openNotes;
 
 // init
-fetchObras();
+(function init(){
+  renderCalendar();
+  fetchObras();
+})();
 </script>
 
 </body>
