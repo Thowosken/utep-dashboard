@@ -9,14 +9,12 @@
 
   <style>
     :root{
-      /* Tema verde cana */
       --bg:#0b1f13;
       --card:#0f2a1a;
       --line:#1f4d31;
       --text:#eafff1;
       --muted:#a6d7bb;
-      --accent:#6fbf4a;     /* verde cana */
-      --accent2:#4aa36a;
+      --accent:#6fbf4a;
       --dark:#07140d;
 
       --ok:#22c55e;
@@ -49,6 +47,9 @@
     .kv{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
     .kv b{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
     .kv span{font-weight:900}
+
+    .moreCols{display:none}
+    .moreOn .moreCols{display:flex}
 
     .empty{max-width:980px;margin:20px auto;text-align:center;color:var(--muted)}
     .error{max-width:980px;margin:0 auto 12px;background:#7f1d1d;border:1px solid #ef4444;color:#fff;padding:10px;border-radius:12px;display:none;white-space:pre-wrap}
@@ -143,6 +144,7 @@
   <div class="toolbar">
     <button class="btn btn-gray" id="toggleFilters">Mostrar filtros</button>
     <button class="btn btn-ghost" id="clearFilters">Limpar filtros</button>
+    <button class="btn btn-gray" id="toggleCols">Mostrar mais colunas</button>
     <button class="btn btn-green" id="reload">Recarregar</button>
   </div>
 
@@ -258,13 +260,11 @@ function parseAnyDate(v){
   const s = String(v).trim();
   if(!s) return null;
 
-  // DD/MM/AAAA
   const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if(m){
     const [_, dd, mm, yyyy] = m;
     return new Date(Number(yyyy), Number(mm)-1, Number(dd));
   }
-  // AAAA-MM-DD
   const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if(m2){
     const [_, yyyy, mm, dd] = m2;
@@ -289,9 +289,8 @@ function fmtBR(d){
   return `${dd}/${mm}/${yyyy}`;
 }
 
-/* ====== STATUS EMBUTIDO NO TEXTO (SEGURO) ====== */
+/* ====== STATUS EMBUTIDO NO TEXTO ====== */
 function packStatus(status, texto){
-  // Salva status junto sem precisar criar coluna no Supabase
   return `[[STATUS:${status}]]\n${texto}`;
 }
 function unpackStatus(texto){
@@ -316,6 +315,8 @@ let FILTERS = { criterio:"", municipio:"", ar:"", unidade:"" };
 let selectedDate = startOfDay(new Date());
 let viewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
 
+let showMoreCols = false;
+
 let currentNota = null;
 let currentMeta = null;
 
@@ -330,7 +331,7 @@ function renderCalendar(){
   $("calDow").innerHTML = DOW.map(d=>`<div class="calDow">${d}</div>`).join("");
 
   const firstDay = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1);
-  const startIdx = firstDay.getDay(); // 0 domingo
+  const startIdx = firstDay.getDay();
   const start = new Date(firstDay);
   start.setDate(start.getDate() - startIdx);
 
@@ -343,13 +344,7 @@ function renderCalendar(){
     const isToday = sameDay(d, startOfDay(new Date()));
     const isSel = sameDay(d, selectedDate);
 
-    days.push({
-      date:d,
-      label:d.getDate(),
-      inMonth,
-      isToday,
-      isSel
-    });
+    days.push({ date:d, label:d.getDate(), inMonth, isToday, isSel });
   }
 
   $("calDays").innerHTML = days.map(x=>{
@@ -369,7 +364,7 @@ function selectDay(iso){
   const d = new Date(iso);
   selectedDate = startOfDay(d);
   renderCalendar();
-  render(); // atualiza lista
+  render();
 }
 window.selectDay = selectDay;
 
@@ -404,11 +399,9 @@ function normalizeObra(o){
   const gerencia = pick(o, ["gerencia","GERENCIA"]);
 
   const fimRaw = pick(o, ["previsao_execucao_fim","PREVISAO_EXECUCAO_FIM"]);
-  const iniRaw = pick(o, ["previsao_execucao_inicio","PREVISAO_EXECUCAO_INICIO"]);
   const dtFim = parseAnyDate(fimRaw);
-  const dtIni = parseAnyDate(iniRaw);
 
-  return { raw:o, nota, projeto, titulo, criterio, municipio, ar, unidade, localidade, gerencia, dtFim, dtIni };
+  return { raw:o, nota, projeto, titulo, criterio, municipio, ar, unidade, localidade, gerencia, dtFim };
 }
 
 function uniqSorted(arr){
@@ -476,29 +469,36 @@ function render(){
     return;
   }
 
+  const moreClass = showMoreCols ? "moreOn" : "";
+
   $("lista").innerHTML = list.map(x=>{
     const prazo = x.dtFim ? fmtBR(x.dtFim) : "-";
-    const ini = x.dtIni ? fmtBR(x.dtIni) : "-";
 
     return `
-      <div class="card">
+      <div class="card ${moreClass}">
         <div class="row">
           <div>
             <div class="title">${escapeHtml(x.titulo || "(Sem título)")}</div>
-            <div class="meta">${escapeHtml(x.criterio || "")} • ${escapeHtml(x.municipio || "")} • ${escapeHtml(x.localidade || "")}</div>
+            <div class="meta">${escapeHtml(x.criterio || "")} • ${escapeHtml(x.municipio || "")}</div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
             <button class="btn btn-gray" onclick="openNotes('${escapeHtml(String(x.nota))}')">Notas</button>
           </div>
         </div>
 
+        <!-- FIXAS -->
         <div class="kvs">
           <div class="kv"><b>NOTA</b><span>${escapeHtml(x.nota || "-")}</span></div>
           <div class="kv"><b>PROJETO</b><span>${escapeHtml(x.projeto || "-")}</span></div>
           <div class="kv"><b>PRAZO FINAL</b><span>${escapeHtml(prazo)}</span></div>
-          <div class="kv"><b>INÍCIO</b><span>${escapeHtml(ini)}</span></div>
           <div class="kv"><b>AR</b><span>${escapeHtml(x.ar || "-")}</span></div>
           <div class="kv"><b>UNIDADE</b><span>${escapeHtml(x.unidade || "-")}</span></div>
+        </div>
+
+        <!-- OPCIONAIS -->
+        <div class="kvs moreCols">
+          <div class="kv"><b>LOCALIDADE</b><span>${escapeHtml(x.localidade || "-")}</span></div>
+          <div class="kv"><b>GERÊNCIA</b><span>${escapeHtml(x.gerencia || "-")}</span></div>
         </div>
       </div>
     `;
@@ -612,6 +612,12 @@ $("clearFilters").addEventListener("click", ()=>{
   render();
 });
 
+$("toggleCols").addEventListener("click", ()=>{
+  showMoreCols = !showMoreCols;
+  $("toggleCols").textContent = showMoreCols ? "Ocultar colunas extras" : "Mostrar mais colunas";
+  render();
+});
+
 $("fCriterio").addEventListener("change", (e)=>{ FILTERS.criterio = e.target.value; render(); });
 $("fMunicipio").addEventListener("change", (e)=>{ FILTERS.municipio = e.target.value; render(); });
 $("fAR").addEventListener("change", (e)=>{ FILTERS.ar = e.target.value; render(); });
@@ -636,10 +642,8 @@ $("todayBtn").addEventListener("click", ()=>{
   render();
 });
 
-// expõe pro botão
 window.openNotes = openNotes;
 
-// init
 (function init(){
   renderCalendar();
   fetchObras();
