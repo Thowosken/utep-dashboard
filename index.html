@@ -24,7 +24,7 @@
 
     body{font-family:Arial, sans-serif;background:var(--bg);color:var(--text);margin:0;padding:14px}
     h1{margin:6px 0 8px;text-align:center;font-size:24px}
-    .sub{max-width:980px;margin:0 auto 12px;text-align:center;color:var(--muted);font-size:13px;line-height:1.35}
+    .sub{max-width:1100px;margin:0 auto 12px;text-align:center;color:var(--muted);font-size:13px;line-height:1.35}
 
     .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-bottom:12px}
     .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
@@ -42,32 +42,18 @@
     }
     select{background:var(--dark);border:1px solid var(--line);color:#fff;border-radius:12px;padding:10px 12px;width:100%}
 
-    .filters{max-width:980px;margin:0 auto 12px;display:none}
+    .filters{max-width:1100px;margin:0 auto 12px;display:none}
     .filters.on{display:block}
     .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .label{color:var(--muted);font-size:12px;margin-bottom:6px}
 
-    .card{max-width:980px;margin:0 auto 12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
-    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-    .meta{color:var(--muted);font-size:13px;line-height:1.35}
-    .title{font-size:16px;font-weight:900;margin-top:6px}
-    .topRight{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
-
-    .kvs{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-    .kv{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
-    .kv b{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
-    .kv span{font-weight:900}
-
-    .moreCols{display:none}
-    .moreOn .moreCols{display:flex}
-
-    .empty{max-width:980px;margin:20px auto;text-align:center;color:var(--muted)}
-    .error{max-width:980px;margin:0 auto 12px;background:#7f1d1d;border:1px solid #ef4444;color:#fff;padding:10px;border-radius:12px;display:none;white-space:pre-wrap}
-    .footer{max-width:980px;margin:22px auto 8px;text-align:center;color:var(--muted);font-size:12px}
+    .wrap{max-width:1100px;margin:0 auto}
+    .error{max-width:1100px;margin:0 auto 12px;background:#7f1d1d;border:1px solid #ef4444;color:#fff;padding:10px;border-radius:12px;display:none;white-space:pre-wrap}
+    .footer{max-width:1100px;margin:22px auto 8px;text-align:center;color:var(--muted);font-size:12px}
 
     /* CALENDÁRIO VISUAL */
-    .calWrap{max-width:980px;margin:0 auto 12px}
-    .calCard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+    .calWrap{max-width:1100px;margin:0 auto 12px}
+    .calCard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:12px}
     .calHead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
     .calTitle{font-weight:900}
     .calBtns{display:flex;gap:10px}
@@ -88,26 +74,34 @@
     .day:hover{border-color:rgba(111,191,74,.35)}
     .calInfo{margin-top:10px;color:var(--muted);font-size:13px}
 
-    /* Modal */
-    .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:9999}
-    .modalBack.on{display:flex}
-    .modal{width:min(900px,100%);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
-    .modalHead{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
-    .modalTitle{font-weight:900;font-size:18px;margin:0}
-    input, textarea{
-      width:100%;
-      background:var(--dark);
+    /* BASES */
+    .bases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .baseCol{
+      background:rgba(255,255,255,.03);
       border:1px solid var(--line);
-      color:#fff;
-      border-radius:12px;
-      padding:10px 12px;
-      font-size:16px;
+      border-radius:16px;
+      padding:12px;
     }
-    textarea{min-height:84px;resize:vertical}
+    .baseHead{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+    .baseTitle{font-weight:900}
+    .baseMeta{color:var(--muted);font-size:12px}
 
-    .noteItem{background:var(--dark);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px}
-    .noteTop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
-    .noteText{margin-top:8px;white-space:pre-wrap;line-height:1.35}
+    /* CARDS DE OBRA */
+    .card{background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+    .meta{color:var(--muted);font-size:13px;line-height:1.35}
+    .title{font-size:15px;font-weight:900;margin-top:4px}
+    .topRight{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+
+    .kvs{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .kv{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+    .kv b{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}
+    .kv span{font-weight:900}
+
+    .moreCols{display:none}
+    .moreOn .moreCols{display:flex}
+
+    .empty{margin:10px 0;text-align:center;color:var(--muted);font-size:13px}
 
     .badge{
       display:inline-flex;align-items:center;gap:6px;
@@ -121,10 +115,29 @@
     .b-bad{border-color:rgba(239,68,68,.55); background:rgba(239,68,68,.12)}
     .b-none{opacity:.9}
 
-    @media (max-width:920px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
-    @media (max-width:560px){
-      body{padding:12px}
-      .grid{grid-template-columns:1fr}
+    /* Modal */
+    .modalBack{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:9999}
+    .modalBack.on{display:flex}
+    .modal{width:min(900px,100%);background:rgba(15,42,26,.98);border:1px solid var(--line);border-radius:16px;padding:14px}
+    .modalHead{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+    .modalTitle{font-weight:900;font-size:18px;margin:0}
+    input, textarea{
+      width:100%;
+      background:var(--dark);
+      border:1px solid var(--line);
+      color:#fff;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:16px;
+    }
+    textarea{min-height:84px;resize:vertical}
+
+    .noteItem{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px}
+    .noteTop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+    .noteText{margin-top:8px;white-space:pre-wrap;line-height:1.35}
+
+    @media (max-width:1080px){
+      .bases{grid-template-columns:1fr}
       .input{min-width:0;width:100%}
     }
   </style>
@@ -134,7 +147,7 @@
   <h1>Acompanhamento de Obras</h1>
   <div class="sub" id="subtitle">Carregando...</div>
 
-  <!-- CALENDÁRIO VISUAL -->
+  <!-- CALENDÁRIO -->
   <div class="calWrap">
     <div class="calCard">
       <div class="calHead">
@@ -159,44 +172,48 @@
     <button class="btn btn-gray" id="toggleFilters">Mostrar filtros</button>
     <button class="btn btn-ghost" id="clearFilters">Limpar filtros</button>
     <button class="btn btn-gray" id="toggleCols">Mostrar mais colunas</button>
-    <button class="btn btn-gray" id="exportCsv">Exportar CSV</button>
-    <button class="btn btn-gray" id="waToday">WhatsApp (obras do dia)</button>
+    <button class="btn btn-gray" id="exportCsv">Exportar CSV (lista)</button>
+    <button class="btn btn-gray" id="waToday">WhatsApp (somente do dia)</button>
     <button class="btn btn-green" id="reload">Recarregar</button>
   </div>
 
-  <div id="err" class="error"></div>
+  <div class="wrap">
+    <div id="err" class="error"></div>
 
-  <div id="filters" class="filters">
-    <div class="card">
-      <div class="row">
-        <div class="meta"><b>Filtros</b> (selecionou → atualiza)</div>
-      </div>
+    <div id="filters" class="filters">
+      <div class="calCard">
+        <div class="row">
+          <div class="meta"><b>Filtros</b> (selecionou → atualiza)</div>
+        </div>
 
-      <div style="height:12px"></div>
+        <div style="height:12px"></div>
 
-      <div class="grid">
-        <div>
-          <div class="label">CRITÉRIO</div>
-          <select id="fCriterio"></select>
-        </div>
-        <div>
-          <div class="label">MUNICÍPIO</div>
-          <select id="fMunicipio"></select>
-        </div>
-        <div>
-          <div class="label">AGENTE RESPONSÁVEL (AR)</div>
-          <select id="fAR"></select>
-        </div>
-        <div>
-          <div class="label">UNIDADE</div>
-          <select id="fUnidade"></select>
+        <div class="grid">
+          <div>
+            <div class="label">CRITÉRIO</div>
+            <select id="fCriterio"></select>
+          </div>
+          <div>
+            <div class="label">MUNICÍPIO</div>
+            <select id="fMunicipio"></select>
+          </div>
+          <div>
+            <div class="label">AGENTE RESPONSÁVEL (AR)</div>
+            <select id="fAR"></select>
+          </div>
+          <div>
+            <div class="label">BASE</div>
+            <select id="fBase"></select>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div id="lista"></div>
-  <div class="footer">UTEP Nordeste • Supabase • Calendário + Filtros + Notas + WhatsApp</div>
+    <!-- 3 BASES FIXAS -->
+    <div class="bases" id="bases"></div>
+
+    <div class="footer">UTEP Nordeste • Supabase • Bases + Obras do dia por base + Notas</div>
+  </div>
 
   <!-- MODAL NOTAS -->
   <div id="modalBack" class="modalBack">
@@ -265,12 +282,34 @@ function escapeHtml(s){
     .replaceAll(">","&gt;")
     .replaceAll('"',"&quot;");
 }
+
 function pick(obj, keys){
   for(const k of keys){
     if(obj && obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== "") return obj[k];
   }
   return "";
 }
+
+/* ====== PICK “SOLTO” (acha coluna mesmo se mudar o nome) ====== */
+function normKey(k){
+  return String(k || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+function pickLoose(obj, wanted){
+  if(!obj) return "";
+  const target = normKey(wanted);
+  for (const k of Object.keys(obj)){
+    if (normKey(k) === target){
+      const v = obj[k];
+      if (v !== undefined && v !== null && String(v).trim() !== "") return v;
+    }
+  }
+  return "";
+}
+
 function parseAnyDate(v){
   if(!v) return null;
   const s = String(v).trim();
@@ -306,9 +345,6 @@ function fmtBR(d){
 }
 
 /* ====== STATUS (embutido no texto) ====== */
-function packStatus(status, texto){
-  return `[[STATUS:${status}]]\n${texto}`;
-}
 function unpackStatus(texto){
   const s = String(texto ?? "");
   const m = s.match(/^\s*\[\[STATUS:(.+?)\]\]\s*\n?/);
@@ -325,19 +361,26 @@ function statusBadge(status){
   return `<span class="badge b-none">ℹ️ Sem status</span>`;
 }
 
+/* ====== BASES FIXAS ====== */
+const BASES = [
+  "3 - Alagoinhas",
+  "Ribeira do Pombal",
+  "Paulo Afonso"
+];
+
 /* ====== STATE ====== */
 let ALL = [];
-let FILTERS = { criterio:"", municipio:"", ar:"", unidade:"" };
+let FILTERS = { criterio:"", municipio:"", ar:"", base:"" };
 let selectedDate = startOfDay(new Date());
 let viewMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
 let showMoreCols = false;
 
 let LAST_STATUS_BY_NOTA = new Map();
+
 let currentNota = null;
 let currentMeta = null;
 
-let CURRENT_LIST = [];      // lista atual exibida (com fallback)
-let CURRENT_TODAY = [];     // somente obras do dia selecionado (sem fallback)
+let CURRENT_TODAY_ALL_BASES = []; // para WhatsApp do dia (somente do dia, juntando bases)
 
 /* ====== CALENDÁRIO ====== */
 const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
@@ -391,12 +434,12 @@ window.selectDay = selectDay;
 async function fetchObras(){
   clearErr();
   $("subtitle").textContent = "Carregando obras...";
-  $("lista").innerHTML = `<div class="empty">Carregando...</div>`;
+  $("bases").innerHTML = `<div class="empty">Carregando...</div>`;
 
   const { data, error } = await sb.from("obras").select("*").limit(5000);
   if(error){
     showErr("Erro ao carregar obras:\n" + JSON.stringify(error, null, 2));
-    $("lista").innerHTML = "";
+    $("bases").innerHTML = "";
     $("subtitle").textContent = "Erro ao carregar.";
     return;
   }
@@ -406,21 +449,63 @@ async function fetchObras(){
   render();
 }
 
-function normalizeObra(o){
-  const nota = pick(o, ["nota","NOTA"]);
-  const projeto = pick(o, ["projeto","PROJETO"]);
-  const titulo = pick(o, ["titulo","TITULO"]);
-  const criterio = pick(o, ["criterio","CRITERIO","criterio_","CRITERIO_"]);
-  const municipio = pick(o, ["municipio","MUNICIPIO"]);
-  const ar = pick(o, ["agente_responsavel","AGENTE_RESPONSAVEL"]);
-  const unidade = pick(o, ["unidade","UNIDADE"]);
-  const localidade = pick(o, ["localidade","LOCALIDADE"]);
-  const gerencia = pick(o, ["gerencia","GERENCIA"]);
+/* Detecta BASE mesmo se variar o nome */
+function getBaseFromRow(o){
+  return (
+    pick(o, ["base","BASE"]) ||
+    pickLoose(o, "base") ||
+    pick(o, ["BASE_OPERACIONAL","BASE OPERACIONAL","BASEOPERACIONAL"]) ||
+    pickLoose(o, "baseoperacional") ||
+    ""
+  );
+}
 
-  const fimRaw = pick(o, ["previsao_execucao_fim","PREVISAO_EXECUCAO_FIM"]);
+/* Normaliza BASE para casar com as 3 fixas (flexível) */
+function normalizeBaseLabel(b){
+  const s = String(b || "").trim();
+
+  const nk = normKey(s);
+
+  if(nk.includes("alagoinha")) return "3 - Alagoinhas";
+  if(nk.includes("ribeiradopombal") || (nk.includes("pombal") && nk.includes("ribeira"))) return "Ribeira do Pombal";
+  if(nk.includes("pauloafonso") || (nk.includes("afonso") && nk.includes("paulo"))) return "Paulo Afonso";
+
+  // tenta match exato com as bases
+  for(const B of BASES){
+    if(normKey(B) === nk) return B;
+  }
+
+  return s;
+}
+
+function normalizeObra(o){
+  const nota = pick(o, ["nota","NOTA"]) || pickLoose(o, "nota");
+  const titulo = pick(o, ["titulo","TITULO"]) || pickLoose(o, "titulo");
+
+  // PROJETO bem “à prova”
+  const projeto =
+    pick(o, ["projeto","PROJETO","Projeto","NOME_PROJETO","NOME DO PROJETO"]) ||
+    pickLoose(o, "projeto") ||
+    pickLoose(o, "nomeprojeto");
+
+  const criterio = pick(o, ["criterio","CRITERIO","criterio_","CRITERIO_"]) || pickLoose(o, "criterio");
+  const municipio = pick(o, ["municipio","MUNICIPIO"]) || pickLoose(o, "municipio");
+  const ar = pick(o, ["agente_responsavel","AGENTE_RESPONSAVEL","AR","ar"]) || pickLoose(o, "agenteresponsavel");
+  const localidade = pick(o, ["localidade","LOCALIDADE"]) || pickLoose(o, "localidade");
+  const gerencia = pick(o, ["gerencia","GERENCIA"]) || pickLoose(o, "gerencia");
+
+  const fimRaw =
+    pick(o, ["previsao_execucao_fim","PREVISAO_EXECUCAO_FIM"]) ||
+    pickLoose(o, "previsaoexecucaofim") ||
+    pickLoose(o, "previsaofim") ||
+    "";
+
   const dtFim = parseAnyDate(fimRaw);
 
-  return { raw:o, nota, projeto, titulo, criterio, municipio, ar, unidade, localidade, gerencia, dtFim };
+  const baseRaw = getBaseFromRow(o);
+  const base = normalizeBaseLabel(baseRaw);
+
+  return { raw:o, nota, projeto, titulo, criterio, municipio, ar, localidade, gerencia, dtFim, base };
 }
 
 function uniqSorted(arr){
@@ -438,39 +523,41 @@ function fillSelect(sel, values, allLabel){
   });
   if(values.includes(cur)) sel.value = cur;
 }
+
 function buildFilterOptions(){
   const norm = ALL.map(normalizeObra);
+
   fillSelect($("fCriterio"), ["", ...uniqSorted(norm.map(x=>x.criterio))], "Todos");
   fillSelect($("fMunicipio"), ["", ...uniqSorted(norm.map(x=>x.municipio))], "Todos");
   fillSelect($("fAR"), ["", ...uniqSorted(norm.map(x=>x.ar))], "Todos");
-  fillSelect($("fUnidade"), ["", ...uniqSorted(norm.map(x=>x.unidade))], "Todos");
+  fillSelect($("fBase"), ["", ...BASES], "Todas");
 }
+
 function applyFilters(list){
   return list.filter(x=>{
     if(FILTERS.criterio && String(x.criterio) !== FILTERS.criterio) return false;
     if(FILTERS.municipio && String(x.municipio) !== FILTERS.municipio) return false;
     if(FILTERS.ar && String(x.ar) !== FILTERS.ar) return false;
-    if(FILTERS.unidade && String(x.unidade) !== FILTERS.unidade) return false;
+    if(FILTERS.base && String(x.base) !== FILTERS.base) return false;
     return true;
   });
 }
 function applySearch(list){
   const q = ($("q").value || "").trim().toLowerCase();
   if(!q) return list;
-
   return list.filter(x=>{
-    const a = `${x.nota||""} ${x.projeto||""} ${x.titulo||""}`.toLowerCase();
+    const a = `${x.nota||""} ${x.projeto||""} ${x.titulo||""} ${x.base||""}`.toLowerCase();
     return a.includes(q);
   });
 }
 
-/* ====== último status por nota (pra badge no card) ====== */
+/* último status por nota (pra badge no card) */
 async function hydrateLastStatus(notas){
   LAST_STATUS_BY_NOTA = new Map();
   const unique = Array.from(new Set((notas||[]).filter(Boolean).map(String)));
   if(unique.length === 0) return;
 
-  const slice = unique.slice(0, 250);
+  const slice = unique.slice(0, 400);
 
   const { data, error } = await sb
     .from("notes")
@@ -489,98 +576,150 @@ async function hydrateLastStatus(notas){
   }
 }
 
-/* ====== RENDER ====== */
+/* ====== RENDER POR BASE ====== */
 async function render(){
-  const base = startOfDay(selectedDate);
-  const end5 = startOfDay(addDays(base, 5));
+  const baseDay = startOfDay(selectedDate);
+  const end5 = startOfDay(addDays(baseDay, 5));
 
-  let norm = applyFilters(ALL.map(normalizeObra));
-  norm = applySearch(norm);
+  let norm = applySearch(applyFilters(ALL.map(normalizeObra)));
 
-  // SOMENTE do dia selecionado (sem fallback)
-  const doDiaOnly = norm
-    .filter(x => x.dtFim && sameDay(startOfDay(x.dtFim), base))
-    .sort((a,b)=>a.dtFim - b.dtFim);
+  // separa por base fixa
+  const byBase = new Map();
+  for(const B of BASES) byBase.set(B, []);
+  for(const o of norm){
+    const b = BASES.includes(o.base) ? o.base : null;
+    if(b) byBase.get(b).push(o);
+  }
 
-  CURRENT_TODAY = doDiaOnly;
+  // calcula: obras do dia por base + fallback 5 mais próximas
+  CURRENT_TODAY_ALL_BASES = [];
+  const cardsToHydrate = [];
 
-  // lista principal: se não tiver no dia, fallback +5 dias
-  let list = doDiaOnly;
-  let header = `Obras com prazo final em <b>${fmtBR(base)}</b>`;
+  const sections = [];
 
-  if(list.length === 0){
-    const proximas = norm
-      .filter(x => x.dtFim && startOfDay(x.dtFim) >= base && startOfDay(x.dtFim) <= end5)
+  for(const B of BASES){
+    const arr = (byBase.get(B) || []).filter(x=>x.dtFim);
+
+    const todayList = arr
+      .filter(x => sameDay(startOfDay(x.dtFim), baseDay))
       .sort((a,b)=>a.dtFim - b.dtFim);
 
-    list = proximas;
-    header = `Nenhuma obra vence em <b>${fmtBR(base)}</b>. Mostrando as que vencem nos <b>próximos 5 dias</b> (até ${fmtBR(end5)})`;
+    CURRENT_TODAY_ALL_BASES.push(...todayList);
+
+    let shown = todayList;
+    let label = `Do dia (${fmtBR(baseDay)})`;
+
+    if(shown.length === 0){
+      const proximas = arr
+        .filter(x => {
+          const d = startOfDay(x.dtFim);
+          return d >= baseDay;
+        })
+        .sort((a,b)=>a.dtFim - b.dtFim)
+        .slice(0, 5);
+
+      shown = proximas;
+      label = `Sem obras no dia. Mostrando as 5 mais próximas`;
+    }
+
+    cardsToHydrate.push(...shown.map(x=>x.nota));
+
+    sections.push({ base: B, label, shown });
   }
 
-  CURRENT_LIST = list;
+  // subtitle geral
+  $("subtitle").innerHTML =
+    `Selecionado: <b>${fmtBR(baseDay)}</b> • Em cada base: mostra obras do dia; se não tiver, as <b>5 mais próximas</b>.<br/>
+     <span class="meta">WhatsApp envia <b>somente</b> as obras do dia (todas as bases).</span>`;
 
-  $("subtitle").innerHTML = `${header}<br/>
-    <span class="meta">WhatsApp envia <b>somente</b> as obras do dia selecionado (${fmtBR(base)}).</span>`;
-
-  if(list.length === 0){
-    $("lista").innerHTML = `<div class="empty">Sem obras para mostrar com os filtros atuais.</div>`;
-    return;
-  }
-
-  await hydrateLastStatus(list.map(x=>x.nota));
+  await hydrateLastStatus(cardsToHydrate);
 
   const moreClass = showMoreCols ? "moreOn" : "";
 
-  $("lista").innerHTML = list.map(x=>{
-    const prazo = x.dtFim ? fmtBR(x.dtFim) : "-";
-    const lastSt = LAST_STATUS_BY_NOTA.get(String(x.nota)) || "";
+  $("bases").innerHTML = sections.map(sec=>{
+    const list = sec.shown;
+
+    const inner = (list.length === 0)
+      ? `<div class="empty">Sem obras nessa base (com filtros/busca atuais).</div>`
+      : list.map(o=>{
+          const prazo = o.dtFim ? fmtBR(o.dtFim) : "-";
+          const lastSt = LAST_STATUS_BY_NOTA.get(String(o.nota)) || "";
+          return `
+            <div class="card ${moreClass}">
+              <div class="row">
+                <div>
+                  <div class="title">${escapeHtml(o.titulo || "(Sem título)")}</div>
+                  <div class="meta">${escapeHtml(o.criterio || "")} • ${escapeHtml(o.municipio || "")}</div>
+                </div>
+                <div class="topRight">
+                  ${statusBadge(lastSt)}
+                  <button class="btn btn-gray" onclick="openNotes('${escapeHtml(String(o.nota))}')">Notas</button>
+                </div>
+              </div>
+
+              <div class="kvs">
+                <div class="kv"><b>NOTA</b><span>${escapeHtml(o.nota || "-")}</span></div>
+                <div class="kv"><b>PROJETO</b><span>${escapeHtml(o.projeto || "-")}</span></div>
+                <div class="kv"><b>PRAZO FINAL</b><span>${escapeHtml(prazo)}</span></div>
+                <div class="kv"><b>AR</b><span>${escapeHtml(o.ar || "-")}</span></div>
+              </div>
+
+              <div class="kvs moreCols">
+                <div class="kv"><b>LOCALIDADE</b><span>${escapeHtml(o.localidade || "-")}</span></div>
+                <div class="kv"><b>GERÊNCIA</b><span>${escapeHtml(o.gerencia || "-")}</span></div>
+              </div>
+            </div>
+          `;
+        }).join("");
 
     return `
-      <div class="card ${moreClass}">
-        <div class="row">
+      <div class="baseCol">
+        <div class="baseHead">
           <div>
-            <div class="title">${escapeHtml(x.titulo || "(Sem título)")}</div>
-            <div class="meta">${escapeHtml(x.criterio || "")} • ${escapeHtml(x.municipio || "")}</div>
+            <div class="baseTitle">${escapeHtml(sec.base)}</div>
+            <div class="baseMeta">${escapeHtml(sec.label)}</div>
           </div>
-
-          <div class="topRight">
-            ${statusBadge(lastSt)}
-            <button class="btn btn-gray" onclick="openNotes('${escapeHtml(String(x.nota))}')">Notas</button>
-          </div>
+          <div class="baseMeta">Qtd: <b>${list.length}</b></div>
         </div>
-
-        <div class="kvs">
-          <div class="kv"><b>NOTA</b><span>${escapeHtml(x.nota || "-")}</span></div>
-          <div class="kv"><b>PROJETO</b><span>${escapeHtml(x.projeto || "-")}</span></div>
-          <div class="kv"><b>PRAZO FINAL</b><span>${escapeHtml(prazo)}</span></div>
-          <div class="kv"><b>AR</b><span>${escapeHtml(x.ar || "-")}</span></div>
-          <div class="kv"><b>UNIDADE</b><span>${escapeHtml(x.unidade || "-")}</span></div>
-        </div>
-
-        <div class="kvs moreCols">
-          <div class="kv"><b>LOCALIDADE</b><span>${escapeHtml(x.localidade || "-")}</span></div>
-          <div class="kv"><b>GERÊNCIA</b><span>${escapeHtml(x.gerencia || "-")}</span></div>
-        </div>
+        ${inner}
       </div>
     `;
   }).join("");
 }
 
-/* ====== WHATSAPP: somente obras do dia ====== */
+/* ====== WHATSAPP (somente obras do dia, todas as bases) ====== */
 function buildWhatsAppMessage(){
-  const base = startOfDay(selectedDate);
-  const dataStr = fmtBR(base);
+  const d = startOfDay(selectedDate);
+  const dataStr = fmtBR(d);
 
-  if(!CURRENT_TODAY || CURRENT_TODAY.length === 0){
-    return `📌 Acompanhamento UTEP\n\nNenhuma obra com prazo final em *${dataStr}* (de acordo com os filtros/busca atuais).`;
+  if(!CURRENT_TODAY_ALL_BASES || CURRENT_TODAY_ALL_BASES.length === 0){
+    return `📌 Acompanhamento UTEP\n\nNenhuma obra com prazo final em *${dataStr}* (de acordo com filtros/busca).`;
   }
 
-  const linhas = CURRENT_TODAY.map((o, i)=>{
-    const prazo = o.dtFim ? fmtBR(o.dtFim) : "-";
-    return `• ${i+1}) *Nota:* ${o.nota || "-"} | *Projeto:* ${o.projeto || "-"}\n  *Título:* ${o.titulo || "-"}\n  *Município:* ${o.municipio || "-"} | *AR:* ${o.ar || "-"} | *Prazo:* ${prazo}`;
-  });
+  // agrupa por base
+  const map = new Map();
+  for(const B of BASES) map.set(B, []);
+  for(const o of CURRENT_TODAY_ALL_BASES){
+    const b = BASES.includes(o.base) ? o.base : "Outros";
+    if(!map.has(b)) map.set(b, []);
+    map.get(b).push(o);
+  }
 
-  return `📌 *Acompanhamento UTEP — Obras do dia*\n📅 *${dataStr}*\n\n${linhas.join("\n\n")}`;
+  let out = `📌 *Acompanhamento UTEP — Obras do dia*\n📅 *${dataStr}*\n\n`;
+
+  for(const B of BASES){
+    const arr = (map.get(B) || []);
+    if(arr.length === 0) continue;
+
+    out += `*${B}* (${arr.length})\n`;
+    arr.forEach((o, i)=>{
+      const prazo = o.dtFim ? fmtBR(o.dtFim) : "-";
+      out += `• ${i+1}) Nota: ${o.nota || "-"} | Projeto: ${o.projeto || "-"}\n  Título: ${o.titulo || "-"}\n  Município: ${o.municipio || "-"} | AR: ${o.ar || "-"} | Prazo: ${prazo}\n`;
+    });
+    out += "\n";
+  }
+
+  return out.trim();
 }
 
 function exportWhatsAppToday(){
@@ -589,7 +728,71 @@ function exportWhatsAppToday(){
   window.open(url, "_blank");
 }
 
-/* ====== NOTAS (MODAL) ====== */
+/* ====== EXPORTAR CSV (tudo que está na tela — por base) ====== */
+function exportCsv(){
+  const norm = applySearch(applyFilters(ALL.map(normalizeObra)));
+
+  // monta linhas “do que aparece”: por base, usa mesma regra (dia ou 5 próximas)
+  const d = startOfDay(selectedDate);
+
+  const rows = [];
+  for(const B of BASES){
+    const arr = norm.filter(x => x.base === B && x.dtFim);
+
+    const todayList = arr
+      .filter(x => sameDay(startOfDay(x.dtFim), d))
+      .sort((a,b)=>a.dtFim - b.dtFim);
+
+    let shown = todayList;
+    if(shown.length === 0){
+      shown = arr
+        .filter(x => startOfDay(x.dtFim) >= d)
+        .sort((a,b)=>a.dtFim - b.dtFim)
+        .slice(0, 5);
+    }
+
+    for(const x of shown){
+      rows.push({
+        BASE: x.base || "",
+        NOTA: x.nota || "",
+        PROJETO: x.projeto || "",
+        TITULO: x.titulo || "",
+        CRITERIO: x.criterio || "",
+        MUNICIPIO: x.municipio || "",
+        AR: x.ar || "",
+        PRAZO_FINAL: x.dtFim ? fmtBR(x.dtFim) : "",
+        LOCALIDADE: x.localidade || "",
+        GERENCIA: x.gerencia || ""
+      });
+    }
+  }
+
+  if(rows.length === 0){
+    alert("Nada para exportar.");
+    return;
+  }
+
+  const headers = Object.keys(rows[0]);
+  const esc = (v)=> `"${String(v ?? "").replaceAll('"','""')}"`;
+
+  const csv = [
+    headers.join(";"),
+    ...rows.map(r=>headers.map(h=>esc(r[h])).join(";"))
+  ].join("\n");
+
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `acompanhamento_bases_${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ====== NOTAS ====== */
 async function openNotes(nota){
   currentNota = String(nota);
 
@@ -602,7 +805,7 @@ async function openNotes(nota){
 
   $("modalTitle").textContent = `Notas - Nota ${currentNota}`;
   $("modalMeta").innerHTML = currentMeta
-    ? `${escapeHtml(currentMeta.titulo || "")} • ${escapeHtml(currentMeta.municipio || "")} • ${escapeHtml(currentMeta.criterio || "")}`
+    ? `${escapeHtml(currentMeta.titulo || "")} • ${escapeHtml(currentMeta.municipio || "")} • ${escapeHtml(currentMeta.base || "")}`
     : "";
 
   await loadNotes();
@@ -679,49 +882,7 @@ async function saveNote(){
   await render();
 }
 
-/* ====== EXPORTAR CSV (lista exibida) ====== */
-function exportCsv(){
-  const rows = (CURRENT_LIST || []).map(x=>({
-    NOTA: x.nota || "",
-    PROJETO: x.projeto || "",
-    TITULO: x.titulo || "",
-    CRITERIO: x.criterio || "",
-    MUNICIPIO: x.municipio || "",
-    AR: x.ar || "",
-    UNIDADE: x.unidade || "",
-    PRAZO_FINAL: x.dtFim ? fmtBR(x.dtFim) : "",
-    LOCALIDADE: x.localidade || "",
-    GERENCIA: x.gerencia || ""
-  }));
-
-  if(rows.length === 0){
-    alert("Nada para exportar.");
-    return;
-  }
-
-  const headers = Object.keys(rows[0]);
-  const esc = (v)=> `"${String(v ?? "").replaceAll('"','""')}"`;
-
-  const csv = [
-    headers.join(";"),
-    ...rows.map(r=>headers.map(h=>esc(r[h])).join(";"))
-  ].join("\n");
-
-  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `acompanhamento_${Date.now()}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/* ====== EVENTOS ====== */
-$("reload").addEventListener("click", fetchObras);
-
+/* ====== EVENTOS UI ====== */
 $("toggleFilters").addEventListener("click", ()=>{
   const box = $("filters");
   box.classList.toggle("on");
@@ -729,11 +890,11 @@ $("toggleFilters").addEventListener("click", ()=>{
 });
 
 $("clearFilters").addEventListener("click", ()=>{
-  FILTERS = { criterio:"", municipio:"", ar:"", unidade:"" };
+  FILTERS = { criterio:"", municipio:"", ar:"", base:"" };
   $("fCriterio").value = "";
   $("fMunicipio").value = "";
   $("fAR").value = "";
-  $("fUnidade").value = "";
+  $("fBase").value = "";
   render();
 });
 
@@ -743,13 +904,14 @@ $("toggleCols").addEventListener("click", ()=>{
   render();
 });
 
+$("reload").addEventListener("click", fetchObras);
 $("exportCsv").addEventListener("click", exportCsv);
 $("waToday").addEventListener("click", exportWhatsAppToday);
 
 $("fCriterio").addEventListener("change", (e)=>{ FILTERS.criterio = e.target.value; render(); });
 $("fMunicipio").addEventListener("change", (e)=>{ FILTERS.municipio = e.target.value; render(); });
 $("fAR").addEventListener("change", (e)=>{ FILTERS.ar = e.target.value; render(); });
-$("fUnidade").addEventListener("change", (e)=>{ FILTERS.unidade = e.target.value; render(); });
+$("fBase").addEventListener("change", (e)=>{ FILTERS.base = e.target.value; render(); });
 
 $("q").addEventListener("input", ()=>{
   window.clearTimeout(window.__tq);
@@ -760,6 +922,7 @@ $("closeModal").addEventListener("click", closeNotes);
 $("modalBack").addEventListener("click", (e)=>{ if(e.target.id==="modalBack") closeNotes(); });
 $("saveNote").addEventListener("click", saveNote);
 
+/* calendário botões */
 $("prevMonth").addEventListener("click", ()=>{
   viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()-1, 1);
   renderCalendar();
@@ -777,7 +940,21 @@ $("todayBtn").addEventListener("click", ()=>{
 
 window.openNotes = openNotes;
 
+/* init */
 (function init(){
+  // cria base boxes vazias primeiro
+  $("bases").innerHTML = BASES.map(b=>`
+    <div class="baseCol">
+      <div class="baseHead">
+        <div>
+          <div class="baseTitle">${escapeHtml(b)}</div>
+          <div class="baseMeta">Carregando...</div>
+        </div>
+      </div>
+      <div class="empty">Aguardando dados...</div>
+    </div>
+  `).join("");
+
   renderCalendar();
   fetchObras();
 })();
