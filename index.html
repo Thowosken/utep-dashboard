@@ -48,7 +48,7 @@
       display:flex;flex-direction:column;gap:10px;align-items:flex-end;
       min-width:210px;
     }
-    .badgeRow{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+    .badgeRow{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
     .pill{
       display:inline-flex;align-items:center;gap:8px;
       background:rgba(124,252,184,.12);
@@ -88,7 +88,7 @@
       align-items:center;justify-content:space-between;
       border-bottom:1px solid var(--line);
     }
-    .tabs{display:flex;gap:8px;align-items:center}
+    .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .tab{
       padding:9px 12px;border-radius:12px;
       border:1px solid rgba(232,255,244,.12);
@@ -102,6 +102,12 @@
       border-color:rgba(124,252,184,.35);
       background:rgba(124,252,184,.14);
     }
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+    /* Panes (agora filtros funciona) */
+    .pane{display:none;}
+    .pane.active{display:block;}
+
     .filters{
       padding:14px 16px;
       display:grid;
@@ -125,6 +131,24 @@
       color:var(--muted);
       font-size:13px;
     }
+    .detailBox{
+      padding:14px 16px 6px 16px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    }
+    .toggleRow{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      padding:0 16px 14px 16px;
+    }
+    .toggle{
+      display:flex;gap:10px;align-items:center;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(232,255,244,.12);
+      background:rgba(0,0,0,.12);
+      cursor:pointer;
+      user-select:none;
+    }
+    .toggle input{width:auto}
+
     .error{
       margin:0 16px 16px 16px;
       padding:12px 14px;
@@ -187,7 +211,6 @@
     }
     .tag.warn{background:rgba(255,209,102,.12);border-color:rgba(255,209,102,.25)}
     .tag.danger{background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.25)}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
     .linkBtn{
       cursor:pointer;
       padding:8px 10px;border-radius:12px;
@@ -203,7 +226,7 @@
       font-size:12px;
     }
 
-    /* Modal */
+    /* Modal (shared) */
     .overlay{
       position:fixed;inset:0;
       background:rgba(0,0,0,.55);
@@ -213,7 +236,7 @@
       z-index:9999;
     }
     .modal{
-      width:min(700px, 100%);
+      width:min(760px, 100%);
       background:linear-gradient(180deg, rgba(16,56,43,.92), rgba(10,34,26,.92));
       border:1px solid rgba(232,255,244,.14);
       border-radius:18px;
@@ -263,11 +286,25 @@
     .modalFoot{
       display:flex;gap:10px;justify-content:flex-end;
       padding:12px 14px;border-top:1px solid var(--line);
+      flex-wrap:wrap;
+    }
+    .checkList{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:8px;
+      padding:10px 0 0 0;
+    }
+    .checkItem{
+      display:flex;gap:10px;align-items:center;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(232,255,244,.12);
+      background:rgba(0,0,0,.12);
     }
 
     @media (max-width:900px){
       .filters{grid-template-columns:1fr}
       .modalGrid{grid-template-columns:1fr}
+      .checkList{grid-template-columns:1fr}
       header{flex-direction:column;align-items:flex-start}
       .rightTop{align-items:flex-start}
     }
@@ -284,7 +321,7 @@
     <div class="rightTop">
       <div class="badgeRow">
         <div class="pill" id="todayPill">Data: --/--/----</div>
-        <div class="pill">Versão: VFinal</div>
+        <div class="pill">Versão: VFinal+</div>
       </div>
       <button class="btn secondary" id="btnReload">Recarregar</button>
     </div>
@@ -294,45 +331,62 @@
     <div class="panel">
       <div class="panelHead">
         <div class="tabs">
-          <div class="tab active" id="tabFiltros">Filtros</div>
-          <div class="tab" id="tabDetalhes">+ Detalhes</div>
-          <button class="btn" id="btnWhats">Exportar WhatsApp (dia)</button>
+          <div class="tab active" id="tabFiltros" title="Mostrar/ocultar filtros">Filtros</div>
+          <div class="tab" id="tabDetalhes" title="Configurações de colunas">Detalhes</div>
+          <button class="btn" id="btnWhats">Exportar WhatsApp</button>
         </div>
         <div class="actions">
           <button class="btn secondary" id="btnHoje">Hoje</button>
         </div>
       </div>
 
-      <div class="filters">
-        <div class="field">
-          <label>Data (prazo final)</label>
-          <input type="date" id="fData" />
+      <!-- Pane FILTROS (agora funciona mesmo) -->
+      <div class="pane active" id="paneFiltros">
+        <div class="filters">
+          <div class="field">
+            <label>Data (prazo final)</label>
+            <input type="date" id="fData" />
+          </div>
+
+          <div class="field">
+            <label>Base</label>
+            <select id="fBase">
+              <option value="">Todas</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Município</label>
+            <select id="fMunicipio">
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Critério</label>
+            <select id="fCriterio">
+              <option value="">Todos</option>
+            </select>
+          </div>
         </div>
 
-        <div class="field">
-          <label>Base</label>
-          <select id="fBase">
-            <option value="">Todas</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Município</label>
-          <select id="fMunicipio">
-            <option value="">Todos</option>
-          </select>
-        </div>
-
-        <div class="field" style="grid-column:1/-1">
-          <label>Critério</label>
-          <select id="fCriterio">
-            <option value="">Todos</option>
-          </select>
+        <div class="rule" id="ruleText">
+          Regras: mostra obras com <b>prazo final</b> na data escolhida. Se não houver, mostra as <b>5 mais próximas dentro de 5 dias</b>, separadas por Base.
         </div>
       </div>
 
-      <div class="rule" id="ruleText">
-        Regras: mostra obras com <b>prazo final</b> na data escolhida. Se não houver, mostra as <b>5 mais próximas dentro de 5 dias</b>, separadas por Base.
+      <!-- Pane DETALHES -->
+      <div class="pane" id="paneDetalhes">
+        <div class="detailBox">
+          <div class="pill">Colunas extras</div>
+          <div class="muted">Ative/desative campos adicionais na tabela.</div>
+        </div>
+        <div class="toggleRow">
+          <label class="toggle">
+            <input type="checkbox" id="tShowExtras" />
+            Mostrar colunas extras (Gerência)
+          </label>
+        </div>
       </div>
 
       <div id="errBox" class="error" style="display:none"></div>
@@ -346,14 +400,14 @@
   </div>
 
   <!-- Modal notas -->
-  <div class="overlay" id="overlay">
+  <div class="overlay" id="overlayNotes">
     <div class="modal">
       <div class="modalHead">
         <div>
           <h3 id="modalTitle">Notas</h3>
           <div class="muted" id="modalSub"></div>
         </div>
-        <button class="linkBtn" id="btnClose">Fechar</button>
+        <button class="linkBtn" id="btnCloseNotes">Fechar</button>
       </div>
 
       <div class="modalBody">
@@ -389,7 +443,51 @@
       </div>
 
       <div class="modalFoot">
-        <button class="btn secondary" id="btnClose2">Fechar</button>
+        <button class="btn secondary" id="btnCloseNotes2">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal WhatsApp -->
+  <div class="overlay" id="overlayWhats">
+    <div class="modal">
+      <div class="modalHead">
+        <div>
+          <h3>Exportar WhatsApp</h3>
+          <div class="muted">Escolha período e bases. Exporta agrupado por <b>data</b> e <b>base</b>.</div>
+        </div>
+        <button class="linkBtn" id="btnCloseWhats">Fechar</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="modalGrid">
+          <div class="field">
+            <label>De (data inicial)</label>
+            <input type="date" id="wDe" />
+          </div>
+          <div class="field">
+            <label>Até (data final)</label>
+            <input type="date" id="wAte" />
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Bases para exportar</label>
+            <div class="checkList" id="wBases"></div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn secondary" id="btnSelAll">Selecionar todas</button>
+              <button class="btn secondary" id="btnSelNone">Limpar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule" style="padding:10px 0 0 0">
+          Dica: para “<b>hoje até quinta que vem</b>”, coloque a data final manualmente no campo “Até”.
+        </div>
+      </div>
+
+      <div class="modalFoot">
+        <button class="btn secondary" id="btnPreviewWhats">Prévia</button>
+        <button class="btn" id="btnSendWhats">Abrir WhatsApp</button>
       </div>
     </div>
   </div>
@@ -406,9 +504,9 @@
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // nomes de coluna (auto-detect)
-    let COL_BASE = "base_oper_prog";      // fallback
+    let COL_BASE = "base_oper_prog";
     let COL_PRAZO = "PREVISAO_EXECUCAO_FIM";
-    let COL_NOTA  = "nota";               // tudo minúsculo (seu caso)
+    let COL_NOTA  = "nota";
     let COL_MUN   = "municipio";
     let COL_CRIT  = "criterio";
     let COL_PROJ  = "projeto";
@@ -423,18 +521,15 @@
     let criterios = [];
 
     // modal state
-    let currentObra = null; // row
-    let currentNotaKey = null; // string
+    let currentNotaKey = null;
 
     // helpers
     const $ = (id) => document.getElementById(id);
 
     function fmtDateBR(iso){
       if(!iso) return "";
-      // iso pode vir "2026-02-13" ou timestamp
       const d = new Date(iso);
       if(String(d) === "Invalid Date"){
-        // tenta yyyy-mm-dd puro
         const parts = String(iso).slice(0,10).split("-");
         if(parts.length===3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
         return String(iso);
@@ -455,9 +550,38 @@
     function normalizeNota(v){
       if(v === null || v === undefined) return "";
       let s = String(v).trim();
-      // remove .0 no final
       s = s.replace(/\.0$/,"");
       return s;
+    }
+
+    function parseDateOnly(v){
+      if(!v) return null;
+      const s = String(v).slice(0,10);
+      const d = new Date(s + "T00:00:00");
+      if(String(d)==="Invalid Date") return null;
+      return d;
+    }
+
+    function addDays(d, n){
+      const x = new Date(d);
+      x.setDate(x.getDate()+n);
+      return x;
+    }
+
+    function sameDay(a,b){
+      return a && b &&
+        a.getFullYear()===b.getFullYear() &&
+        a.getMonth()===b.getMonth() &&
+        a.getDate()===b.getDate();
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
     }
 
     function showError(msg){
@@ -472,9 +596,6 @@
     }
 
     async function detectColumns(){
-      // tenta descobrir se BASE_OPER_PROG veio maiúsculo (raro) ou minúsculo
-      // e se projeto existe mesmo
-      // estratégia: faz select com head (limit 1) e captura erro 42703
       const tests = [
         { key:"COL_BASE", candidates:["base_oper_prog", "BASE_OPER_PROG", '"BASE_OPER_PROG"'] },
         { key:"COL_PROJ", candidates:["projeto", "PROJETO", '"PROJETO"'] },
@@ -487,12 +608,8 @@
       for(const t of tests){
         let chosen = null;
         for(const c of t.candidates){
-          const sel = `${c}`;
-          const { error } = await sb.from("obras").select(sel, { head:true, count:"exact" }).limit(1);
-          if(!error){
-            chosen = c;
-            break;
-          }
+          const { error } = await sb.from("obras").select(`${c}`, { head:true, count:"exact" }).limit(1);
+          if(!error){ chosen = c; break; }
         }
         if(chosen){
           if(t.key==="COL_BASE") COL_BASE = chosen;
@@ -506,7 +623,6 @@
     }
 
     function getField(row, col){
-      // se col vier '"BASE_OPER_PROG"' precisamos acessar row.BASE_OPER_PROG
       const clean = col.replaceAll('"',"");
       return row?.[clean];
     }
@@ -514,7 +630,6 @@
     async function loadAll(){
       clearError();
 
-      // valida config básica
       if(!SUPABASE_URL || !SUPABASE_ANON_KEY){
         showError("Faltou SUPABASE_URL ou SUPABASE_ANON_KEY.");
         return;
@@ -522,7 +637,6 @@
 
       await detectColumns();
 
-      // busca dados (puxa campos principais + extras comuns)
       const selectCols = [
         `${COL_NOTA}`,
         `${COL_PROJ}`,
@@ -535,10 +649,7 @@
         "status",
       ].join(",");
 
-      const { data, error } = await sb
-        .from("obras")
-        .select(selectCols)
-        .limit(5000);
+      const { data, error } = await sb.from("obras").select(selectCols).limit(5000);
 
       if(error){
         showError(
@@ -547,15 +658,15 @@
 Detalhe: ${error.message}
 
 Verifique:
-- SUPABASE_URL e ANON_KEY (sb_publishable)
 - RLS/policies da tabela obras (SELECT para anon)
-- Se a tabela se chama 'obras'`
+- Nome da tabela e colunas`
         );
         return;
       }
 
       allRows = data || [];
       buildFacets();
+      buildWhatsBases();
       render();
     }
 
@@ -577,37 +688,9 @@ Verifique:
       municipios = Array.from(setMun).sort((a,b)=>a.localeCompare(b));
       criterios = Array.from(setCrit).sort((a,b)=>a.localeCompare(b));
 
-      // popular selects
-      const baseSel = $("fBase");
-      baseSel.innerHTML = `<option value="">Todas</option>` + bases.map(b=>`<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
-
-      const munSel = $("fMunicipio");
-      munSel.innerHTML = `<option value="">Todos</option>` + municipios.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
-
-      const critSel = $("fCriterio");
-      critSel.innerHTML = `<option value="">Todos</option>` + criterios.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-    }
-
-    function parseDateOnly(v){
-      if(!v) return null;
-      // pega só yyyy-mm-dd
-      const s = String(v).slice(0,10);
-      const d = new Date(s + "T00:00:00");
-      if(String(d)==="Invalid Date") return null;
-      return d;
-    }
-
-    function addDays(d, n){
-      const x = new Date(d);
-      x.setDate(x.getDate()+n);
-      return x;
-    }
-
-    function sameDay(a,b){
-      return a && b &&
-        a.getFullYear()===b.getFullYear() &&
-        a.getMonth()===b.getMonth() &&
-        a.getDate()===b.getDate();
+      $("fBase").innerHTML = `<option value="">Todas</option>` + bases.map(b=>`<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
+      $("fMunicipio").innerHTML = `<option value="">Todos</option>` + municipios.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+      $("fCriterio").innerHTML = `<option value="">Todos</option>` + criterios.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
     }
 
     function render(){
@@ -620,34 +703,15 @@ Verifique:
 
       let rows = allRows.slice();
 
-      // filtros
-      if(fBase){
-        rows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === fBase);
-      }
-      if(fMun){
-        rows = rows.filter(r => (getField(r, COL_MUN) ?? "").toString().trim() === fMun);
-      }
-      if(fCrit){
-        rows = rows.filter(r => (getField(r, COL_CRIT) ?? "").toString().trim() === fCrit);
-      }
+      if(fBase) rows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === fBase);
+      if(fMun) rows = rows.filter(r => (getField(r, COL_MUN) ?? "").toString().trim() === fMun);
+      if(fCrit) rows = rows.filter(r => (getField(r, COL_CRIT) ?? "").toString().trim() === fCrit);
 
-      // regra do dia
-      let dayRows = [];
-      if(chosenDate){
-        dayRows = rows.filter(r => {
-          const d = parseDateOnly(getField(r, COL_PRAZO));
-          return d && sameDay(d, chosenDate);
-        });
-      }
-
-      // se não tiver do dia, pega próximas 5 dentro de 5 dias (por base)
-      // mas mantém "vitrine" por base sempre
       const basesToShow = (fBase ? [fBase] : (bases.length ? bases : ["(Sem base)"]));
 
       const container = $("gridBases");
       container.innerHTML = "";
 
-      // agrupamento por base
       for(const b of basesToShow){
         const baseRows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === b);
 
@@ -661,49 +725,32 @@ Verifique:
           });
 
           if(inDay.length){
-            showList = inDay.sort((a,b)=> (getField(a,COL_PRAZO) || "").localeCompare(getField(b,COL_PRAZO) || ""));
+            showList = inDay;
             label = `Obras do dia (${inDay.length})`;
           }else{
             const maxDate = addDays(chosenDate, 5);
-            const upcoming = baseRows
+            showList = baseRows
               .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
               .filter(x => x.d && x.d >= chosenDate && x.d <= maxDate)
               .sort((x,y)=> x.d - y.d)
               .slice(0,5)
               .map(x=>x.r);
-
-            showList = upcoming;
-            label = `Sem obras no dia • Próximas até +5 dias (${upcoming.length})`;
+            label = `Sem obras no dia • Próximas até +5 dias (${showList.length})`;
           }
         }else{
-          // sem data -> pega as mais próximas a partir de hoje por base
           const today = new Date(); today.setHours(0,0,0,0);
           const maxDate = addDays(today, 5);
-          const upcoming = baseRows
+          showList = baseRows
             .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
             .filter(x => x.d && x.d >= today && x.d <= maxDate)
             .sort((x,y)=> x.d - y.d)
             .slice(0,5)
             .map(x=>x.r);
-
-          showList = upcoming;
-          label = `Próximas até +5 dias (${upcoming.length})`;
+          label = `Próximas até +5 dias (${showList.length})`;
         }
-
-        // se não tem nada e a base não tem linhas, pula
-        if(!baseRows.length && fBase) continue;
 
         container.appendChild(renderBaseBlock(b, label, showList));
       }
-    }
-
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
     }
 
     function renderBaseBlock(baseName, label, list){
@@ -718,24 +765,20 @@ Verifique:
       const table = document.createElement("table");
       const thead = document.createElement("thead");
 
-      // colunas fixas (sem INICIO)
       const fixedCols = [
-        { k: COL_NOTA, name:"nota", label:"Nota", cls:"nowrap" },
-        { k: COL_PROJ, name:"projeto", label:"Projeto", cls:"nowrap" },
-        { k: COL_PRAZO, name:"prazo", label:"Prazo final", cls:"nowrap" },
-        { k: "titulo", name:"titulo", label:"Título", cls:"" },
-        { k: COL_MUN, name:"municipio", label:"Município", cls:"nowrap" },
-        { k: COL_CRIT, name:"criterio", label:"Critério", cls:"nowrap" },
-        { k: "status", name:"status", label:"Status", cls:"nowrap" },
+        { k: COL_NOTA, label:"Nota", cls:"nowrap" },
+        { k: COL_PROJ, label:"Projeto", cls:"nowrap" },
+        { k: COL_PRAZO, label:"Prazo final", cls:"nowrap" },
+        { k: "titulo", label:"Título", cls:"" },
+        { k: COL_MUN, label:"Município", cls:"nowrap" },
+        { k: COL_CRIT, label:"Critério", cls:"nowrap" },
+        { k: "status", label:"Status", cls:"nowrap" },
       ];
-
-      // extras (toggle)
       const extraCols = [
         { k: "gerencia", label:"Gerência", cls:"nowrap" },
       ];
 
       const cols = showExtras ? fixedCols.concat(extraCols) : fixedCols;
-
       thead.innerHTML = `<tr>${cols.map(c=>`<th class="${c.cls||""}">${escapeHtml(c.label)}</th>`).join("")}<th class="nowrap">Ações</th></tr>`;
       table.appendChild(thead);
 
@@ -746,6 +789,16 @@ Verifique:
         tr.innerHTML = `<td colspan="${cols.length+1}" class="muted">Nenhuma obra para exibir nesta base.</td>`;
         tbody.appendChild(tr);
       }else{
+        // ordena por prazo final
+        list = list.slice().sort((a,b)=>{
+          const da = parseDateOnly(getField(a,COL_PRAZO));
+          const db = parseDateOnly(getField(b,COL_PRAZO));
+          if(!da && !db) return 0;
+          if(!da) return 1;
+          if(!db) return -1;
+          return da - db;
+        });
+
         for(const row of list){
           const tr = document.createElement("tr");
           const cells = cols.map(c=>{
@@ -771,7 +824,6 @@ Verifique:
       table.appendChild(tbody);
       wrap.appendChild(table);
 
-      // bind notes buttons
       wrap.querySelectorAll("button[data-nota]").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           const nota = btn.getAttribute("data-nota");
@@ -783,75 +835,16 @@ Verifique:
       return wrap;
     }
 
-    function buildWhatsText(){
-      const chosenDate = $("fData").value ? new Date($("fData").value + "T00:00:00") : null;
-      if(!chosenDate){
-        return "Selecione uma data primeiro.";
-      }
-
-      const fBase = $("fBase").value;
-      const fMun = $("fMunicipio").value;
-      const fCrit = $("fCriterio").value;
-
-      let rows = allRows.slice();
-      if(fBase) rows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === fBase);
-      if(fMun) rows = rows.filter(r => (getField(r, COL_MUN) ?? "").toString().trim() === fMun);
-      if(fCrit) rows = rows.filter(r => (getField(r, COL_CRIT) ?? "").toString().trim() === fCrit);
-
-      const day = rows.filter(r=>{
-        const d = parseDateOnly(getField(r, COL_PRAZO));
-        return d && sameDay(d, chosenDate);
-      });
-
-      const dateBR = fmtDateBR($("fData").value);
-
-      if(!day.length){
-        return `📌 Obras do dia (${dateBR})\n\nNenhuma obra com prazo final hoje pelos filtros selecionados.`;
-      }
-
-      // agrupa por base
-      const byBase = new Map();
-      for(const r of day){
-        const b = (getField(r, COL_BASE) ?? "Sem base").toString().trim() || "Sem base";
-        if(!byBase.has(b)) byBase.set(b, []);
-        byBase.get(b).push(r);
-      }
-
-      let msg = `📌 Obras do dia (${dateBR})\n`;
-      for(const [b, list] of Array.from(byBase.entries()).sort((a,b)=>a[0].localeCompare(b[0]))){
-        msg += `\n🏷️ Base: ${b}\n`;
-        for(const r of list){
-          const nota = normalizeNota(getField(r, COL_NOTA));
-          const proj = getField(r, COL_PROJ) || "—";
-          const titulo = getField(r, "titulo") || "—";
-          const mun = getField(r, COL_MUN) || "—";
-          msg += `- Nota ${nota} • ${proj} • ${mun} • ${titulo}\n`;
-        }
-      }
-      return msg.trim();
-    }
-
-    function openWhats(){
-      const txt = buildWhatsText();
-      const url = "https://wa.me/?text=" + encodeURIComponent(txt);
-      window.open(url, "_blank");
+    // ======= Tabs (agora Filtros funciona) =======
+    function setActiveTab(tab){
+      const isFiltros = tab === "filtros";
+      $("tabFiltros").classList.toggle("active", isFiltros);
+      $("tabDetalhes").classList.toggle("active", !isFiltros);
+      $("paneFiltros").classList.toggle("active", isFiltros);
+      $("paneDetalhes").classList.toggle("active", !isFiltros);
     }
 
     // ======= NOTAS =======
-    async function openNotes(notaKey, sub){
-      currentNotaKey = notaKey;
-      $("modalTitle").textContent = `Notas - Nota ${notaKey}`;
-      $("modalSub").textContent = sub || "";
-      $("overlay").style.display = "flex";
-      $("nTexto").value = "";
-      await loadNotes();
-    }
-
-    function closeNotes(){
-      $("overlay").style.display = "none";
-      currentNotaKey = null;
-    }
-
     function statusTag(status){
       if(status==="executada") return `<span class="tag">Executada</span>`;
       if(status==="problemas") return `<span class="tag warn">Problemas</span>`;
@@ -859,11 +852,24 @@ Verifique:
       return `<span class="tag">${escapeHtml(status||"—")}</span>`;
     }
 
+    async function openNotes(notaKey, sub){
+      currentNotaKey = notaKey;
+      $("modalTitle").textContent = `Notas - Nota ${notaKey}`;
+      $("modalSub").textContent = sub || "";
+      $("overlayNotes").style.display = "flex";
+      $("nTexto").value = "";
+      await loadNotes();
+    }
+
+    function closeNotes(){
+      $("overlayNotes").style.display = "none";
+      currentNotaKey = null;
+    }
+
     async function loadNotes(){
       const list = $("notesList");
       list.innerHTML = `<div class="muted">Carregando notas…</div>`;
 
-      // tenta buscar pelo nota em texto (sem .0)
       const { data, error } = await sb
         .from("notes")
         .select("id, nota, autor, texto, status, created_at")
@@ -871,8 +877,7 @@ Verifique:
         .order("created_at", { ascending:false });
 
       if(error){
-        list.innerHTML =
-          `<div class="error">Erro ao carregar notas: ${escapeHtml(error.message)}</div>`;
+        list.innerHTML = `<div class="error">Erro ao carregar notas: ${escapeHtml(error.message)}</div>`;
         return;
       }
 
@@ -901,34 +906,148 @@ Verifique:
       const texto = $("nTexto").value.trim();
       const status = $("nStatus").value;
 
-      if(!autor){
-        alert("Informe seu nome.");
-        return;
-      }
-      if(!texto){
-        alert("Escreva a nota.");
-        return;
-      }
+      if(!autor){ alert("Informe seu nome."); return; }
+      if(!texto){ alert("Escreva a nota."); return; }
 
-      const payload = {
-        nota: currentNotaKey,
-        autor,
-        texto,
-        status
-        // created_at geralmente é automático no Supabase
-      };
-
+      const payload = { nota: currentNotaKey, autor, texto, status };
       const { error } = await sb.from("notes").insert(payload);
-      if(error){
-        alert("Erro ao salvar nota: " + error.message);
-        return;
-      }
+      if(error){ alert("Erro ao salvar nota: " + error.message); return; }
 
       $("nTexto").value = "";
       await loadNotes();
     }
 
-    // ======= UI events =======
+    // ======= WHATSAPP (novo fluxo com perguntas) =======
+    function openWhatsModal(){
+      // default: hoje até +5 dias
+      const today = new Date(); today.setHours(0,0,0,0);
+      $("wDe").value = fmtDateInput(today);
+      $("wAte").value = fmtDateInput(addDays(today, 5));
+      $("overlayWhats").style.display = "flex";
+    }
+    function closeWhatsModal(){
+      $("overlayWhats").style.display = "none";
+    }
+
+    function buildWhatsBases(){
+      const wrap = $("wBases");
+      if(!wrap) return;
+      wrap.innerHTML = "";
+
+      const list = (bases && bases.length) ? bases : [];
+      if(!list.length){
+        wrap.innerHTML = `<div class="muted">Carregue os dados primeiro.</div>`;
+        return;
+      }
+
+      for(const b of list){
+        const id = "wb_" + b.replace(/\W+/g,"_");
+        const div = document.createElement("label");
+        div.className = "checkItem";
+        div.innerHTML = `
+          <input type="checkbox" data-base="${escapeHtml(b)}" id="${id}" checked />
+          <span>${escapeHtml(b)}</span>
+        `;
+        wrap.appendChild(div);
+      }
+    }
+
+    function getSelectedWhatsBases(){
+      const checks = Array.from(document.querySelectorAll('#wBases input[type="checkbox"][data-base]'));
+      return checks.filter(c=>c.checked).map(c=>c.getAttribute("data-base"));
+    }
+
+    function buildWhatsTextRange(fromDate, toDate, basesSelected){
+      const d1 = new Date(fromDate + "T00:00:00");
+      const d2 = new Date(toDate + "T00:00:00");
+      d1.setHours(0,0,0,0);
+      d2.setHours(0,0,0,0);
+
+      if(String(d1)==="Invalid Date" || String(d2)==="Invalid Date"){
+        return "Escolha datas válidas.";
+      }
+      if(d2 < d1){
+        return "A data final precisa ser maior ou igual à inicial.";
+      }
+      if(!basesSelected.length){
+        return "Selecione ao menos uma base.";
+      }
+
+      // filtra no intervalo e nas bases
+      const inRange = allRows
+        .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
+        .filter(x => x.d && x.d >= d1 && x.d <= d2)
+        .filter(x => basesSelected.includes((getField(x.r, COL_BASE) ?? "").toString().trim()));
+
+      // agrupa por data->base
+      const map = new Map(); // dateKey -> Map(base -> rows)
+      for(const x of inRange){
+        const dateKey = fmtDateInput(x.d);
+        if(!map.has(dateKey)) map.set(dateKey, new Map());
+        const b = (getField(x.r, COL_BASE) ?? "Sem base").toString().trim() || "Sem base";
+        const mb = map.get(dateKey);
+        if(!mb.has(b)) mb.set(b, []);
+        mb.get(b).push(x.r);
+      }
+
+      const dateKeys = Array.from(map.keys()).sort((a,b)=>a.localeCompare(b));
+      const header = `📌 Obras planejadas (${fmtDateBR(d1)} → ${fmtDateBR(d2)})`;
+      if(!dateKeys.length){
+        return `${header}\n\nNenhuma obra encontrada no período para as bases selecionadas.`;
+      }
+
+      let msg = header + "\n";
+      for(const dk of dateKeys){
+        msg += `\n📅 ${fmtDateBR(dk)}\n`;
+        const mb = map.get(dk);
+        const baseKeys = Array.from(mb.keys()).sort((a,b)=>a.localeCompare(b));
+        for(const b of baseKeys){
+          msg += `\n🏷️ Base: ${b}\n`;
+          const rows = mb.get(b).slice().sort((a,b)=>{
+            const na = normalizeNota(getField(a, COL_NOTA));
+            const nb = normalizeNota(getField(b, COL_NOTA));
+            return na.localeCompare(nb);
+          });
+
+          for(const r of rows){
+            const nota = normalizeNota(getField(r, COL_NOTA)) || "—";
+            const proj = getField(r, COL_PROJ) || "—";
+            const titulo = getField(r, "titulo") || "—";
+            const mun = getField(r, COL_MUN) || "—";
+            const crit = getField(r, COL_CRIT) || "—";
+            msg += `- Nota ${nota} • ${proj} • ${mun} • ${crit} • ${titulo}\n`;
+          }
+        }
+      }
+      return msg.trim();
+    }
+
+    function openWhatsWithText(text){
+      const url = "https://wa.me/?text=" + encodeURIComponent(text);
+      window.open(url, "_blank");
+    }
+
+    function previewWhats(){
+      const fromDate = $("wDe").value;
+      const toDate = $("wAte").value;
+      const basesSelected = getSelectedWhatsBases();
+      const txt = buildWhatsTextRange(fromDate, toDate, basesSelected);
+      alert(txt.length > 1500 ? (txt.slice(0,1500) + "\n\n...(prévia cortada)") : txt);
+    }
+
+    function sendWhats(){
+      const fromDate = $("wDe").value;
+      const toDate = $("wAte").value;
+      const basesSelected = getSelectedWhatsBases();
+      const txt = buildWhatsTextRange(fromDate, toDate, basesSelected);
+      if(txt.startsWith("Escolha") || txt.startsWith("A data") || txt.startsWith("Selecione")){
+        alert(txt);
+        return;
+      }
+      openWhatsWithText(txt);
+    }
+
+    // ======= Init =======
     function setToday(){
       const now = new Date();
       now.setHours(0,0,0,0);
@@ -936,15 +1055,9 @@ Verifique:
       $("todayPill").textContent = "Data: " + fmtDateBR($("fData").value);
     }
 
-    function toggleDetails(){
-      showExtras = !showExtras;
-      $("tabDetalhes").classList.toggle("active", showExtras);
-      render();
-    }
-
-    // init
     (function init(){
       setToday();
+      setActiveTab("filtros");
 
       $("btnReload").addEventListener("click", loadAll);
       $("btnHoje").addEventListener("click", ()=>{ setToday(); render(); });
@@ -954,18 +1067,33 @@ Verifique:
       $("fMunicipio").addEventListener("change", render);
       $("fCriterio").addEventListener("change", render);
 
-      $("tabFiltros").addEventListener("click", ()=>{
-        $("tabFiltros").classList.add("active");
-        // não tem painel separado; apenas visual
+      // Tabs (agora alterna panes)
+      $("tabFiltros").addEventListener("click", ()=> setActiveTab("filtros"));
+      $("tabDetalhes").addEventListener("click", ()=> setActiveTab("detalhes"));
+
+      // Detalhes toggle
+      $("tShowExtras").addEventListener("change", (e)=>{
+        showExtras = e.target.checked;
+        render();
       });
-      $("tabDetalhes").addEventListener("click", toggleDetails);
 
-      $("btnWhats").addEventListener("click", openWhats);
+      // WhatsApp
+      $("btnWhats").addEventListener("click", openWhatsModal);
+      $("btnCloseWhats").addEventListener("click", closeWhatsModal);
+      $("overlayWhats").addEventListener("click", (e)=>{ if(e.target === $("overlayWhats")) closeWhatsModal(); });
+      $("btnPreviewWhats").addEventListener("click", previewWhats);
+      $("btnSendWhats").addEventListener("click", sendWhats);
+      $("btnSelAll").addEventListener("click", ()=>{
+        document.querySelectorAll('#wBases input[type="checkbox"][data-base]').forEach(c=>c.checked=true);
+      });
+      $("btnSelNone").addEventListener("click", ()=>{
+        document.querySelectorAll('#wBases input[type="checkbox"][data-base]').forEach(c=>c.checked=false);
+      });
 
-      $("btnClose").addEventListener("click", closeNotes);
-      $("btnClose2").addEventListener("click", closeNotes);
-      $("overlay").addEventListener("click", (e)=>{ if(e.target === $("overlay")) closeNotes(); });
-
+      // Notes
+      $("btnCloseNotes").addEventListener("click", closeNotes);
+      $("btnCloseNotes2").addEventListener("click", closeNotes);
+      $("overlayNotes").addEventListener("click", (e)=>{ if(e.target === $("overlayNotes")) closeNotes(); });
       $("btnSalvarNota").addEventListener("click", saveNote);
       $("btnRecarregarNotas").addEventListener("click", loadNotes);
 
