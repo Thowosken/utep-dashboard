@@ -4,35 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Acompanhamento de Obras</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root{
-      /* tema “verde cana” */
-      --bg0:#06110b;
-      --bg1:#0a1a11;
-      --card:#0f2217;
-      --card2:#122a1c;
-      --line:#1f3a2a;
-      --text:#e9fff1;
-      --muted:#b6d9c2;
-      --accent:#2fbf71;      /* verde cana */
-      --accent2:#1a8f52;
-      --warn:#ffcc66;
-      --bad:#ff6b6b;
-      --ok:#66ffa6;
-      --shadow: 0 18px 60px rgba(0,0,0,.35);
-      --radius: 16px;
-      --radius2: 20px;
+      --bg0:#06110b; --bg1:#0a1a11;
+      --card:rgba(255,255,255,.03);
+      --line:rgba(255,255,255,.08);
+      --text:#e9fff1; --muted:#b6d9c2;
+      --accent:#2fbf71; --accent2:#1a8f52;
+      --warn:#ffcc66; --bad:#ff6b6b;
+      --shadow:0 18px 60px rgba(0,0,0,.35);
+      --radius:18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
       background:
         radial-gradient(1100px 650px at 15% 10%, rgba(47,191,113,.18), transparent 60%),
         radial-gradient(900px 600px at 85% 20%, rgba(47,191,113,.12), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
+        linear-gradient(180deg,var(--bg0),var(--bg1));
       min-height:100vh;
     }
     .wrap{max-width:1200px;margin:0 auto;padding:22px 16px 40px}
@@ -40,134 +35,90 @@
       display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
       padding:6px 0 14px;border-bottom:1px solid rgba(255,255,255,.06);
     }
-    .h-title{font-size:34px;font-weight:800;letter-spacing:.2px;margin:0}
-    .h-sub{margin:6px 0 0;color:var(--muted);font-size:14px}
+    h1{margin:0;font-size:30px;font-weight:900}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px}
     .rightTop{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-    .todayBadge{
+    .badge{
       font-family:var(--mono);
       background:rgba(47,191,113,.18);
       border:1px solid rgba(47,191,113,.35);
       padding:8px 10px;border-radius:999px;
-      color:var(--text);
       display:flex;gap:8px;align-items:center;
     }
     .btnRow{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
     button{
-      cursor:pointer;border:0;border-radius:999px;
-      padding:10px 14px;font-weight:700;
-      background:rgba(255,255,255,.08);
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.10);
-      transition:.15s transform, .15s background, .15s border-color;
-      backdrop-filter: blur(8px);
+      cursor:pointer;border-radius:999px;border:1px solid rgba(255,255,255,.10);
+      padding:10px 14px;font-weight:800;color:var(--text);
+      background:rgba(255,255,255,.08); backdrop-filter: blur(8px);
     }
-    button:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.18)}
     .btnAccent{
       background:linear-gradient(180deg, rgba(47,191,113,.95), rgba(26,143,82,.95));
-      border:1px solid rgba(47,191,113,.65);
+      border-color:rgba(47,191,113,.65);
       color:#06110b;
     }
-    .btnAccent:hover{background:linear-gradient(180deg, rgba(47,191,113,1), rgba(26,143,82,1))}
-    .btnGhost{background:transparent;border:1px solid rgba(47,191,113,.35);color:var(--text)}
-    .btnGhost:hover{background:rgba(47,191,113,.08)}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border-radius:999px;
-      border:1px solid rgba(47,191,113,.35);
-      background:rgba(47,191,113,.08);
-      color:var(--text);
-      font-size:13px;
-    }
-
+    .btnGhost{background:transparent;border-color:rgba(47,191,113,.35)}
     .panel{
-      margin-top:16px;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:var(--radius2);
+      margin-top:16px;background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
       box-shadow:var(--shadow);
       overflow:hidden;
     }
     .panelHead{
       display:flex;align-items:center;justify-content:space-between;gap:12px;
-      padding:14px 16px;
+      padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);
       background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border-bottom:1px solid rgba(255,255,255,.06);
     }
-    .panelHead h2{margin:0;font-size:16px;color:var(--text)}
+    .panelHead h2{margin:0;font-size:16px}
     .filters{
-      padding:16px;
-      display:grid;
-      grid-template-columns: 1.2fr 1fr 1fr;
+      padding:16px;display:grid;grid-template-columns: 1.2fr 1fr 1fr;
       gap:14px;
     }
+    @media(max-width:900px){ .filters{grid-template-columns:1fr} }
     .field label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
     .field input,.field select{
-      width:100%;
-      padding:11px 12px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
+      width:100%;padding:11px 12px;border-radius:12px;outline:none;
+      border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);color:var(--text);
     }
-    .field input:focus,.field select:focus{border-color:rgba(47,191,113,.55);box-shadow:0 0 0 3px rgba(47,191,113,.14)}
-    .hint{
-      padding:0 16px 14px;
-      color:var(--muted);
-      font-size:13px;
+    .hint{padding:0 16px 14px;color:var(--muted);font-size:13px}
+    .err{
+      margin:0 16px 16px;padding:14px;border-radius:14px;
+      border:1px solid rgba(255,107,107,.38);background:rgba(255,107,107,.09);
+      color:#ffd6d6;display:none;white-space:pre-wrap;
     }
-    .hint b{color:var(--text)}
-    .errBox{
-      margin:0 16px 16px;
-      padding:14px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,107,107,.38);
-      background:rgba(255,107,107,.09);
-      color:#ffd6d6;
+    .detailsBox{
+      margin:0 16px 16px;padding:12px;border-radius:16px;
+      border:1px solid rgba(47,191,113,.18);background:rgba(47,191,113,.06);
       display:none;
-      white-space:pre-wrap;
     }
-    .gridBases{
-      padding:16px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:14px;
+    .detailsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(min-width:800px){ .detailsGrid{grid-template-columns:1fr 1fr 1fr 1fr} }
+    .chk{
+      display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12);
+      color:var(--muted);font-size:13px;
     }
-    @media (min-width: 980px){
-      .gridBases{grid-template-columns: 1fr 1fr 1fr;}
-    }
+    .gridBases{padding:16px;display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:980px){ .gridBases{grid-template-columns:1fr 1fr 1fr} }
     .baseCard{
       background:rgba(0,0,0,.18);
       border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      overflow:hidden;
+      border-radius:18px;overflow:hidden;
     }
     .baseHead{
-      padding:12px 12px;
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;
       border-bottom:1px solid rgba(255,255,255,.06);
-      background:linear-gradient(180deg, rgba(47,191,113,.10), rgba(0,0,0,.0));
+      background:linear-gradient(180deg, rgba(47,191,113,.10), rgba(0,0,0,0));
     }
     .baseHead .name{font-weight:900}
-    .baseHead .count{
-      font-family:var(--mono);
-      color:var(--muted);
-      font-size:12px;
-      padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-    }
+    .count{font-family:var(--mono);color:var(--muted);font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04)}
     .items{padding:10px;display:flex;flex-direction:column;gap:10px}
     .item{
       border:1px solid rgba(255,255,255,.08);
       background:rgba(255,255,255,.03);
-      border-radius:16px;
-      padding:12px;
+      border-radius:16px;padding:12px;
     }
-    .itemTop{
-      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
-    }
-    .itemTitle{
-      margin:0;font-weight:900;font-size:14px;line-height:1.25;
-    }
+    .title{margin:0;font-weight:900;font-size:14px;line-height:1.25}
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     .chip{
       font-size:12px;padding:6px 10px;border-radius:999px;
@@ -176,132 +127,32 @@
       color:var(--muted);
     }
     .chipStrong{border-color:rgba(47,191,113,.35);background:rgba(47,191,113,.10);color:var(--text)}
-    .chipWarn{border-color:rgba(255,204,102,.35);background:rgba(255,204,102,.10);color:#ffe6b5}
-    .chipBad{border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.10);color:#ffd6d6}
-    .meta{
-      margin-top:10px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:8px;
-      color:var(--muted);
-      font-size:13px;
-    }
+    .meta{margin-top:10px;color:var(--muted);font-size:13px;display:grid;gap:8px}
     .metaRow{display:flex;gap:10px;flex-wrap:wrap}
     .metaRow b{color:var(--text)}
-    .actions{
-      margin-top:10px;display:flex;gap:10px;flex-wrap:wrap
-    }
-    .smallBtn{
-      padding:9px 12px;border-radius:12px;font-weight:800;
-    }
+    .actions{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+    .smallBtn{padding:9px 12px;border-radius:12px;font-weight:900}
 
-    /* Detalhes (colunas extras) */
-    .detailsBox{
-      margin:0 16px 16px;
-      padding:12px;
-      border-radius:16px;
-      border:1px solid rgba(47,191,113,.18);
-      background:rgba(47,191,113,.06);
-      display:none;
-    }
-    .detailsGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    @media (min-width: 800px){
-      .detailsGrid{grid-template-columns: 1fr 1fr 1fr 1fr;}
-    }
-    .chk{
-      display:flex;align-items:center;gap:8px;
-      padding:8px 10px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(0,0,0,.12);
-      color:var(--muted);
-      font-size:13px;
-    }
-    .chk input{transform:scale(1.1)}
-    .footer{
-      margin-top:16px;
-      text-align:center;
-      color:rgba(233,255,241,.65);
-      font-size:12px;
-    }
-
-    /* Modal */
-    .overlay{
-      position:fixed;inset:0;background:rgba(0,0,0,.55);
-      display:none;align-items:center;justify-content:center;
-      padding:16px;
-      z-index:999;
-    }
-    .modal{
-      width:min(860px, 100%);
-      background:linear-gradient(180deg, rgba(15,34,23,.98), rgba(10,26,17,.98));
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .modalHead{
-      padding:14px 16px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
-    }
+    /* modal */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:999}
+    .modal{width:min(860px,100%);background:linear-gradient(180deg, rgba(15,34,23,.98), rgba(10,26,17,.98));
+      border:1px solid rgba(255,255,255,.10);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+    .modalHead{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     .modalHead h3{margin:0;font-size:16px}
-    .modalHead .sub{margin:6px 0 0;color:var(--muted);font-size:13px}
+    .modalHead .sub{margin-top:6px;color:var(--muted);font-size:13px}
     .modalBody{padding:14px 16px}
-    .modalGrid{
-      display:grid;grid-template-columns:1fr;gap:12px;
-    }
-    @media (min-width: 900px){
-      .modalGrid{grid-template-columns: 1.1fr .9fr}
-    }
-    .noteList{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      background:rgba(0,0,0,.18);
-      padding:10px;
-      min-height:220px;
-      max-height:360px;
-      overflow:auto;
-    }
-    .noteItem{
-      padding:10px 10px;border-radius:14px;
-      border:1px solid rgba(255,255,255,.06);
-      background:rgba(255,255,255,.03);
-      margin-bottom:10px;
-    }
+    .modalGrid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:900px){ .modalGrid{grid-template-columns:1.1fr .9fr} }
+    .noteList{border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(0,0,0,.18);padding:10px;min-height:220px;max-height:360px;overflow:auto}
+    .noteItem{padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);margin-bottom:10px}
     .noteItem:last-child{margin-bottom:0}
     .noteTop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
     .noteAuthor{font-weight:900}
     .noteDate{color:var(--muted);font-family:var(--mono);font-size:12px}
-    .noteTxt{margin:8px 0 0;color:var(--text);white-space:pre-wrap}
-    .noteStatus{margin-top:8px;display:inline-flex}
-    .modalActions{
-      padding:14px 16px;border-top:1px solid rgba(255,255,255,.06);
-      display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;
-    }
-    textarea{
-      width:100%;min-height:120px;resize:vertical;
-      padding:11px 12px;border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-    }
-    textarea:focus{border-color:rgba(47,191,113,.55);box-shadow:0 0 0 3px rgba(47,191,113,.14)}
-    .miniErr{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,107,107,.38);
-      background:rgba(255,107,107,.09);
-      color:#ffd6d6;
-      display:none;
-      white-space:pre-wrap;
-      font-size:13px;
-    }
+    .noteTxt{margin-top:8px;white-space:pre-wrap}
+    textarea{width:100%;min-height:120px;resize:vertical;padding:11px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);color:var(--text);outline:none}
+    .modalActions{padding:14px 16px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+    .miniErr{margin-top:10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,107,107,.38);background:rgba(255,107,107,.09);color:#ffd6d6;display:none;white-space:pre-wrap;font-size:13px}
   </style>
 </head>
 
@@ -309,15 +160,12 @@
   <div class="wrap">
     <header>
       <div>
-        <h1 class="h-title">Acompanhamento de Obras</h1>
-        <div class="h-sub">UTEP Nordeste • Supabase + GitHub Pages</div>
+        <h1>Acompanhamento de Obras</h1>
+        <div class="sub">UTEP Nordeste • Supabase + GitHub Pages</div>
       </div>
       <div class="rightTop">
-        <div class="todayBadge">
-          <span>📅</span><span id="todayLabel">--/--/----</span>
-        </div>
+        <div class="badge"><span>📅</span><span id="todayLabel">--/--/----</span></div>
         <div class="btnRow">
-          <span class="pill" id="verPill">Versão: V3 (verde cana)</span>
           <button id="btnReload">Recarregar</button>
         </div>
       </div>
@@ -358,23 +206,18 @@
 
       <div class="detailsBox" id="detailsBox">
         <div class="hint" style="padding:0 0 10px;margin:0">
-          Marque as colunas extras que você quer <b>mostrar</b> na lista (as principais ficam fixas).
+          Marque colunas extras para mostrar (as principais ficam fixas).
         </div>
         <div class="detailsGrid" id="detailsGrid"></div>
       </div>
 
       <div class="hint">
-        <b>Regras:</b> mostra obras com <b>prazo final</b> na data escolhida (<code>previsao_execucao_fim</code>). Se não houver, mostra as <b>5 mais próximas dentro de 5 dias</b> (por base).
+        <b>Regras:</b> mostra obras com <b>prazo_final</b> na data escolhida. Se não houver, mostra as <b>5 mais próximas dentro de 5 dias</b> (por base).
       </div>
 
-      <div class="errBox" id="errBox"></div>
-
+      <div class="err" id="errBox"></div>
       <div class="gridBases" id="basesGrid"></div>
     </section>
-
-    <div class="footer">
-      UTEP Nordeste • Atualiza automaticamente quando você fizer commit no GitHub Pages.
-    </div>
   </div>
 
   <!-- Modal Notas -->
@@ -391,13 +234,10 @@
       <div class="modalBody">
         <div class="modalGrid">
           <div>
-            <div class="pill" style="margin-bottom:10px">📝 Histórico de anotações</div>
             <div class="noteList" id="noteList"></div>
           </div>
 
           <div>
-            <div class="pill" style="margin-bottom:10px">➕ Nova anotação</div>
-
             <div class="field" style="margin-bottom:10px">
               <label>Seu nome</label>
               <input id="inpAuthor" placeholder="Ex.: João Silva" />
@@ -429,9 +269,6 @@
     </div>
   </div>
 
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script>
     /***********************
      * CONFIG (SUAS CHAVES)
@@ -439,30 +276,27 @@
     const SUPABASE_URL = "https://yyfhnuafwzeglwcpnmkd.supabase.co";
     const SUPABASE_KEY = "sb_publishable_7rmfNL9N6limSSFxFcl2Og_MV9xkbjx";
 
-    // Tabelas (minúsculo!)
+    const { createClient } = window.supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Tabelas
     const TABLE_OBRAS = "obras";
     const TABLE_NOTES = "notes";
 
-    // Colunas (minúsculo!)
+    // Colunas (minúsculas)
     const COL_NOTA = "nota";
     const COL_PROJETO = "projeto";
-    const COL_BASE = "base"; // se sua base estiver em outra coluna, troque aqui
+    const COL_BASE = "base";
     const COL_MUNICIPIO = "municipio";
-    const COL_CRITERIO = "criterio";
-    const COL_PRAZO = "prazo_final";
+    const COL_PRAZO = "prazo_final";          // ✅ AGORA USA A COLUNA DATE
+    const COL_PRAZO_TEXTO = "previsao_execucao_fim"; // só para exibir se quiser
 
-    // Notes table columns (minúsculo!)
+    // Notes (minúsculas)
     const NOTE_COL_NOTA = "nota";
     const NOTE_COL_AUTHOR = "author";
     const NOTE_COL_NOTE = "note";
     const NOTE_COL_STATUS = "status_execucao";
     const NOTE_COL_CREATED = "created_at";
-
-    /***********************
-     * SUPABASE CLIENT
-     ***********************/
-    const { createClient } = window.supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     /***********************
      * UI refs
@@ -495,29 +329,10 @@
     /***********************
      * Helpers
      ***********************/
-    function showErr(msg){
-      errBox.style.display = "block";
-      errBox.textContent = msg;
-    }
-    function hideErr(){
-      errBox.style.display = "none";
-      errBox.textContent = "";
-    }
-    function showMiniErr(msg){
-      miniErr.style.display = "block";
-      miniErr.textContent = msg;
-    }
-    function hideMiniErr(){
-      miniErr.style.display = "none";
-      miniErr.textContent = "";
-    }
     function pad2(n){ return String(n).padStart(2,"0"); }
-    function ymdFromDate(d){
-      return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
-    }
+    function ymdFromDate(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
     function brFromISO(iso){
       if(!iso) return "—";
-      // aceita yyyy-mm-dd ou timestamp
       const d = new Date(iso);
       if(isNaN(d.getTime())) return String(iso);
       return pad2(d.getDate())+"/"+pad2(d.getMonth()+1)+"/"+d.getFullYear();
@@ -525,59 +340,67 @@
     function timeBR(iso){
       const d = new Date(iso);
       if(isNaN(d.getTime())) return "";
-      return pad2(d.getDate())+"/"+pad2(d.getMonth()+1)+"/"+d.getFullYear()+" "+pad2(d.getHours())+":"+pad2(d.getMinutes());
+      return brFromISO(d)+" "+pad2(d.getHours())+":"+pad2(d.getMinutes());
     }
-    function norm(s){
-      return String(s ?? "").trim().toLowerCase();
-    }
-    function safeGet(row, col){
-      if(!row) return "";
-      return row[col] ?? "";
+    function norm(v){ return String(v ?? "").trim().toLowerCase(); }
+    function showErr(msg){ errBox.style.display="block"; errBox.textContent=msg; }
+    function hideErr(){ errBox.style.display="none"; errBox.textContent=""; }
+    function showMiniErr(msg){ miniErr.style.display="block"; miniErr.textContent=msg; }
+    function hideMiniErr(){ miniErr.style.display="none"; miniErr.textContent=""; }
+    function safeGet(row, col){ return row?.[col] ?? ""; }
+
+    function baseOf(row){
+      return String(safeGet(row, COL_BASE) || "").trim() || "—";
     }
 
-    // Decide qual base usar (se vier vazio)
-    function baseOf(row){
-      const b = safeGet(row, COL_BASE);
-      // Se no seu CSV/DB base vier em outra coluna, troque acima.
-      return String(b || "").trim() || "—";
+    function getPrazoYMD(row){
+      // agora é DATE no banco; pode vir "YYYY-MM-DD" ou timestamp
+      const v = safeGet(row, COL_PRAZO);
+      if(!v) return "";
+      const s = String(v).trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+      const d = new Date(s);
+      if(!isNaN(d.getTime())) return ymdFromDate(d);
+      return "";
+    }
+
+    function withinDays(dateStr, startStr, days){
+      const a = new Date(startStr+"T00:00:00");
+      const b = new Date(dateStr+"T00:00:00");
+      const diff = Math.round((b - a) / (1000*60*60*24));
+      return diff >= 0 && diff <= days;
     }
 
     function statusChip(status){
       const s = norm(status);
       if(s==="executada") return '<span class="chip chipStrong">✅ Executada</span>';
-      if(s==="problemas") return '<span class="chip chipWarn">⚠️ Problemas</span>';
-      if(s==="nao_executada" || s==="não foi executada" || s==="nao foi executada") return '<span class="chip chipBad">❌ Não executada</span>';
+      if(s==="problemas") return '<span class="chip" style="border-color:rgba(255,204,102,.35);background:rgba(255,204,102,.10);color:#ffe6b5">⚠️ Problemas</span>';
+      if(s==="nao_executada") return '<span class="chip" style="border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.10);color:#ffd6d6">❌ Não executada</span>';
       return '<span class="chip">—</span>';
     }
 
     /***********************
-     * Colunas extras (toggle)
-     * principais fixas: nota, projeto, prazo final, municipio, base
+     * Extras
      ***********************/
     const EXTRA_COLUMNS = [
       { key: "base_oper_prog", label: "base_oper_prog" },
       { key: "criterio", label: "critério" },
       { key: "gerencia", label: "gerência" },
       { key: "localidade", label: "localidade" },
-      { key: "superintendencia", label: "superintendência" },
       { key: "status", label: "status" },
       { key: "status_si", label: "status_si" },
-      { key: "prioridade_principal", label: "prioridade_principal" },
-      { key: "prioridade_todas", label: "prioridade_todas" },
     ];
-    const extraOn = new Set(["criterio"]); // padrão: mostra critério se existir
+    const extraOn = new Set(["criterio"]);
 
     function renderExtraToggles(){
       detailsGrid.innerHTML = "";
       EXTRA_COLUMNS.forEach(c=>{
-        const id = "chk_"+c.key;
         const div = document.createElement("label");
         div.className = "chk";
-        div.innerHTML = `<input type="checkbox" id="${id}" ${extraOn.has(c.key) ? "checked":""} />
+        div.innerHTML = `<input type="checkbox" ${extraOn.has(c.key) ? "checked":""} />
                          <span>${c.label}</span>`;
         div.querySelector("input").addEventListener("change",(e)=>{
-          if(e.target.checked) extraOn.add(c.key);
-          else extraOn.delete(c.key);
+          if(e.target.checked) extraOn.add(c.key); else extraOn.delete(c.key);
           renderAll();
         });
         detailsGrid.appendChild(div);
@@ -585,32 +408,26 @@
     }
 
     /***********************
-     * Data loading
+     * Data
      ***********************/
     let allRows = [];
-    let currentDayRows = []; // o que está na tela
+    let currentNota = null;
+
     const BASES_ORDER = ["Alagoinhas", "Ribeira do Pombal", "Paulo Afonso"];
 
     async function loadObras(){
       hideErr();
       basesGrid.innerHTML = "";
 
-      // 🔴 IMPORTANTE: se não houver policy SELECT para anon na tabela obras, vai dar vazio/erro
-      const { data, error } = await sb
-        .from(TABLE_OBRAS)
-        .select("*");
+      // pega tudo
+      const { data, error } = await sb.from(TABLE_OBRAS).select("*");
 
       if(error){
         showErr(
-          "Não consegui carregar dados da tabela 'obras'.\n\n" +
-          "Detalhe: " + (error.message || JSON.stringify(error)) + "\n\n" +
-          "Verifique:\n" +
-          "- SUPABASE_URL e ANON_KEY (sb_publishable)\n" +
-          "- RLS/policies da tabela obras (SELECT para anon)\n" +
-          "- nomes das colunas em minúsculo (ex.: 'nota', 'previsao_execucao_fim')"
+          "Erro ao carregar 'obras': " + error.message + "\n\n" +
+          "Checar:\n- Policy SELECT para anon em obras\n- coluna 'prazo_final' existe\n- dados importados"
         );
         allRows = [];
-        currentDayRows = [];
         return;
       }
 
@@ -629,68 +446,26 @@
       munPick.innerHTML = `<option value="todos">Todos</option>` + arr.map(m=>`<option value="${m}">${m}</option>`).join("");
     }
 
-    /***********************
-     * Filtragem e regra do “dia”
-     ***********************/
-    function withinDays(dateStr, startStr, days){
-      // dateStr e startStr em yyyy-mm-dd
-      const a = new Date(startStr+"T00:00:00");
-      const b = new Date(dateStr+"T00:00:00");
-      const diff = Math.round((b - a) / (1000*60*60*24));
-      return diff >= 0 && diff <= days;
+    function filterBase(row){
+      const pick = basePick.value;
+      if(pick==="todas") return true;
+      return norm(baseOf(row)) === pick;
     }
-
-   function getPrazoYMD(row){
-  const v = safeGet(row, COL_PRAZO);
-  if(!v) return "";
-
-  const s = String(v).trim();
-
-  // 1) Se já vier em YYYY-MM-DD ou timestamp ISO
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
-
-  // 2) Se vier em DD/MM/AAAA
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-    const [dd, mm, yyyy] = s.split("/");
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  // 3) Tentativa final via Date
-  const d = new Date(s);
-  if(!isNaN(d.getTime())) return ymdFromDate(d);
-
-  return "";
-}
-
-    function filterBase(row, baseSelected){
-      if(baseSelected==="todas") return true;
-      const b = norm(baseOf(row));
-      return b === baseSelected;
-    }
-
-    function filterMunicipio(row, munSelected){
-      if(munSelected==="todos") return true;
-      const m = String(safeGet(row, COL_MUNICIPIO) || "").trim();
-      return m === munSelected;
+    function filterMunicipio(row){
+      const pick = munPick.value;
+      if(pick==="todos") return true;
+      return String(safeGet(row, COL_MUNICIPIO) || "").trim() === pick;
     }
 
     function pickDayRows(){
-      const target = datePick.value; // yyyy-mm-dd
-      const baseSelected = basePick.value;
-      const munSelected = munPick.value;
+      const target = datePick.value;
+      const candidates = allRows.filter(r => filterBase(r) && filterMunicipio(r));
 
-      // 1) candidatos pelos filtros (base/mun)
-      const candidates = allRows.filter(r => filterBase(r, baseSelected) && filterMunicipio(r, munSelected));
-
-      // 2) obras do dia (prazo final = target)
       const sameDay = candidates.filter(r => getPrazoYMD(r) === target);
-
       if(sameDay.length > 0){
-        // ordena por algo estável (nota)
-        return sameDay.sort((a,b)=> String(safeGet(a,COL_NOTA)).localeCompare(String(safeGet(b,COL_NOTA)), "pt-BR"));
+        return sameDay.sort((a,b)=> String(safeGet(a,COL_NOTA)).localeCompare(String(safeGet(b,COL_NOTA)),"pt-BR"));
       }
 
-      // 3) se não houver, pega próximas dentro de 5 dias
       const next = candidates
         .filter(r => {
           const d = getPrazoYMD(r);
@@ -698,59 +473,39 @@
           return withinDays(d, target, 5);
         })
         .sort((a,b)=>{
-          const da = getPrazoYMD(a);
-          const db = getPrazoYMD(b);
+          const da = getPrazoYMD(a), db = getPrazoYMD(b);
           if(da !== db) return da.localeCompare(db);
-          return String(safeGet(a,COL_NOTA)).localeCompare(String(safeGet(b,COL_NOTA)), "pt-BR");
+          return String(safeGet(a,COL_NOTA)).localeCompare(String(safeGet(b,COL_NOTA)),"pt-BR");
         });
 
-      return next.slice(0, 15); // geral (na tela a gente ainda separa por base e mostra 5 por base)
+      return next; // por base a gente corta 5
     }
 
     function splitByBase(rows){
       const map = new Map();
       BASES_ORDER.forEach(b=>map.set(b, []));
       map.set("Outros", []);
-
       rows.forEach(r=>{
         const b = baseOf(r);
         const key = BASES_ORDER.find(x => norm(x) === norm(b)) || "Outros";
         map.get(key).push(r);
       });
-
-      // se não tem filtro “todas”, pode vir só uma base; ok.
       return map;
     }
 
-    /***********************
-     * Render
-     ***********************/
     function renderAll(){
-      hideErr();
       const rows = pickDayRows();
-      currentDayRows = rows;
-
       const map = splitByBase(rows);
       basesGrid.innerHTML = "";
 
-      // cria cards na ordem
-      const keys = [...BASES_ORDER, "Outros"].filter(k => map.get(k) && map.get(k).length>0);
+      // se hoje tem obras, não limita tanto; se não tem, mostra 5 por base
+      const hasSameDay = allRows
+        .filter(r => filterBase(r) && filterMunicipio(r))
+        .some(r => getPrazoYMD(r) === datePick.value);
 
-      // Se filtro “todas” e não há nada, ainda mostra 3 cards vazios
-      const shouldShowEmptyCards = (basePick.value === "todas");
-      const finalKeys = shouldShowEmptyCards ? BASES_ORDER : keys.length?keys:BASES_ORDER;
-
-      finalKeys.forEach(baseName=>{
+      BASES_ORDER.forEach(baseName=>{
         const list = map.get(baseName) || [];
-        // regra: se não tinha obras do dia, mostrar 5 mais próximas de cada base
-        let displayList = list;
-        const hadSameDay = allRows.some(r => filterBase(r, basePick.value) && filterMunicipio(r, munPick.value) && getPrazoYMD(r) === datePick.value);
-        if(!hadSameDay){
-          displayList = list.slice(0, 5);
-        }else{
-          // se tem do dia, não limita (mas pode ser muita coisa; aqui limito 25)
-          displayList = list.slice(0, 25);
-        }
+        const displayList = hasSameDay ? list.slice(0, 25) : list.slice(0, 5);
 
         const card = document.createElement("div");
         card.className = "baseCard";
@@ -759,22 +514,20 @@
             <div class="name">${baseName}</div>
             <div class="count">${displayList.length} obra(s)</div>
           </div>
-          <div class="items" id="items_${baseName.replace(/\s+/g,'_')}"></div>
+          <div class="items"></div>
         `;
-        basesGrid.appendChild(card);
-
         const holder = card.querySelector(".items");
+
         if(displayList.length === 0){
           const empty = document.createElement("div");
           empty.className = "item";
-          empty.innerHTML = `<div style="color:var(--muted)">Sem obras para esta base na regra do dia/5 dias.</div>`;
+          empty.innerHTML = `<div style="color:var(--muted)">Sem obras nesta base (dia/5 dias).</div>`;
           holder.appendChild(empty);
-          return;
+        }else{
+          displayList.forEach(r => holder.appendChild(renderItem(r)));
         }
 
-        displayList.forEach(r=>{
-          holder.appendChild(renderItem(r));
-        });
+        basesGrid.appendChild(card);
       });
     }
 
@@ -785,64 +538,52 @@
       const prazo = safeGet(r, COL_PRAZO);
       const base = baseOf(r);
 
-      const chips = [];
-      chips.push(`<span class="chip chipStrong">📌 Nota: ${nota ?? "—"}</span>`);
-      if(projeto) chips.push(`<span class="chip">🧩 Projeto: ${projeto}</span>`);
-      chips.push(`<span class="chip">📍 ${municipio || "Município —"}</span>`);
-      chips.push(`<span class="chip">🏷️ Base: ${base || "—"}</span>`);
-      chips.push(`<span class="chip">🗓️ Prazo: ${brFromISO(prazo)}</span>`);
+      const chips = [
+        `<span class="chip chipStrong">📌 Nota: ${nota || "—"}</span>`,
+        `<span class="chip">🧩 Projeto: ${projeto || "—"}</span>`,
+        `<span class="chip">📍 ${municipio || "—"}</span>`,
+        `<span class="chip">🏷️ Base: ${base || "—"}</span>`,
+        `<span class="chip">🗓️ Prazo: ${brFromISO(prazo)}</span>`
+      ];
 
-      // extras
-      const extrasRows = [];
+      const extras = [];
       EXTRA_COLUMNS.forEach(c=>{
         if(!extraOn.has(c.key)) return;
         const v = r[c.key];
         if(v === undefined || v === null || String(v).trim()==="") return;
-        extrasRows.push(`<div class="metaRow"><b>${c.label}:</b> <span>${String(v)}</span></div>`);
+        extras.push(`<div class="metaRow"><b>${c.label}:</b> <span>${String(v)}</span></div>`);
       });
 
       const el = document.createElement("div");
       el.className = "item";
       el.innerHTML = `
-        <div class="itemTop">
-          <p class="itemTitle">${(projeto ? projeto : "Obra")} <span style="color:var(--muted);font-weight:700">• ${municipio || "—"}</span></p>
-        </div>
+        <p class="title">${projeto || "Obra"} <span style="color:var(--muted);font-weight:700">• ${municipio || "—"}</span></p>
         <div class="chips">${chips.join("")}</div>
-        ${extrasRows.length ? `<div class="meta">${extrasRows.join("")}</div>` : ``}
+        ${extras.length ? `<div class="meta">${extras.join("")}</div>` : ``}
         <div class="actions">
-          <button class="smallBtn btnGhost" data-nota="${String(nota)}" data-municipio="${String(municipio||"")}" data-projeto="${String(projeto||"")}" data-base="${String(base||"")}">Anotações</button>
+          <button class="smallBtn btnGhost">Anotações</button>
         </div>
       `;
-
-      el.querySelector("button").addEventListener("click",(e)=>{
-        const b = e.currentTarget;
+      el.querySelector("button").addEventListener("click", ()=>{
         openNotesModal({
-          nota: b.getAttribute("data-nota"),
-          municipio: b.getAttribute("data-municipio"),
-          projeto: b.getAttribute("data-projeto"),
-          base: b.getAttribute("data-base"),
-          prazo: prazo
+          nota, base, municipio, projeto, prazo
         });
       });
-
       return el;
     }
 
     /***********************
-     * WhatsApp export (somente do dia)
+     * WhatsApp (somente do dia)
      ***********************/
     function buildWhatsText(){
       const target = datePick.value;
-      // somente as do dia (prazo = target) respeitando filtros
-      const baseSelected = basePick.value;
-      const munSelected = munPick.value;
 
       const dayRows = allRows
-        .filter(r => filterBase(r, baseSelected) && filterMunicipio(r, munSelected))
+        .filter(r => filterBase(r) && filterMunicipio(r))
         .filter(r => getPrazoYMD(r) === target);
 
       if(dayRows.length === 0){
-        return `Obras do dia (${brFromISO(target)}):\n\nNenhuma obra com prazo final hoje na regra.`;
+        return `📌 Obras do dia (${brFromISO(target)}):\n\nNenhuma obra com prazo final hoje.`;
       }
 
       const map = splitByBase(dayRows);
@@ -852,7 +593,6 @@
         const list = map.get(baseName) || [];
         out += `\n🏷️ ${baseName} (${list.length})\n`;
         if(list.length === 0){ out += `- (sem obras)\n`; return; }
-
         list.forEach(r=>{
           const nota = safeGet(r, COL_NOTA);
           const proj = safeGet(r, COL_PROJETO);
@@ -866,20 +606,16 @@
 
     function openWhats(){
       const text = buildWhatsText();
-      const url = "https://wa.me/?text=" + encodeURIComponent(text);
-      window.open(url, "_blank");
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
     }
 
     /***********************
      * Notes modal
      ***********************/
-    let currentNota = null;
-
     function openNotesModal(ctx){
       currentNota = ctx.nota;
       hideMiniErr();
       txtNote.value = "";
-      // não zerar nome (pra facilitar)
       modalTitle.textContent = `Notas • Nota ${ctx.nota || "—"}`;
       modalSub.textContent = `${ctx.base || "—"} • ${ctx.municipio || "—"} • Prazo: ${brFromISO(ctx.prazo)}`;
       overlay.style.display = "flex";
@@ -895,7 +631,6 @@
 
     async function loadNotesForNota(nota){
       noteList.innerHTML = `<div style="color:var(--muted)">Carregando...</div>`;
-
       const { data, error } = await sb
         .from(TABLE_NOTES)
         .select(`${NOTE_COL_AUTHOR},${NOTE_COL_NOTE},${NOTE_COL_STATUS},${NOTE_COL_CREATED}`)
@@ -913,62 +648,46 @@
         return;
       }
 
-      noteList.innerHTML = rows.map(r=>{
-        return `
-          <div class="noteItem">
-            <div class="noteTop">
-              <div class="noteAuthor">${r[NOTE_COL_AUTHOR] || "—"}</div>
-              <div class="noteDate">${timeBR(r[NOTE_COL_CREATED])}</div>
-            </div>
-            <div class="noteTxt">${(r[NOTE_COL_NOTE] || "").replace(/</g,"&lt;")}</div>
-            <div class="noteStatus">${statusChip(r[NOTE_COL_STATUS])}</div>
+      noteList.innerHTML = rows.map(r=>`
+        <div class="noteItem">
+          <div class="noteTop">
+            <div class="noteAuthor">${r[NOTE_COL_AUTHOR] || "—"}</div>
+            <div class="noteDate">${timeBR(r[NOTE_COL_CREATED])}</div>
           </div>
-        `;
-      }).join("");
+          <div class="noteTxt">${(r[NOTE_COL_NOTE] || "").replace(/</g,"&lt;")}</div>
+          <div style="margin-top:8px">${statusChip(r[NOTE_COL_STATUS])}</div>
+        </div>
+      `).join("");
     }
 
     async function saveNote(){
       hideMiniErr();
-      if(!currentNota){
-        showMiniErr("Não encontrei a 'nota' atual. Feche e abra novamente.");
-        return;
-      }
+      if(!currentNota){ showMiniErr("Sem nota selecionada."); return; }
       const author = inpAuthor.value.trim();
       const note = txtNote.value.trim();
       const status = selStatus.value;
+      if(!author){ showMiniErr("Digite seu nome."); return; }
+      if(!note){ showMiniErr("Digite a anotação."); return; }
 
-      if(!author){
-        showMiniErr("Digite seu nome antes de salvar.");
-        return;
-      }
-      if(!note){
-        showMiniErr("Digite a anotação antes de salvar.");
-        return;
-      }
-
-      const payload = {};
-      payload[NOTE_COL_NOTA] = currentNota;
-      payload[NOTE_COL_AUTHOR] = author;
-      payload[NOTE_COL_NOTE] = note;
-      payload[NOTE_COL_STATUS] = status;
+      const payload = {
+        [NOTE_COL_NOTA]: currentNota,
+        [NOTE_COL_AUTHOR]: author,
+        [NOTE_COL_NOTE]: note,
+        [NOTE_COL_STATUS]: status
+      };
 
       const { error } = await sb.from(TABLE_NOTES).insert(payload);
-
-      if(error){
-        showMiniErr("Erro ao salvar nota: " + error.message);
-        return;
-      }
+      if(error){ showMiniErr("Erro ao salvar: " + error.message); return; }
 
       txtNote.value = "";
       await loadNotesForNota(currentNota);
     }
 
     /***********************
-     * Events
+     * Events + init
      ***********************/
     btnReload.addEventListener("click", loadObras);
     btnWhats.addEventListener("click", openWhats);
-
     btnToggleDetails.addEventListener("click", ()=>{
       const open = detailsBox.style.display === "block";
       detailsBox.style.display = open ? "none" : "block";
@@ -980,21 +699,14 @@
     datePick.addEventListener("change", renderAll);
 
     btnCloseModal.addEventListener("click", closeNotesModal);
-    overlay.addEventListener("click",(e)=>{
-      if(e.target === overlay) closeNotesModal();
-    });
-
+    overlay.addEventListener("click",(e)=>{ if(e.target===overlay) closeNotesModal(); });
     btnSaveNote.addEventListener("click", saveNote);
     btnRefreshNotes.addEventListener("click", ()=> currentNota && loadNotesForNota(currentNota));
 
-    /***********************
-     * Init
-     ***********************/
     (function init(){
       const now = new Date();
       todayLabel.textContent = pad2(now.getDate())+"/"+pad2(now.getMonth()+1)+"/"+now.getFullYear();
       datePick.value = ymdFromDate(now);
-
       renderExtraToggles();
       loadObras();
     })();
