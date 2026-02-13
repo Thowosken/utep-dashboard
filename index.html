@@ -1,1095 +1,1263 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Acompanhamento de Obras</title>
+
+  <!-- Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root{
-      --bg:#071a13;
-      --bg2:#0c2a20;
-      --card:#0e2f24;
-      --card2:#10382b;
-      --text:#e8fff4;
-      --muted:#b9e6d2;
-      --line:rgba(232,255,244,.12);
-      --accent:#7CFCB8;     /* verde cana */
-      --accent2:#3ddc97;
+      /* tema "verde cana" */
+      --bg0:#071b12;
+      --bg1:#0b2a1b;
+      --card:#0e3321;
+      --card2:#0a2418;
+      --line:rgba(255,255,255,.10);
+      --txt:#eaf7ef;
+      --muted:rgba(234,247,239,.72);
+      --brand:#48d18d;   /* verde cana */
+      --brand2:#2aa86a;
       --danger:#ff6b6b;
       --warn:#ffd166;
-      --shadow: 0 10px 35px rgba(0,0,0,.35);
-      --radius:18px;
+      --ok:#48d18d;
+      --chip:#103a25;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius: 14px;
+      --radius2: 18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", "Noto Sans", "Liberation Sans", sans-serif;
     }
-    *{box-sizing:border-box}
+
+    *{ box-sizing:border-box; }
     body{
       margin:0;
-      font-family:var(--sans);
-      background: radial-gradient(1200px 800px at 50% -10%, rgba(124,252,184,.20), transparent 55%),
-                  radial-gradient(900px 700px at 100% 20%, rgba(61,220,151,.12), transparent 55%),
-                  linear-gradient(180deg, var(--bg), #04110c 70%);
-      color:var(--text);
+      font-family: Arial, sans-serif;
+      color:var(--txt);
+      background: radial-gradient(1400px 700px at 20% 0%, #0f3c27 0%, var(--bg0) 45%, #041109 100%);
       min-height:100vh;
-      padding:22px;
     }
+    .wrap{ max-width:1100px; margin:0 auto; padding:18px; }
+
     header{
-      max-width:1200px;
-      margin:0 auto 14px auto;
       display:flex;
-      gap:14px;
       align-items:flex-start;
       justify-content:space-between;
+      gap:14px;
+      margin-bottom:14px;
     }
-    .title h1{margin:0;font-size:34px;letter-spacing:.2px}
-    .title .sub{margin-top:6px;color:var(--muted);font-size:14px}
-    .rightTop{
-      display:flex;flex-direction:column;gap:10px;align-items:flex-end;
-      min-width:210px;
+    .h-left h1{
+      margin:0;
+      letter-spacing:.3px;
+      font-size:28px;
+      line-height:1.1;
     }
-    .badgeRow{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      background:rgba(124,252,184,.12);
-      border:1px solid rgba(124,252,184,.22);
-      color:var(--text);
-      padding:8px 12px;border-radius:999px;font-size:13px;
+    .subtitle{ color:var(--muted); margin-top:6px; font-size:14px; }
+
+    .top-right{
+      text-align:right;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:10px;
+    }
+    .today{
+      font-family:var(--mono);
+      font-size:14px;
+      color:var(--muted);
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+      width:max-content;
     }
     .btn{
-      border:0;cursor:pointer;
-      padding:10px 14px;border-radius:12px;
-      background:linear-gradient(180deg, rgba(124,252,184,.22), rgba(61,220,151,.16));
-      border:1px solid rgba(124,252,184,.26);
-      color:var(--text);
-      box-shadow:var(--shadow);
-      transition:.15s transform ease, .15s opacity ease;
-    }
-    .btn:hover{transform:translateY(-1px)}
-    .btn.secondary{
+      border:1px solid var(--line);
       background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:none;
-    }
-    .wrap{
-      max-width:1200px;margin:0 auto;
-      display:grid;gap:14px;
-    }
-    .panel{
-      background:linear-gradient(180deg, rgba(16,56,43,.72), rgba(10,34,26,.66));
-      border:1px solid rgba(232,255,244,.12);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .panelHead{
-      padding:14px 16px;
-      display:flex;flex-wrap:wrap;gap:12px;
-      align-items:center;justify-content:space-between;
-      border-bottom:1px solid var(--line);
-    }
-    .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .tab{
-      padding:9px 12px;border-radius:12px;
-      border:1px solid rgba(232,255,244,.12);
-      background:rgba(0,0,0,.12);
-      color:var(--text);
+      color:var(--txt);
+      padding:10px 14px;
+      border-radius:999px;
       cursor:pointer;
-      font-size:13px;
+      font-weight:700;
+      transition:.15s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); background:rgba(255,255,255,.10); }
+    .btn.brand{
+      background: linear-gradient(180deg, rgba(72,209,141,.22), rgba(72,209,141,.12));
+      border-color: rgba(72,209,141,.35);
+    }
+    .btn.brand:hover{
+      background: linear-gradient(180deg, rgba(72,209,141,.30), rgba(72,209,141,.16));
+    }
+    .btn.ghost{ background:transparent; }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin:12px 0;
+    }
+
+    .pill{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius2);
+      padding:14px;
+      box-shadow: var(--shadow);
+      margin-bottom:14px;
+    }
+
+    .panel-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .tab{
+      cursor:pointer;
       user-select:none;
+      font-weight:800;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid transparent;
+      color:var(--muted);
     }
     .tab.active{
-      border-color:rgba(124,252,184,.35);
-      background:rgba(124,252,184,.14);
+      color:var(--txt);
+      border-color: rgba(72,209,141,.35);
+      background:rgba(72,209,141,.12);
     }
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-
-    .pane{display:none;}
-    .pane.active{display:block;}
 
     .filters{
-      padding:14px 16px;
-      display:grid;
-      grid-template-columns: 1.2fr 1fr 1fr;
-      gap:12px;
-    }
-    .field{display:flex;flex-direction:column;gap:6px}
-    .field label{color:var(--muted);font-size:13px}
-    input, select{
-      width:100%;
-      background:rgba(0,0,0,.20);
-      border:1px solid rgba(232,255,244,.14);
-      color:var(--text);
-      padding:12px 12px;
-      border-radius:14px;
-      outline:none;
-    }
-    input[type="date"]{color-scheme:dark}
-    .rule{
-      padding:0 16px 14px 16px;
-      color:var(--muted);
-      font-size:13px;
-    }
-    .detailBox{
-      padding:14px 16px 6px 16px;
-      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
-    }
-    .toggleRow{
-      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
-      padding:0 16px 14px 16px;
-    }
-    .toggle{
-      display:flex;gap:10px;align-items:center;
-      padding:10px 12px;border-radius:14px;
-      border:1px solid rgba(232,255,244,.12);
-      background:rgba(0,0,0,.12);
-      cursor:pointer;
-      user-select:none;
-    }
-    .toggle input{width:auto}
-
-    .error{
-      margin:0 16px 16px 16px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,107,107,.35);
-      background:rgba(255,107,107,.10);
-      color:#ffeaea;
-      white-space:pre-wrap;
-      font-family:var(--mono);
-      font-size:12px;
-    }
-    .gridBases{
-      padding:14px 16px 18px 16px;
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px;
-    }
-    .baseBlock{
-      border:1px solid rgba(232,255,244,.12);
-      background:rgba(0,0,0,.10);
-      border-radius:16px;
-      overflow:hidden;
-    }
-    .baseHead{
-      padding:12px 14px;
-      display:flex;justify-content:space-between;align-items:center;
-      border-bottom:1px solid var(--line);
-      background:rgba(124,252,184,.08);
-    }
-    .baseHead .name{font-weight:700}
-    .baseHead .count{color:var(--muted);font-size:13px}
-    table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:13px;
-    }
-    th, td{
-      padding:10px 10px;
-      border-bottom:1px solid rgba(232,255,244,.10);
-      vertical-align:top;
-    }
-    th{
-      text-align:left;
-      color:var(--muted);
-      font-weight:600;
-      background:rgba(0,0,0,.10);
-      position:sticky; top:0;
-      z-index:1;
-    }
-    tr:hover td{background:rgba(124,252,184,.06)}
-    .nowrap{white-space:nowrap}
-    .muted{color:var(--muted)}
-    .tag{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:4px 10px;border-radius:999px;
-      background:rgba(124,252,184,.12);
-      border:1px solid rgba(124,252,184,.22);
-      font-size:12px;
-      white-space:nowrap;
-    }
-    .tag.warn{background:rgba(255,209,102,.12);border-color:rgba(255,209,102,.25)}
-    .tag.danger{background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.25)}
-    .linkBtn{
-      cursor:pointer;
-      padding:8px 10px;border-radius:12px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      font-size:12px;
-    }
-    .footer{
-      max-width:1200px;margin:16px auto 0 auto;
-      text-align:center;
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    .overlay{
-      position:fixed;inset:0;
-      background:rgba(0,0,0,.55);
       display:none;
-      align-items:center;justify-content:center;
-      padding:18px;
-      z-index:9999;
-    }
-    .modal{
-      width:min(760px, 100%);
-      background:linear-gradient(180deg, rgba(16,56,43,.92), rgba(10,34,26,.92));
-      border:1px solid rgba(232,255,244,.14);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .modalHead{
-      padding:12px 14px;
-      border-bottom:1px solid var(--line);
-      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
-    }
-    .modalHead h3{margin:0;font-size:16px}
-    .modalBody{padding:14px}
-    .modalGrid{
-      display:grid;grid-template-columns:1fr 1fr;
       gap:12px;
-    }
-    .modalGrid .field:last-child{grid-column:1/-1}
-    textarea{
-      width:100%;
-      min-height:110px;
-      resize:vertical;
-      background:rgba(0,0,0,.20);
-      border:1px solid rgba(232,255,244,.14);
-      color:var(--text);
-      padding:12px 12px;
-      border-radius:14px;
-      outline:none;
-      font-family:var(--sans);
-    }
-    .notesList{
-      margin-top:14px;
+      flex-wrap:wrap;
+      margin-top:12px;
       border-top:1px solid var(--line);
       padding-top:12px;
     }
-    .noteItem{
-      border:1px solid rgba(232,255,244,.12);
-      background:rgba(0,0,0,.12);
-      border-radius:14px;
+    .filters.show{ display:flex; }
+    .field{
+      min-width:220px;
+      flex:1;
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    input, select, textarea{
+      width:100%;
       padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      color:var(--txt);
+      outline:none;
+    }
+    input::placeholder, textarea::placeholder{ color: rgba(234,247,239,.45); }
+
+    .rules{
       margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
     }
-    .noteMeta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .noteMeta .who{font-weight:700}
-    .noteMeta .when{color:var(--muted);font-size:12px}
-    .noteText{margin-top:8px;color:var(--text);white-space:pre-wrap}
-    .modalFoot{
-      display:flex;gap:10px;justify-content:flex-end;
-      padding:12px 14px;border-top:1px solid var(--line);
-      flex-wrap:wrap;
-    }
-    .checkList{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:8px;
-      padding:10px 0 0 0;
-    }
-    .checkItem{
-      display:flex;gap:10px;align-items:center;
-      padding:10px 12px;border-radius:14px;
-      border:1px solid rgba(232,255,244,.12);
-      background:rgba(0,0,0,.12);
+    .rules strong{ color: var(--txt); }
+
+    .error{
+      margin-top:12px;
+      border:1px solid rgba(255,107,107,.35);
+      background: rgba(255,107,107,.10);
+      padding:12px;
+      border-radius:14px;
+      color:#ffd9d9;
+      white-space:pre-wrap;
     }
 
-    @media (max-width:900px){
-      .filters{grid-template-columns:1fr}
-      .modalGrid{grid-template-columns:1fr}
-      .checkList{grid-template-columns:1fr}
-      header{flex-direction:column;align-items:flex-start}
-      .rightTop{align-items:flex-start}
+    .bases{
+      margin-top:14px;
+      display:grid;
+      gap:14px;
+    }
+    .base-card{
+      border:1px solid var(--line);
+      border-radius: var(--radius2);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.10));
+      overflow:hidden;
+    }
+    .base-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:12px 14px;
+      background: rgba(0,0,0,.18);
+      border-bottom:1px solid var(--line);
+    }
+    .base-title{
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+    .base-count{
+      color:var(--muted);
+      font-size:12px;
+      font-family:var(--mono);
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+    }
+
+    .table{
+      width:100%;
+      overflow:auto;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 130px 170px 200px 160px 120px 1fr;
+      gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      align-items:center;
+    }
+    .row.head{
+      position:sticky;
+      top:0;
+      background: rgba(7,27,18,.92);
+      backdrop-filter: blur(10px);
+      z-index:2;
+      font-weight:900;
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .cell{
+      font-size:13px;
+      line-height:1.25;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .cell.mono{ font-family:var(--mono); font-size:12px; color:var(--muted); }
+    .cell strong{ color:var(--txt); }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(72,209,141,.12);
+      border:1px solid rgba(72,209,141,.25);
+      color:var(--txt);
+      font-weight:900;
+      font-size:12px;
+      width:max-content;
+    }
+    .badge.gray{
+      background: rgba(255,255,255,.06);
+      border-color: var(--line);
+      color:var(--muted);
+      font-weight:800;
+    }
+    .btn.small{
+      padding:7px 10px;
+      font-weight:800;
+      border-radius:12px;
+    }
+    .actions{
+      display:flex; gap:8px; justify-content:flex-end; align-items:center;
+    }
+
+    /* Modal */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.62);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:999;
+    }
+    .modal-backdrop.show{ display:flex; }
+    .modal{
+      width:min(760px, 100%);
+      background: rgba(7,27,18,.96);
+      border:1px solid var(--line);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal-head{
+      padding:14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+    }
+    .modal-title{ font-weight:900; }
+    .modal-body{ padding:14px 16px; display:grid; gap:12px; }
+    .modal-actions{ padding:14px 16px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid var(--line); }
+
+    .grid2{ display:grid; gap:12px; grid-template-columns: 1fr 1fr; }
+    .grid3{ display:grid; gap:12px; grid-template-columns: 1fr 1fr 1fr; }
+
+    .checks{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background: rgba(0,0,0,.20);
+    }
+    .chk{
+      display:flex; gap:8px; align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--txt);
+      cursor:pointer;
+      user-select:none;
+      font-size:13px;
+    }
+    .chk input{ width:auto; }
+
+    footer{
+      margin-top:18px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+      padding:16px 6px;
+    }
+
+    @media (max-width: 920px){
+      .row{ grid-template-columns: 120px 160px 1fr; }
+      .row.head{ display:none; }
+      .cell{ white-space:normal; }
+      .actions{ justify-content:flex-start; flex-wrap:wrap; }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <div class="title">
-      <h1>Acompanhamento de Obras</h1>
-      <div class="sub">UTEP Nordeste • Supabase + GitHub Pages</div>
-    </div>
-
-    <div class="rightTop">
-      <div class="badgeRow">
-        <div class="pill" id="todayPill">Data: --/--/----</div>
-        <div class="pill">Versão: VFinal+Agente</div>
-      </div>
-      <button class="btn secondary" id="btnReload">Recarregar</button>
-    </div>
-  </header>
-
   <div class="wrap">
+
+    <header>
+      <div class="h-left">
+        <h1>Acompanhamento de Obras</h1>
+        <div class="subtitle">UTEP Nordeste • Supabase + GitHub Pages</div>
+      </div>
+      <div class="top-right">
+        <div class="today" id="todayTop">--/--/----</div>
+        <button class="btn brand" id="btnReload">Recarregar</button>
+      </div>
+    </header>
+
     <div class="panel">
-      <div class="panelHead">
+      <div class="panel-head">
         <div class="tabs">
-          <div class="tab active" id="tabFiltros" title="Mostrar/ocultar filtros">Filtros</div>
-          <div class="tab" id="tabDetalhes" title="Configurações de colunas">Detalhes</div>
-          <button class="btn" id="btnWhats">Exportar WhatsApp</button>
-        </div>
-        <div class="actions">
-          <button class="btn secondary" id="btnHoje">Hoje</button>
-        </div>
-      </div>
-
-      <div class="pane active" id="paneFiltros">
-        <div class="filters">
-          <div class="field">
-            <label>Data (prazo final)</label>
-            <input type="date" id="fData" />
-          </div>
-
-          <div class="field">
-            <label>Base</label>
-            <select id="fBase">
-              <option value="">Todas</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Município</label>
-            <select id="fMunicipio">
-              <option value="">Todos</option>
-            </select>
-          </div>
-
-          <div class="field" style="grid-column:1/-1">
-            <label>Critério</label>
-            <select id="fCriterio">
-              <option value="">Todos</option>
-            </select>
-          </div>
+          <div class="tab active" id="tabFiltros">Filtros</div>
+          <div class="tab" id="tabDetalhes">+ Detalhes</div>
         </div>
 
-        <div class="rule" id="ruleText">
-          Regras: mostra obras com <b>prazo final</b> na data escolhida. Se não houver, mostra as <b>5 mais próximas dentro de 5 dias</b>, separadas por Base.
+        <div class="toolbar">
+          <button class="btn brand" id="btnExport">Exportar WhatsApp</button>
+          <span class="pill" id="pillInfo">Carregando…</span>
         </div>
       </div>
 
-      <div class="pane" id="paneDetalhes">
-        <div class="detailBox">
-          <div class="pill">Colunas extras</div>
-          <div class="muted">Ative/desative campos adicionais na tabela.</div>
+      <div class="filters" id="filtersArea">
+        <div class="field">
+          <label>Data (prazo final)</label>
+          <input type="date" id="inpDate">
         </div>
-        <div class="toggleRow">
-          <label class="toggle">
-            <input type="checkbox" id="tShowExtras" />
-            Mostrar colunas extras (Gerência)
-          </label>
+
+        <div class="field">
+          <label>Base</label>
+          <select id="selBase">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Município</label>
+          <select id="selMunicipio">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Critério</label>
+          <select id="selCriterio">
+            <option value="">Todos</option>
+          </select>
         </div>
       </div>
 
-      <div id="errBox" class="error" style="display:none"></div>
+      <div class="filters" id="detailsArea">
+        <div class="field">
+          <label>Mostrar colunas extras</label>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" id="chkShowProjeto" checked> Projeto</label>
+            <label class="chk"><input type="checkbox" id="chkShowAgente" checked> Agente responsável</label>
+            <label class="chk"><input type="checkbox" id="chkShowAvpn" checked> AVPN</label>
+          </div>
+        </div>
+      </div>
 
-      <div class="gridBases" id="gridBases"></div>
+      <div class="rules">
+        <strong>Regras:</strong> mostra obras com <strong>prazo final</strong> na data escolhida.
+        Se não houver, mostra as <strong>5 mais próximas</strong> dentro de <strong>5 dias</strong> (por base).
+      </div>
+
+      <div class="error" id="errBox" style="display:none;"></div>
     </div>
 
-    <div class="footer">
-      UTEP Nordeste • Atualiza automaticamente quando você fizer commit no GitHub Pages.
+    <div class="bases" id="basesContainer"></div>
+
+    <footer>
+      UTEP Nordeste • Atualiza automaticamente quando você faz commit no GitHub Pages
+    </footer>
+  </div>
+
+  <!-- MODAL: WhatsApp Export -->
+  <div class="modal-backdrop" id="modalExport">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Exportar WhatsApp</div>
+        <button class="btn ghost" id="btnCloseExport">Fechar</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid2">
+          <div class="field">
+            <label>Data inicial</label>
+            <input type="date" id="expStart">
+          </div>
+          <div class="field">
+            <label>Data final</label>
+            <input type="date" id="expEnd">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Bases para exportar</label>
+          <div class="checks" id="expBases"></div>
+        </div>
+
+        <div class="field">
+          <label>Prévia</label>
+          <textarea id="expPreview" rows="10" placeholder="A prévia vai aparecer aqui…" readonly></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="btnBuildPreview">Gerar prévia</button>
+        <button class="btn brand" id="btnSendWA">Abrir WhatsApp</button>
+      </div>
     </div>
   </div>
 
-  <!-- Modal notas -->
-  <div class="overlay" id="overlayNotes">
+  <!-- MODAL: Notas -->
+  <div class="modal-backdrop" id="modalNotes">
     <div class="modal">
-      <div class="modalHead">
-        <div>
-          <h3 id="modalTitle">Notas</h3>
-          <div class="muted" id="modalSub"></div>
-        </div>
-        <button class="linkBtn" id="btnCloseNotes">Fechar</button>
+      <div class="modal-head">
+        <div class="modal-title" id="notesTitle">Notas</div>
+        <button class="btn ghost" id="btnCloseNotes">Fechar</button>
       </div>
-
-      <div class="modalBody">
-        <div class="modalGrid">
+      <div class="modal-body">
+        <div class="grid2">
           <div class="field">
             <label>Seu nome</label>
-            <input id="nAutor" placeholder="Ex.: João Silva" />
+            <input id="noteAuthor" placeholder="Ex.: João Silva">
           </div>
-
           <div class="field">
             <label>Status</label>
-            <select id="nStatus">
-              <option value="executada">Executada</option>
-              <option value="problemas">Houve problemas</option>
-              <option value="nao_executada">Não foi executada</option>
+            <select id="noteStatus">
+              <option value="Executada">Executada</option>
+              <option value="Problemas na execução">Problemas na execução</option>
+              <option value="Não foi executada">Não foi executada</option>
             </select>
           </div>
-
-          <div class="field">
-            <label>Adicionar nota</label>
-            <textarea id="nTexto" placeholder="Escreva a observação desta obra..."></textarea>
-          </div>
         </div>
 
-        <div class="actions" style="margin-top:10px">
-          <button class="btn" id="btnSalvarNota">Salvar nota</button>
-          <button class="btn secondary" id="btnRecarregarNotas">Recarregar notas</button>
+        <div class="field">
+          <label>Adicionar nota</label>
+          <textarea id="noteText" rows="4" placeholder="Escreva a observação desta obra..."></textarea>
         </div>
 
-        <div class="notesList" id="notesList">
-          <div class="muted">Carregando notas…</div>
+        <div class="toolbar">
+          <button class="btn brand small" id="btnSaveNote">Salvar nota</button>
+          <button class="btn small" id="btnReloadNotes">Recarregar notas</button>
         </div>
-      </div>
 
-      <div class="modalFoot">
-        <button class="btn secondary" id="btnCloseNotes2">Fechar</button>
+        <div class="error" id="notesErr" style="display:none;"></div>
+
+        <div class="panel" style="margin:0; padding:12px; background:rgba(0,0,0,.14);">
+          <div style="font-weight:900; margin-bottom:8px;">Histórico</div>
+          <div id="notesList" style="display:grid; gap:10px;"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal WhatsApp -->
-  <div class="overlay" id="overlayWhats">
-    <div class="modal">
-      <div class="modalHead">
-        <div>
-          <h3>Exportar WhatsApp</h3>
-          <div class="muted">Escolha período e bases. Exporta agrupado por <b>data</b> e <b>base</b>.</div>
-        </div>
-        <button class="linkBtn" id="btnCloseWhats">Fechar</button>
-      </div>
+<script>
+/** ============================
+ *  CONFIG
+ *  ============================ */
+const SUPABASE_URL = "https://yyfhnuafwzeglwcpnmkd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_7rmfNL9N6limSSFxFcl2Og_MV9xkbjx";
 
-      <div class="modalBody">
-        <div class="modalGrid">
-          <div class="field">
-            <label>De (data inicial)</label>
-            <input type="date" id="wDe" />
-          </div>
-          <div class="field">
-            <label>Até (data final)</label>
-            <input type="date" id="wAte" />
-          </div>
+// Tabelas
+const TBL_OBRAS = "obras";
+const TBL_NOTES = "notes";
 
-          <div class="field" style="grid-column:1/-1">
-            <label>Bases para exportar</label>
-            <div class="checkList" id="wBases"></div>
-            <div class="actions" style="margin-top:10px">
-              <button class="btn secondary" id="btnSelAll">Selecionar todas</button>
-              <button class="btn secondary" id="btnSelNone">Limpar</button>
+// Colunas (obras)
+const COL_NOTA = "nota";
+const COL_PROJETO = "projeto";
+const COL_TITULO = "titulo";
+const COL_MUNICIPIO = "municipio";
+const COL_CRITERIO = "criterio";
+const COL_BASE = "base_oper_prog";              // base correta (com _prog no final)
+const COL_PRAZO = "previsao_execucao_fim";      // prazo final
+const COL_AGENTE = "agente_responsavel";
+const COL_AVPN = "avpn";
+
+// ===== init supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/** ============================
+ *  UI refs
+ *  ============================ */
+const elErr = document.getElementById("errBox");
+const elPill = document.getElementById("pillInfo");
+const elBases = document.getElementById("basesContainer");
+
+const tabFiltros = document.getElementById("tabFiltros");
+const tabDetalhes = document.getElementById("tabDetalhes");
+const filtersArea = document.getElementById("filtersArea");
+const detailsArea = document.getElementById("detailsArea");
+
+const inpDate = document.getElementById("inpDate");
+const selBase = document.getElementById("selBase");
+const selMunicipio = document.getElementById("selMunicipio");
+const selCriterio = document.getElementById("selCriterio");
+
+const chkShowProjeto = document.getElementById("chkShowProjeto");
+const chkShowAgente = document.getElementById("chkShowAgente");
+const chkShowAvpn = document.getElementById("chkShowAvpn");
+
+document.getElementById("btnReload").addEventListener("click", () => loadAll(true));
+
+/** ============================
+ *  Helpers
+ *  ============================ */
+function showError(msg){
+  elErr.style.display = "block";
+  elErr.textContent = msg;
+}
+function clearError(){
+  elErr.style.display = "none";
+  elErr.textContent = "";
+}
+
+function fmtDateBR(d){
+  if(!d) return "—";
+  // aceita string ISO ou yyyy-mm-dd
+  const dt = new Date(d);
+  if(Number.isNaN(dt.getTime())) return String(d);
+  return dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+}
+
+function toISODateLocal(dateObj){
+  // yyyy-mm-dd no fuso local (SP)
+  const dt = new Date(dateObj);
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,"0");
+  const d = String(dt.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function addDays(isoDate, days){
+  const [y,m,d] = isoDate.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate() + days);
+  return toISODateLocal(dt);
+}
+
+function normNota(n){
+  if(n === null || n === undefined) return "";
+  let s = String(n).trim();
+  // remove ".0" final (caso venha assim)
+  if(s.endsWith(".0")) s = s.slice(0,-2);
+  return s;
+}
+
+function toPercent(value){
+  if(value === null || value === undefined || value === "") return "—";
+  let n = Number(String(value).replace(",", "."));
+  if(!Number.isFinite(n)) return "—";
+  if(n <= 1) n = n * 100;          // 0..1 -> %
+  n = Math.max(0, Math.min(100, n));
+  return `${Math.round(n)}%`;
+}
+
+function uniq(arr){
+  return [...new Set(arr.filter(v => v !== null && v !== undefined && String(v).trim() !== ""))].sort((a,b)=>String(a).localeCompare(String(b)));
+}
+
+function safeText(v){ return (v === null || v === undefined || v === "") ? "—" : String(v); }
+
+/** ============================
+ *  Safe select (remove colunas que não existem)
+ *  ============================ */
+async function safeSelect(table, cols){
+  let columns = [...cols];
+  while(columns.length){
+    const sel = columns.join(",");
+    const { data, error } = await supabase.from(table).select(sel);
+    if(!error) return { data, columns, error:null };
+    const msg = (error.message || "") + " " + (error.details || "");
+    // erro coluna inexistente
+    if(String(error.code) === "42703" || msg.includes("does not exist")){
+      // tenta descobrir qual coluna
+      const m = msg.match(/column\s+([a-zA-Z0-9_."]+)\s+does not exist/i);
+      if(m && m[1]){
+        let col = m[1].replace(/"/g,"");
+        // pode vir "obras.nota" -> pega só final
+        if(col.includes(".")) col = col.split(".").pop();
+        columns = columns.filter(c => c !== col);
+        continue;
+      }
+      // se não achou, remove a última
+      columns.pop();
+      continue;
+    }
+    // outro erro: retorna
+    return { data:null, columns, error };
+  }
+  return { data:null, columns:[], error:{ message:"Não foi possível selecionar colunas." } };
+}
+
+/** ============================
+ *  Load filters lists
+ *  ============================ */
+let ALL_OBRAS = [];
+let FILTERED = [];
+let BASES = [];
+
+async function loadFiltersData(){
+  // pega um conjunto grande (caso tenha mais de 1000, aumente)
+  const wantedCols = [COL_NOTA, COL_BASE, COL_MUNICIPIO, COL_CRITERIO, COL_PRAZO, COL_TITULO, COL_PROJETO, COL_AGENTE, COL_AVPN];
+  const { data, columns, error } = await safeSelect(TBL_OBRAS, wantedCols);
+
+  if(error){
+    throw error;
+  }
+
+  ALL_OBRAS = (data || []).map(o => ({
+    ...o,
+    [COL_NOTA]: normNota(o[COL_NOTA]),
+  }));
+
+  // bases
+  BASES = uniq(ALL_OBRAS.map(o => o[COL_BASE] ?? ""));
+
+  // dropdowns
+  selBase.innerHTML = `<option value="">Todas</option>` + BASES.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
+
+  const municipios = uniq(ALL_OBRAS.map(o => o[COL_MUNICIPIO] ?? ""));
+  selMunicipio.innerHTML = `<option value="">Todos</option>` + municipios.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+
+  const criterios = uniq(ALL_OBRAS.map(o => o[COL_CRITERIO] ?? ""));
+  selCriterio.innerHTML = `<option value="">Todos</option>` + criterios.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+  // modal bases
+  renderExportBases();
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/** ============================
+ *  Filtering & "obras do dia / próximos 5 dias"
+ *  ============================ */
+function applyFilters(){
+  const dateISO = inpDate.value; // yyyy-mm-dd
+  const base = selBase.value;
+  const mun = selMunicipio.value;
+  const crit = selCriterio.value;
+
+  // primeiro filtra pelo resto
+  let arr = ALL_OBRAS.slice();
+
+  if(base) arr = arr.filter(o => String(o[COL_BASE]||"") === base);
+  if(mun) arr = arr.filter(o => String(o[COL_MUNICIPIO]||"") === mun);
+  if(crit) arr = arr.filter(o => String(o[COL_CRITERIO]||"") === crit);
+
+  // agora aplica regra do "dia" por base:
+  // para cada base, tenta obras com prazo = dateISO, senão pega 5 próximas até date+5
+  const basesToShow = base ? [base] : (BASES.length ? BASES : ["(Sem base)"]);
+
+  const byBase = {};
+  for(const b of basesToShow){
+    const subset = base ? arr : arr.filter(o => String(o[COL_BASE]||"") === b);
+
+    const sameDay = subset.filter(o => {
+      const v = o[COL_PRAZO];
+      if(!v) return false;
+      const iso = String(v).slice(0,10);
+      return iso === dateISO;
+    });
+
+    if(sameDay.length){
+      byBase[b] = sameDay;
+    } else {
+      const endISO = addDays(dateISO, 5);
+      const upcoming = subset
+        .filter(o => {
+          const v = o[COL_PRAZO];
+          if(!v) return false;
+          const iso = String(v).slice(0,10);
+          return iso >= dateISO && iso <= endISO;
+        })
+        .sort((a,b)=>{
+          const da = String(a[COL_PRAZO]||"");
+          const db = String(b[COL_PRAZO]||"");
+          return da.localeCompare(db);
+        })
+        .slice(0,5);
+      byBase[b] = upcoming;
+    }
+  }
+
+  FILTERED = byBase;
+  renderBases(byBase);
+}
+
+/** ============================
+ *  Render
+ *  ============================ */
+function renderBases(byBase){
+  elBases.innerHTML = "";
+
+  const bases = Object.keys(byBase);
+  let totalShown = 0;
+  for(const b of bases) totalShown += (byBase[b]||[]).length;
+
+  elPill.textContent = `Mostrando ${totalShown} obras (por base)`;
+
+  for(const baseName of bases){
+    const list = byBase[baseName] || [];
+
+    const card = document.createElement("div");
+    card.className = "base-card";
+
+    const head = document.createElement("div");
+    head.className = "base-head";
+    head.innerHTML = `
+      <div class="base-title">${escapeHtml(baseName || "SEM BASE")}</div>
+      <div class="base-count">${list.length} itens</div>
+    `;
+    card.appendChild(head);
+
+    const table = document.createElement("div");
+    table.className = "table";
+
+    // header
+    const showProjeto = chkShowProjeto.checked;
+    const showAgente  = chkShowAgente.checked;
+    const showAvpn    = chkShowAvpn.checked;
+
+    // Layout: Nota, Projeto, Agente, Prazo, Município, Critério, Título, AVPN, Ações (mas grid fixo em CSS)
+    // A gente renderiza em "row" e no mobile fica empilhado.
+
+    const headRow = document.createElement("div");
+    headRow.className = "row head";
+    headRow.innerHTML = `
+      <div class="cell">Nota</div>
+      <div class="cell">${showProjeto ? "Projeto" : "Município"}</div>
+      <div class="cell">${showAgente ? "Agente" : "Critério"}</div>
+      <div class="cell">Prazo final</div>
+      <div class="cell">${showAvpn ? "AVPN" : "Critério"}</div>
+      <div class="cell" style="text-align:right;">Ações</div>
+    `;
+    table.appendChild(headRow);
+
+    if(!list.length){
+      const empty = document.createElement("div");
+      empty.className = "row";
+      empty.innerHTML = `<div class="cell mono" style="grid-column:1/-1;">Sem obras para este critério.</div>`;
+      table.appendChild(empty);
+    } else {
+      for(const o of list){
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const nota = safeText(o[COL_NOTA]);
+        const projeto = safeText(o[COL_PROJETO]);
+        const agente = safeText(o[COL_AGENTE]);
+        const prazo = fmtDateBR(o[COL_PRAZO]);
+        const mun = safeText(o[COL_MUNICIPIO]);
+        const crit = safeText(o[COL_CRITERIO]);
+        const titulo = safeText(o[COL_TITULO]);
+        const avpn = toPercent(o[COL_AVPN]);
+
+        // col2/3/5 mudam conforme toggles para caber no grid
+        const col2 = showProjeto ? `<strong>${escapeHtml(projeto)}</strong><div class="cell mono">${escapeHtml(titulo)}</div>` :
+                                   `<strong>${escapeHtml(mun)}</strong><div class="cell mono">${escapeHtml(titulo)}</div>`;
+
+        const col3 = showAgente ? `<strong>${escapeHtml(agente)}</strong><div class="cell mono">${escapeHtml(mun)}</div>` :
+                                  `<strong>${escapeHtml(crit)}</strong><div class="cell mono">${escapeHtml(mun)}</div>`;
+
+        const col5 = showAvpn ? `<span class="badge">${escapeHtml(avpn)}</span>` :
+                                `<span class="badge gray">${escapeHtml(crit)}</span>`;
+
+        row.innerHTML = `
+          <div class="cell mono">${escapeHtml(nota)}</div>
+          <div class="cell">${col2}</div>
+          <div class="cell">${col3}</div>
+          <div class="cell"><span class="badge gray">${escapeHtml(prazo)}</span></div>
+          <div class="cell">${col5}</div>
+          <div class="cell">
+            <div class="actions">
+              <button class="btn small" data-nota="${escapeHtml(nota)}" data-titulo="${escapeHtml(titulo)}" data-base="${escapeHtml(baseName)}" data-mun="${escapeHtml(mun)}" data-crit="${escapeHtml(crit)}" data-proj="${escapeHtml(projeto)}">Notas</button>
             </div>
           </div>
-        </div>
-
-        <div class="rule" style="padding:10px 0 0 0">
-          Dica: para “<b>hoje até quinta que vem</b>”, coloque a data final manualmente no campo “Até”.
-        </div>
-      </div>
-
-      <div class="modalFoot">
-        <button class="btn secondary" id="btnPreviewWhats">Prévia</button>
-        <button class="btn" id="btnSendWhats">Abrir WhatsApp</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script>
-    // ======= CONFIG (suas credenciais) =======
-    const SUPABASE_URL = "https://yyfhnuafwzeglwcpnmkd.supabase.co".trim();
-    const SUPABASE_ANON_KEY = "sb_publishable_7rmfNL9N6limSSFxFcl2Og_MV9xkbjx".trim();
-
-    // ======= APP =======
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // nomes de coluna (auto-detect)
-    let COL_BASE = "base_oper_prog";
-    let COL_PRAZO = "PREVISAO_EXECUCAO_FIM";
-    let COL_NOTA  = "nota";
-    let COL_MUN   = "municipio";
-    let COL_CRIT  = "criterio";
-    let COL_PROJ  = "projeto";
-    let COL_AGENT = "agente_responsavel"; // <<< NOVO
-
-    // toggles de colunas extras
-    let showExtras = false;
-
-    // estado
-    let allRows = [];
-    let bases = [];
-    let municipios = [];
-    let criterios = [];
-
-    // modal state
-    let currentNotaKey = null;
-
-    // helpers
-    const $ = (id) => document.getElementById(id);
-
-    function fmtDateBR(iso){
-      if(!iso) return "";
-      const d = new Date(iso);
-      if(String(d) === "Invalid Date"){
-        const parts = String(iso).slice(0,10).split("-");
-        if(parts.length===3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        return String(iso);
-      }
-      const dd = String(d.getDate()).padStart(2,"0");
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const yy = d.getFullYear();
-      return `${dd}/${mm}/${yy}`;
-    }
-
-    function fmtDateInput(d){
-      const yy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      return `${yy}-${mm}-${dd}`;
-    }
-
-    function normalizeNota(v){
-      if(v === null || v === undefined) return "";
-      let s = String(v).trim();
-      s = s.replace(/\.0$/,"");
-      return s;
-    }
-
-    function parseDateOnly(v){
-      if(!v) return null;
-      const s = String(v).slice(0,10);
-      const d = new Date(s + "T00:00:00");
-      if(String(d)==="Invalid Date") return null;
-      return d;
-    }
-
-    function addDays(d, n){
-      const x = new Date(d);
-      x.setDate(x.getDate()+n);
-      return x;
-    }
-
-    function sameDay(a,b){
-      return a && b &&
-        a.getFullYear()===b.getFullYear() &&
-        a.getMonth()===b.getMonth() &&
-        a.getDate()===b.getDate();
-    }
-
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function showError(msg){
-      const box = $("errBox");
-      box.style.display = "block";
-      box.textContent = msg;
-    }
-    function clearError(){
-      const box = $("errBox");
-      box.style.display = "none";
-      box.textContent = "";
-    }
-
-    async function detectColumns(){
-      const tests = [
-        { key:"COL_BASE", candidates:["base_oper_prog", "BASE_OPER_PROG", '"BASE_OPER_PROG"'] },
-        { key:"COL_PROJ", candidates:["projeto", "PROJETO", '"PROJETO"'] },
-        { key:"COL_AGENT", candidates:["agente_responsavel", "AGENTE_RESPONSAVEL", '"AGENTE_RESPONSAVEL"'] }, // <<< NOVO
-        { key:"COL_PRAZO", candidates:["PREVISAO_EXECUCAO_FIM", "previsao_execucao_fim"] },
-        { key:"COL_MUN", candidates:["municipio", "MUNICIPIO"] },
-        { key:"COL_CRIT", candidates:["criterio", "CRITERIO"] },
-        { key:"COL_NOTA", candidates:["nota", "NOTA"] },
-      ];
-
-      for(const t of tests){
-        let chosen = null;
-        for(const c of t.candidates){
-          const { error } = await sb.from("obras").select(`${c}`, { head:true, count:"exact" }).limit(1);
-          if(!error){ chosen = c; break; }
-        }
-        if(chosen){
-          if(t.key==="COL_BASE") COL_BASE = chosen;
-          if(t.key==="COL_PROJ") COL_PROJ = chosen;
-          if(t.key==="COL_AGENT") COL_AGENT = chosen;
-          if(t.key==="COL_PRAZO") COL_PRAZO = chosen;
-          if(t.key==="COL_MUN") COL_MUN = chosen;
-          if(t.key==="COL_CRIT") COL_CRIT = chosen;
-          if(t.key==="COL_NOTA") COL_NOTA = chosen;
-        }
+        `;
+        table.appendChild(row);
       }
     }
 
-    function getField(row, col){
-      const clean = col.replaceAll('"',"");
-      return row?.[clean];
-    }
+    card.appendChild(table);
+    elBases.appendChild(card);
+  }
 
-    async function loadAll(){
-      clearError();
-
-      if(!SUPABASE_URL || !SUPABASE_ANON_KEY){
-        showError("Faltou SUPABASE_URL ou SUPABASE_ANON_KEY.");
-        return;
-      }
-
-      await detectColumns();
-
-      const selectCols = [
-        `${COL_NOTA}`,
-        `${COL_PROJ}`,
-        `${COL_AGENT}`, // <<< NOVO
-        `${COL_BASE}`,
-        `${COL_MUN}`,
-        `${COL_CRIT}`,
-        `${COL_PRAZO}`,
-        "titulo",
-        "gerencia",
-        "status",
-      ].join(",");
-
-      const { data, error } = await sb.from("obras").select(selectCols).limit(5000);
-
-      if(error){
-        showError(
-`Não consegui carregar dados da tabela 'obras'.
-
-Detalhe: ${error.message}
-
-Verifique:
-- RLS/policies da tabela obras (SELECT para anon)
-- Nome da tabela e colunas`
-        );
-        return;
-      }
-
-      allRows = data || [];
-      buildFacets();
-      buildWhatsBases();
-      render();
-    }
-
-    function buildFacets(){
-      const setBase = new Set();
-      const setMun = new Set();
-      const setCrit = new Set();
-
-      for(const r of allRows){
-        const b = (getField(r, COL_BASE) ?? "").toString().trim();
-        const m = (getField(r, COL_MUN) ?? "").toString().trim();
-        const c = (getField(r, COL_CRIT) ?? "").toString().trim();
-        if(b) setBase.add(b);
-        if(m) setMun.add(m);
-        if(c) setCrit.add(c);
-      }
-
-      bases = Array.from(setBase).sort((a,b)=>a.localeCompare(b));
-      municipios = Array.from(setMun).sort((a,b)=>a.localeCompare(b));
-      criterios = Array.from(setCrit).sort((a,b)=>a.localeCompare(b));
-
-      $("fBase").innerHTML = `<option value="">Todas</option>` + bases.map(b=>`<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
-      $("fMunicipio").innerHTML = `<option value="">Todos</option>` + municipios.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
-      $("fCriterio").innerHTML = `<option value="">Todos</option>` + criterios.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-    }
-
-    function render(){
-      clearError();
-
-      const chosenDate = $("fData").value ? new Date($("fData").value + "T00:00:00") : null;
-      const fBase = $("fBase").value;
-      const fMun = $("fMunicipio").value;
-      const fCrit = $("fCriterio").value;
-
-      let rows = allRows.slice();
-
-      if(fBase) rows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === fBase);
-      if(fMun) rows = rows.filter(r => (getField(r, COL_MUN) ?? "").toString().trim() === fMun);
-      if(fCrit) rows = rows.filter(r => (getField(r, COL_CRIT) ?? "").toString().trim() === fCrit);
-
-      const basesToShow = (fBase ? [fBase] : (bases.length ? bases : ["(Sem base)"]));
-
-      const container = $("gridBases");
-      container.innerHTML = "";
-
-      for(const b of basesToShow){
-        const baseRows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === b);
-
-        let showList = [];
-        let label = "";
-
-        if(chosenDate){
-          const inDay = baseRows.filter(r => {
-            const d = parseDateOnly(getField(r, COL_PRAZO));
-            return d && sameDay(d, chosenDate);
-          });
-
-          if(inDay.length){
-            showList = inDay;
-            label = `Obras do dia (${inDay.length})`;
-          }else{
-            const maxDate = addDays(chosenDate, 5);
-            showList = baseRows
-              .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
-              .filter(x => x.d && x.d >= chosenDate && x.d <= maxDate)
-              .sort((x,y)=> x.d - y.d)
-              .slice(0,5)
-              .map(x=>x.r);
-            label = `Sem obras no dia • Próximas até +5 dias (${showList.length})`;
-          }
-        }else{
-          const today = new Date(); today.setHours(0,0,0,0);
-          const maxDate = addDays(today, 5);
-          showList = baseRows
-            .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
-            .filter(x => x.d && x.d >= today && x.d <= maxDate)
-            .sort((x,y)=> x.d - y.d)
-            .slice(0,5)
-            .map(x=>x.r);
-          label = `Próximas até +5 dias (${showList.length})`;
-        }
-
-        container.appendChild(renderBaseBlock(b, label, showList));
-      }
-    }
-
-    function renderBaseBlock(baseName, label, list){
-      const wrap = document.createElement("div");
-      wrap.className = "baseBlock";
-
-      const head = document.createElement("div");
-      head.className = "baseHead";
-      head.innerHTML = `<div class="name">${escapeHtml(baseName || "Sem base")}</div><div class="count">${escapeHtml(label)}</div>`;
-      wrap.appendChild(head);
-
-      const table = document.createElement("table");
-      const thead = document.createElement("thead");
-
-      const fixedCols = [
-        { k: COL_NOTA, label:"Nota", cls:"nowrap" },
-        { k: COL_PROJ, label:"Projeto", cls:"nowrap" },
-        { k: COL_AGENT, label:"Agente responsável", cls:"nowrap" }, // <<< NOVO
-        { k: COL_PRAZO, label:"Prazo final", cls:"nowrap" },
-        { k: "titulo", label:"Título", cls:"" },
-        { k: COL_MUN, label:"Município", cls:"nowrap" },
-        { k: COL_CRIT, label:"Critério", cls:"nowrap" },
-        { k: "status", label:"Status", cls:"nowrap" },
-      ];
-      const extraCols = [
-        { k: "gerencia", label:"Gerência", cls:"nowrap" },
-      ];
-
-      const cols = showExtras ? fixedCols.concat(extraCols) : fixedCols;
-      thead.innerHTML = `<tr>${cols.map(c=>`<th class="${c.cls||""}">${escapeHtml(c.label)}</th>`).join("")}<th class="nowrap">Ações</th></tr>`;
-      table.appendChild(thead);
-
-      const tbody = document.createElement("tbody");
-
-      if(!list.length){
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="${cols.length+1}" class="muted">Nenhuma obra para exibir nesta base.</td>`;
-        tbody.appendChild(tr);
-      }else{
-        list = list.slice().sort((a,b)=>{
-          const da = parseDateOnly(getField(a,COL_PRAZO));
-          const db = parseDateOnly(getField(b,COL_PRAZO));
-          if(!da && !db) return 0;
-          if(!da) return 1;
-          if(!db) return -1;
-          return da - db;
-        });
-
-        for(const row of list){
-          const tr = document.createElement("tr");
-          const cells = cols.map(c=>{
-            let v = (c.k === COL_PRAZO) ? fmtDateBR(getField(row, COL_PRAZO)) : getField(row, c.k);
-            if(c.k === COL_NOTA) v = normalizeNota(v);
-            if(v === null || v === undefined || v === "") v = "—";
-            return `<td class="${c.cls||""}">${escapeHtml(v)}</td>`;
-          }).join("");
-
-          const notaKey = normalizeNota(getField(row, COL_NOTA));
-          const sub = `${normalizeNota(getField(row, COL_NOTA))} • ${(getField(row, COL_MUN)||"").toString()} • ${(getField(row, COL_CRIT)||"").toString()}`;
-
-          tr.innerHTML =
-            cells +
-            `<td class="nowrap">
-              <button class="linkBtn" data-nota="${escapeHtml(notaKey)}" data-sub="${escapeHtml(sub)}">Notas</button>
-            </td>`;
-
-          tbody.appendChild(tr);
-        }
-      }
-
-      table.appendChild(tbody);
-      wrap.appendChild(table);
-
-      wrap.querySelectorAll("button[data-nota]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const nota = btn.getAttribute("data-nota");
-          const sub = btn.getAttribute("data-sub");
-          openNotes(nota, sub);
-        });
+  // bind notes buttons
+  elBases.querySelectorAll("button[data-nota]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      openNotes({
+        nota: btn.getAttribute("data-nota"),
+        titulo: btn.getAttribute("data-titulo"),
+        base: btn.getAttribute("data-base"),
+        municipio: btn.getAttribute("data-mun"),
+        criterio: btn.getAttribute("data-crit"),
+        projeto: btn.getAttribute("data-proj"),
       });
+    });
+  });
+}
 
-      return wrap;
+/** ============================
+ *  Tabs (conserta o botão de filtros)
+ *  ============================ */
+function setTab(which){
+  if(which === "filtros"){
+    tabFiltros.classList.add("active");
+    tabDetalhes.classList.remove("active");
+    filtersArea.classList.add("show");
+    detailsArea.classList.remove("show");
+  } else {
+    tabDetalhes.classList.add("active");
+    tabFiltros.classList.remove("active");
+    detailsArea.classList.add("show");
+    filtersArea.classList.remove("show");
+  }
+}
+tabFiltros.addEventListener("click", ()=>setTab("filtros"));
+tabDetalhes.addEventListener("click", ()=>setTab("detalhes"));
+
+/** ============================
+ *  Export WhatsApp (intervalo + bases)
+ *  ============================ */
+const modalExport = document.getElementById("modalExport");
+const expStart = document.getElementById("expStart");
+const expEnd = document.getElementById("expEnd");
+const expBases = document.getElementById("expBases");
+const expPreview = document.getElementById("expPreview");
+
+document.getElementById("btnExport").addEventListener("click", ()=>{
+  openExport();
+});
+document.getElementById("btnCloseExport").addEventListener("click", ()=> closeExport());
+document.getElementById("btnBuildPreview").addEventListener("click", buildExportPreview);
+document.getElementById("btnSendWA").addEventListener("click", openWhatsApp);
+
+function openExport(){
+  // default: hoje até hoje (só do dia)
+  expStart.value = inpDate.value;
+  expEnd.value = inpDate.value;
+  renderExportBases();
+  expPreview.value = "";
+  modalExport.classList.add("show");
+}
+function closeExport(){
+  modalExport.classList.remove("show");
+}
+
+function renderExportBases(){
+  if(!BASES || !BASES.length) return;
+  expBases.innerHTML = "";
+  for(const b of BASES){
+    const id = "b_" + b.replaceAll(" ","_").replaceAll("/","_");
+    const wrap = document.createElement("label");
+    wrap.className = "chk";
+    wrap.innerHTML = `<input type="checkbox" id="${escapeHtml(id)}" value="${escapeHtml(b)}" checked> ${escapeHtml(b)}`;
+    expBases.appendChild(wrap);
+  }
+}
+
+function getSelectedExportBases(){
+  const vals = [];
+  expBases.querySelectorAll("input[type=checkbox]").forEach(ch=>{
+    if(ch.checked) vals.push(ch.value);
+  });
+  return vals;
+}
+
+function buildExportPreview(){
+  const start = expStart.value;
+  const end = expEnd.value;
+  const bases = getSelectedExportBases();
+
+  if(!start || !end){
+    expPreview.value = "Selecione data inicial e final.";
+    return;
+  }
+  if(start > end){
+    expPreview.value = "A data inicial não pode ser maior que a data final.";
+    return;
+  }
+  if(!bases.length){
+    expPreview.value = "Selecione ao menos 1 base.";
+    return;
+  }
+
+  // filtra obras no intervalo e nas bases selecionadas
+  const items = ALL_OBRAS.filter(o=>{
+    const iso = String(o[COL_PRAZO]||"").slice(0,10);
+    if(!iso) return false;
+    if(iso < start || iso > end) return false;
+    const b = String(o[COL_BASE]||"");
+    if(!bases.includes(b)) return false;
+
+    // aplica também filtros de municipio/criterio (se estiverem selecionados)
+    const mun = selMunicipio.value;
+    const crit = selCriterio.value;
+    if(mun && String(o[COL_MUNICIPIO]||"") !== mun) return false;
+    if(crit && String(o[COL_CRITERIO]||"") !== crit) return false;
+
+    return true;
+  }).sort((a,b)=>{
+    const da = String(a[COL_PRAZO]||"");
+    const db = String(b[COL_PRAZO]||"");
+    const ba = String(a[COL_BASE]||"");
+    const bb = String(b[COL_BASE]||"");
+    if(da !== db) return da.localeCompare(db);
+    if(ba !== bb) return ba.localeCompare(bb);
+    return String(a[COL_TITULO]||"").localeCompare(String(b[COL_TITULO]||""));
+  });
+
+  if(!items.length){
+    expPreview.value = "Nenhuma obra encontrada nesse período (com os filtros atuais).";
+    return;
+  }
+
+  // agrupa por data e base
+  const group = {};
+  for(const o of items){
+    const d = String(o[COL_PRAZO]||"").slice(0,10);
+    const b = String(o[COL_BASE]||"");
+    if(!group[d]) group[d] = {};
+    if(!group[d][b]) group[d][b] = [];
+    group[d][b].push(o);
+  }
+
+  let msg = `📌 *Obras planejadas (${fmtDateBR(start)} → ${fmtDateBR(end)})*\n`;
+  msg += `Filtros: Município=${selMunicipio.value || "Todos"} | Critério=${selCriterio.value || "Todos"}\n\n`;
+
+  const dates = Object.keys(group).sort();
+  for(const d of dates){
+    msg += `🗓️ *${fmtDateBR(d)}*\n`;
+    const basesInDay = Object.keys(group[d]).sort();
+    for(const b of basesInDay){
+      msg += `\n🏢 *${b}*\n`;
+      for(const o of group[d][b]){
+        const nota = safeText(o[COL_NOTA]);
+        const titulo = safeText(o[COL_TITULO]);
+        const projeto = safeText(o[COL_PROJETO]);
+        const agente = safeText(o[COL_AGENTE]);
+        const municipio = safeText(o[COL_MUNICIPIO]);
+        const criterio = safeText(o[COL_CRITERIO]);
+        const avpn = toPercent(o[COL_AVPN]);
+
+        msg += `• ${titulo}\n`;
+        msg += `  Nota: ${nota}\n`;
+        msg += `  Projeto: ${projeto}\n`;
+        msg += `  Agente: ${agente}\n`;
+        msg += `  Município: ${municipio}\n`;
+        msg += `  Critério: ${criterio}\n`;
+        msg += `  AVPN: ${avpn}\n\n`;
+      }
     }
+    msg += "\n";
+  }
 
-    function setActiveTab(tab){
-      const isFiltros = tab === "filtros";
-      $("tabFiltros").classList.toggle("active", isFiltros);
-      $("tabDetalhes").classList.toggle("active", !isFiltros);
-      $("paneFiltros").classList.toggle("active", isFiltros);
-      $("paneDetalhes").classList.toggle("active", !isFiltros);
-    }
+  expPreview.value = msg.trim();
+}
 
-    function statusTag(status){
-      if(status==="executada") return `<span class="tag">Executada</span>`;
-      if(status==="problemas") return `<span class="tag warn">Problemas</span>`;
-      if(status==="nao_executada") return `<span class="tag danger">Não executada</span>`;
-      return `<span class="tag">${escapeHtml(status||"—")}</span>`;
-    }
+function openWhatsApp(){
+  if(!expPreview.value.trim()){
+    buildExportPreview();
+  }
+  const text = expPreview.value.trim();
+  if(!text) return;
 
-    async function openNotes(notaKey, sub){
-      currentNotaKey = notaKey;
-      $("modalTitle").textContent = `Notas - Nota ${notaKey}`;
-      $("modalSub").textContent = sub || "";
-      $("overlayNotes").style.display = "flex";
-      $("nTexto").value = "";
-      await loadNotes();
-    }
+  // WhatsApp web
+  const url = "https://wa.me/?text=" + encodeURIComponent(text);
+  window.open(url, "_blank");
+}
 
-    function closeNotes(){
-      $("overlayNotes").style.display = "none";
-      currentNotaKey = null;
-    }
+/** ============================
+ *  Notes (com fallback se coluna não existir)
+ *  ============================ */
+const modalNotes = document.getElementById("modalNotes");
+const notesTitle = document.getElementById("notesTitle");
+const noteAuthor = document.getElementById("noteAuthor");
+const noteText = document.getElementById("noteText");
+const noteStatus = document.getElementById("noteStatus");
+const notesErr = document.getElementById("notesErr");
+const notesList = document.getElementById("notesList");
 
-    async function loadNotes(){
-      const list = $("notesList");
-      list.innerHTML = `<div class="muted">Carregando notas…</div>`;
+document.getElementById("btnCloseNotes").addEventListener("click", closeNotes);
+document.getElementById("btnSaveNote").addEventListener("click", saveNote);
+document.getElementById("btnReloadNotes").addEventListener("click", ()=>loadNotes(true));
 
-      const { data, error } = await sb
-        .from("notes")
-        .select("id, nota, autor, texto, status, created_at")
-        .eq("nota", currentNotaKey)
-        .order("created_at", { ascending:false });
+let CURRENT_NOTA = null;
+let CURRENT_META = null;
 
-      if(error){
-        list.innerHTML = `<div class="error">Erro ao carregar notas: ${escapeHtml(error.message)}</div>`;
+function openNotes(meta){
+  CURRENT_NOTA = normNota(meta.nota);
+  CURRENT_META = meta;
+
+  notesTitle.textContent = `Notas • Nota ${CURRENT_NOTA}`;
+  notesErr.style.display = "none";
+  notesErr.textContent = "";
+  noteText.value = "";
+
+  modalNotes.classList.add("show");
+  loadNotes(false);
+}
+function closeNotes(){
+  modalNotes.classList.remove("show");
+}
+
+async function loadNotes(force){
+  if(!CURRENT_NOTA) return;
+
+  notesErr.style.display = "none";
+  notesErr.textContent = "";
+  notesList.innerHTML = "Carregando…";
+
+  // Tenta com colunas "bonitas"; se falhar por coluna inexistente, tenta reduzido
+  const tryCols1 = ["id","nota","author","note","created_at","status_execucao"]; // status opcional
+  const tryCols2 = ["id","nota","author","note","created_at"]; // fallback
+
+  let data = null;
+
+  // 1
+  let r1 = await supabase.from(TBL_NOTES)
+    .select(tryCols1.join(","))
+    .eq("nota", CURRENT_NOTA)
+    .order("created_at",{ ascending:false });
+
+  if(r1.error){
+    // se coluna não existe, tenta fallback
+    if(String(r1.error.code) === "42703" || String(r1.error.message||"").includes("does not exist")){
+      let r2 = await supabase.from(TBL_NOTES)
+        .select(tryCols2.join(","))
+        .eq("nota", CURRENT_NOTA)
+        .order("created_at",{ ascending:false });
+      if(r2.error){
+        notesList.innerHTML = "";
+        notesErr.style.display = "block";
+        notesErr.textContent = "Erro ao carregar notas: " + (r2.error.message || JSON.stringify(r2.error));
         return;
       }
-
-      if(!data || !data.length){
-        list.innerHTML = `<div class="muted">Nenhuma nota ainda. Adicione a primeira acima.</div>`;
-        return;
-      }
-
-      list.innerHTML = data.map(n=>{
-        const when = n.created_at ? new Date(n.created_at).toLocaleString("pt-BR") : "—";
-        return `
-          <div class="noteItem">
-            <div class="noteMeta">
-              <div class="who">${escapeHtml(n.autor || "—")}</div>
-              ${statusTag(n.status)}
-              <div class="when">${escapeHtml(when)}</div>
-            </div>
-            <div class="noteText">${escapeHtml(n.texto || "")}</div>
-          </div>
-        `;
-      }).join("");
+      data = r2.data || [];
+    } else {
+      notesList.innerHTML = "";
+      notesErr.style.display = "block";
+      notesErr.textContent = "Erro ao carregar notas: " + (r1.error.message || JSON.stringify(r1.error));
+      return;
     }
+  } else {
+    data = r1.data || [];
+  }
 
-    async function saveNote(){
-      const autor = $("nAutor").value.trim();
-      const texto = $("nTexto").value.trim();
-      const status = $("nStatus").value;
+  if(!data.length){
+    notesList.innerHTML = `<div style="color:var(--muted);">Nenhuma nota ainda.</div>`;
+    return;
+  }
 
-      if(!autor){ alert("Informe seu nome."); return; }
-      if(!texto){ alert("Escreva a nota."); return; }
+  notesList.innerHTML = "";
+  for(const n of data){
+    const card = document.createElement("div");
+    card.style.border = "1px solid var(--line)";
+    card.style.borderRadius = "14px";
+    card.style.padding = "10px 12px";
+    card.style.background = "rgba(255,255,255,.04)";
 
-      const payload = { nota: currentNotaKey, autor, texto, status };
-      const { error } = await sb.from("notes").insert(payload);
-      if(error){ alert("Erro ao salvar nota: " + error.message); return; }
+    const dt = n.created_at ? new Date(n.created_at).toLocaleString("pt-BR",{ timeZone:"America/Sao_Paulo" }) : "—";
+    const status = n.status_execucao ? ` • <span class="badge">${escapeHtml(n.status_execucao)}</span>` : "";
 
-      $("nTexto").value = "";
-      await loadNotes();
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+        <div style="font-weight:900;">${escapeHtml(n.author || "—")}${status}</div>
+        <div style="color:var(--muted); font-family:var(--mono); font-size:12px;">${escapeHtml(dt)}</div>
+      </div>
+      <div style="margin-top:8px; white-space:pre-wrap; line-height:1.35;">${escapeHtml(n.note || "")}</div>
+    `;
+    notesList.appendChild(card);
+  }
+}
+
+async function saveNote(){
+  if(!CURRENT_NOTA) return;
+
+  const author = (noteAuthor.value || "").trim();
+  const text = (noteText.value || "").trim();
+  const status = (noteStatus.value || "").trim();
+
+  if(!author){
+    notesErr.style.display = "block";
+    notesErr.textContent = "Informe seu nome.";
+    return;
+  }
+  if(!text){
+    notesErr.style.display = "block";
+    notesErr.textContent = "Escreva a nota.";
+    return;
+  }
+
+  notesErr.style.display = "none";
+  notesErr.textContent = "";
+
+  // tenta inserir com status_execucao, se falhar, insere sem
+  let res = await supabase.from(TBL_NOTES).insert({
+    nota: CURRENT_NOTA,
+    author,
+    note: text,
+    status_execucao: status
+  });
+
+  if(res.error){
+    // fallback sem status_execucao
+    let res2 = await supabase.from(TBL_NOTES).insert({
+      nota: CURRENT_NOTA,
+      author,
+      note: `(${status}) ${text}`
+    });
+    if(res2.error){
+      notesErr.style.display = "block";
+      notesErr.textContent = "Erro ao salvar nota: " + (res2.error.message || JSON.stringify(res2.error));
+      return;
     }
+  }
 
-    function openWhatsModal(){
-      const today = new Date(); today.setHours(0,0,0,0);
-      $("wDe").value = fmtDateInput(today);
-      $("wAte").value = fmtDateInput(addDays(today, 5));
-      $("overlayWhats").style.display = "flex";
-    }
-    function closeWhatsModal(){
-      $("overlayWhats").style.display = "none";
-    }
+  noteText.value = "";
+  await loadNotes(true);
+}
 
-    function buildWhatsBases(){
-      const wrap = $("wBases");
-      if(!wrap) return;
-      wrap.innerHTML = "";
+/** ============================
+ *  Listeners (filtros)
+ *  ============================ */
+[inpDate, selBase, selMunicipio, selCriterio, chkShowProjeto, chkShowAgente, chkShowAvpn].forEach(el=>{
+  el.addEventListener("change", ()=>{
+    applyFilters();
+  });
+});
 
-      const list = (bases && bases.length) ? bases : [];
-      if(!list.length){
-        wrap.innerHTML = `<div class="muted">Carregue os dados primeiro.</div>`;
-        return;
-      }
+/** ============================
+ *  Boot
+ *  ============================ */
+function setTopDate(){
+  // data do topo sempre "hoje" no fuso SP, sem bug de UTC
+  const now = new Date();
+  const txt = now.toLocaleDateString("pt-BR", { timeZone:"America/Sao_Paulo" });
+  document.getElementById("todayTop").textContent = txt;
+}
 
-      for(const b of list){
-        const id = "wb_" + b.replace(/\W+/g,"_");
-        const div = document.createElement("label");
-        div.className = "checkItem";
-        div.innerHTML = `
-          <input type="checkbox" data-base="${escapeHtml(b)}" id="${id}" checked />
-          <span>${escapeHtml(b)}</span>
-        `;
-        wrap.appendChild(div);
-      }
-    }
+async function loadAll(force){
+  clearError();
+  elPill.textContent = "Carregando…";
+  elBases.innerHTML = "";
 
-    function getSelectedWhatsBases(){
-      const checks = Array.from(document.querySelectorAll('#wBases input[type="checkbox"][data-base]'));
-      return checks.filter(c=>c.checked).map(c=>c.getAttribute("data-base"));
-    }
+  try{
+    setTopDate();
 
-    function buildWhatsTextRange(fromDate, toDate, basesSelected){
-      const d1 = new Date(fromDate + "T00:00:00");
-      const d2 = new Date(toDate + "T00:00:00");
-      d1.setHours(0,0,0,0);
-      d2.setHours(0,0,0,0);
-
-      if(String(d1)==="Invalid Date" || String(d2)==="Invalid Date"){
-        return "Escolha datas válidas.";
-      }
-      if(d2 < d1){
-        return "A data final precisa ser maior ou igual à inicial.";
-      }
-      if(!basesSelected.length){
-        return "Selecione ao menos uma base.";
-      }
-
-      const inRange = allRows
-        .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
-        .filter(x => x.d && x.d >= d1 && x.d <= d2)
-        .filter(x => basesSelected.includes((getField(x.r, COL_BASE) ?? "").toString().trim()));
-
-      const map = new Map(); // dateKey -> Map(base -> rows)
-      for(const x of inRange){
-        const dateKey = fmtDateInput(x.d);
-        if(!map.has(dateKey)) map.set(dateKey, new Map());
-        const b = (getField(x.r, COL_BASE) ?? "Sem base").toString().trim() || "Sem base";
-        const mb = map.get(dateKey);
-        if(!mb.has(b)) mb.set(b, []);
-        mb.get(b).push(x.r);
-      }
-
-      const dateKeys = Array.from(map.keys()).sort((a,b)=>a.localeCompare(b));
-      const header = `📌 Obras planejadas (${fmtDateBR(d1)} → ${fmtDateBR(d2)})`;
-      if(!dateKeys.length){
-        return `${header}\n\nNenhuma obra encontrada no período para as bases selecionadas.`;
-      }
-
-      let msg = header + "\n";
-      for(const dk of dateKeys){
-        msg += `\n📅 ${fmtDateBR(dk)}\n`;
-        const mb = map.get(dk);
-        const baseKeys = Array.from(mb.keys()).sort((a,b)=>a.localeCompare(b));
-        for(const b of baseKeys){
-          msg += `\n🏷️ Base: ${b}\n`;
-          const rows = mb.get(b).slice().sort((a,b)=>{
-            const na = normalizeNota(getField(a, COL_NOTA));
-            const nb = normalizeNota(getField(b, COL_NOTA));
-            return na.localeCompare(nb);
-          });
-
-          for(const r of rows){
-            const nota = normalizeNota(getField(r, COL_NOTA)) || "—";
-            const proj = getField(r, COL_PROJ) || "—";
-            const agente = getField(r, COL_AGENT) || "—"; // <<< NOVO
-            const titulo = getField(r, "titulo") || "—";
-            const mun = getField(r, COL_MUN) || "—";
-            const crit = getField(r, COL_CRIT) || "—";
-            // inclui agente no texto do WhatsApp
-            msg += `- Nota ${nota} • ${proj} • Agente: ${agente} • ${mun} • ${crit} • ${titulo}\n`;
-          }
-        }
-      }
-      return msg.trim();
-    }
-
-    function openWhatsWithText(text){
-      const url = "https://wa.me/?text=" + encodeURIComponent(text);
-      window.open(url, "_blank");
-    }
-
-    function previewWhats(){
-      const fromDate = $("wDe").value;
-      const toDate = $("wAte").value;
-      const basesSelected = getSelectedWhatsBases();
-      const txt = buildWhatsTextRange(fromDate, toDate, basesSelected);
-      alert(txt.length > 1500 ? (txt.slice(0,1500) + "\n\n...(prévia cortada)") : txt);
-    }
-
-    function sendWhats(){
-      const fromDate = $("wDe").value;
-      const toDate = $("wAte").value;
-      const basesSelected = getSelectedWhatsBases();
-      const txt = buildWhatsTextRange(fromDate, toDate, basesSelected);
-      if(txt.startsWith("Escolha") || txt.startsWith("A data") || txt.startsWith("Selecione")){
-        alert(txt);
-        return;
-      }
-      openWhatsWithText(txt);
-    }
-
-    function setToday(){
+    // default date = hoje (SP)
+    if(!inpDate.value){
       const now = new Date();
-      now.setHours(0,0,0,0);
-      $("fData").value = fmtDateInput(now);
-      $("todayPill").textContent = "Data: " + fmtDateBR($("fData").value);
+      inpDate.value = now.toLocaleDateString("en-CA", { timeZone:"America/Sao_Paulo" }); // yyyy-mm-dd
     }
 
-    (function init(){
-      setToday();
-      setActiveTab("filtros");
+    await loadFiltersData();
 
-      $("btnReload").addEventListener("click", loadAll);
-      $("btnHoje").addEventListener("click", ()=>{ setToday(); render(); });
+    // mostrar filtros por padrão
+    setTab("filtros");
 
-      $("fData").addEventListener("change", ()=>{ $("todayPill").textContent = "Data: " + fmtDateBR($("fData").value); render(); });
-      $("fBase").addEventListener("change", render);
-      $("fMunicipio").addEventListener("change", render);
-      $("fCriterio").addEventListener("change", render);
+    applyFilters();
+    clearError();
+  } catch(e){
+    console.error(e);
+    elPill.textContent = "Erro";
+    const msg = [
+      `Não consegui carregar dados da tabela '${TBL_OBRAS}'.`,
+      ``,
+      `Detalhe: ${(e && (e.message || e.error_description)) ? (e.message || e.error_description) : JSON.stringify(e)}`,
+      ``,
+      `Verifique:`,
+      `- SUPABASE_URL e ANON_KEY (sb_publishable)`,
+      `- RLS/policies da tabela obras (SELECT para anon)`,
+      `- Se as colunas existem: ${COL_NOTA}, ${COL_BASE}, ${COL_PRAZO}...`,
+    ].join("\n");
+    showError(msg);
+  }
+}
 
-      $("tabFiltros").addEventListener("click", ()=> setActiveTab("filtros"));
-      $("tabDetalhes").addEventListener("click", ()=> setActiveTab("detalhes"));
+loadAll(false);
+</script>
 
-      $("tShowExtras").addEventListener("change", (e)=>{
-        showExtras = e.target.checked;
-        render();
-      });
-
-      $("btnWhats").addEventListener("click", openWhatsModal);
-      $("btnCloseWhats").addEventListener("click", closeWhatsModal);
-      $("overlayWhats").addEventListener("click", (e)=>{ if(e.target === $("overlayWhats")) closeWhatsModal(); });
-      $("btnPreviewWhats").addEventListener("click", previewWhats);
-      $("btnSendWhats").addEventListener("click", sendWhats);
-      $("btnSelAll").addEventListener("click", ()=>{
-        document.querySelectorAll('#wBases input[type="checkbox"][data-base]').forEach(c=>c.checked=true);
-      });
-      $("btnSelNone").addEventListener("click", ()=>{
-        document.querySelectorAll('#wBases input[type="checkbox"][data-base]').forEach(c=>c.checked=false);
-      });
-
-      $("btnCloseNotes").addEventListener("click", closeNotes);
-      $("btnCloseNotes2").addEventListener("click", closeNotes);
-      $("overlayNotes").addEventListener("click", (e)=>{ if(e.target === $("overlayNotes")) closeNotes(); });
-      $("btnSalvarNota").addEventListener("click", saveNote);
-      $("btnRecarregarNotas").addEventListener("click", loadNotes);
-
-      loadAll();
-    })();
-  </script>
 </body>
 </html>
