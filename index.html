@@ -426,13 +426,13 @@
       <div class="modalHead">
         <div>
           <h3>Login</h3>
-          <div class="muted">Envio de link permitido para <b>@neoenergia.com</b> ou <b>mamutevitor@gmail.com</b>. Acesso aos dados: <b>somente admin</b>.</div>
+          <div class="muted">Acesso restrito • link mágico (sem senha)</div>
         </div>
       </div>
       <div class="modalBody">
         <div class="field">
           <label>Seu e-mail</label>
-          <input id="loginEmail" type="email" autocomplete="email" />
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="seuemail@dominio.com" />
         </div>
         <div class="actions" style="margin-top:10px">
           <button class="btn" id="btnSendMagic">Enviar link</button>
@@ -444,7 +444,7 @@
     </div>
   </div>
 
-  <!-- Overlay Não autorizado -->
+  <!-- Overlay Não autorizado (sem mostrar e-mail) -->
   <div class="overlay" id="overlayDenied">
     <div class="modal" style="width:min(560px,100%)">
       <div class="modalHead">
@@ -454,9 +454,9 @@
         </div>
       </div>
       <div class="modalBody">
-        <div class="pill" id="deniedPill">🚫 Usuário: —</div>
+        <div class="pill">🚫 Acesso negado</div>
         <div class="rule" style="padding:10px 0 0 0">
-          Faça logout e entre com o e-mail autorizado.
+          Faça logout e entre com um e-mail autorizado.
         </div>
       </div>
       <div class="modalFoot">
@@ -472,7 +472,7 @@
     const SUPABASE_URL = "https://yyfhnuafwzeglwcpnmkd.supabase.co".trim();
     const SUPABASE_ANON_KEY = "sb_publishable_7rmfNL9N6limSSFxFcl2Og_MV9xkbjx".trim();
 
-    // ======= LOGIN RULES =======
+    // ======= LOGIN RULES (não exibidas na UI) =======
     const ADMIN_EMAIL = "mamutevitor@gmail.com";
     const ALLOW_DOMAIN = "@neoenergia.com";
     const REDIRECT_TO = "https://thowosken.github.io/utep-dashboard/";
@@ -488,19 +488,13 @@
     let COL_PROJ  = "projeto";
     let COL_AGENT = "agente_responsavel";
 
-    // toggles de colunas extras
     let showExtras = false;
-
-    // estado
     let allRows = [];
     let bases = [];
     let municipios = [];
     let criterios = [];
-
-    // modal state
     let currentNotaKey = null;
 
-    // helpers
     const $ = (id) => document.getElementById(id);
     function show(el, on){ el.style.display = on ? "flex" : "none"; }
     function showInline(el, on){ el.style.display = on ? "inline-flex" : "none"; }
@@ -518,21 +512,18 @@
       const yy = d.getFullYear();
       return `${dd}/${mm}/${yy}`;
     }
-
     function fmtDateInput(d){
       const yy = d.getFullYear();
       const mm = String(d.getMonth()+1).padStart(2,"0");
       const dd = String(d.getDate()).padStart(2,"0");
       return `${yy}-${mm}-${dd}`;
     }
-
     function normalizeNota(v){
       if(v === null || v === undefined) return "";
       let s = String(v).trim();
       s = s.replace(/\.0$/,"");
       return s;
     }
-
     function parseDateOnly(v){
       if(!v) return null;
       const s = String(v).slice(0,10);
@@ -540,20 +531,17 @@
       if(String(d)==="Invalid Date") return null;
       return d;
     }
-
     function addDays(d, n){
       const x = new Date(d);
       x.setDate(x.getDate()+n);
       return x;
     }
-
     function sameDay(a,b){
       return a && b &&
         a.getFullYear()===b.getFullYear() &&
         a.getMonth()===b.getMonth() &&
         a.getDate()===b.getDate();
     }
-
     function escapeHtml(s){
       return String(s)
         .replaceAll("&","&amp;")
@@ -562,7 +550,6 @@
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
     }
-
     function showError(msg){
       const box = $("errBox");
       box.style.display = "block";
@@ -574,11 +561,11 @@
       box.textContent = "";
     }
 
-    function setAuthUI(email){
+    function setAuthUI(isAuthed){
       const pill = $("authPill");
       const logout = $("btnLogout");
-      if(email){
-        pill.textContent = "✅ " + email;
+      if(isAuthed){
+        pill.textContent = "✅ Autenticado";
         showInline(pill, true);
         showInline(logout, true);
       }else{
@@ -596,7 +583,7 @@
         (email === ADMIN_EMAIL.toLowerCase()) || email.endsWith(ALLOW_DOMAIN);
 
       if(!allowedToReceiveLink){
-        msg.textContent = "Envio de link permitido apenas para @neoenergia.com ou para o e-mail do administrador.";
+        msg.textContent = "E-mail não permitido para login.";
         msg.style.color = "var(--warn)";
         return;
       }
@@ -621,12 +608,11 @@
 
     async function logout(){
       await sb.auth.signOut();
-      setAuthUI(null);
+      setAuthUI(false);
       show($("overlayDenied"), false);
       show($("overlayLogin"), true);
     }
 
-    // Checa sessão + e-mail + faz um SELECT mínimo em obras para confirmar RLS
     async function guardAndRun(){
       clearError();
 
@@ -634,19 +620,18 @@
       const email = session?.user?.email || null;
 
       if(!session){
-        setAuthUI(null);
+        setAuthUI(false);
         show($("overlayDenied"), false);
         show($("overlayLogin"), true);
         return;
       }
 
-      setAuthUI(email);
+      setAuthUI(true);
 
-      // Acesso ao dashboard SOMENTE admin
+      // Acesso ao dashboard SOMENTE admin (sem mostrar e-mail na UI)
       if((email || "").toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
         show($("overlayLogin"), false);
         show($("overlayDenied"), true);
-        $("deniedPill").textContent = "🚫 Usuário: " + (email || "—");
         return;
       }
 
@@ -660,17 +645,15 @@ ${error.message}
 
 Confirme:
 - SQL aplicado (policies)
-- seu e-mail no SQL = ADMIN_EMAIL no HTML`
+- e-mail do admin no SQL = ADMIN_EMAIL no HTML`
         );
         show($("overlayLogin"), false);
         show($("overlayDenied"), true);
-        $("deniedPill").textContent = "🚫 Usuário: " + (email || "—");
         return;
       }
 
       show($("overlayLogin"), false);
       show($("overlayDenied"), false);
-
       await loadAll();
     }
 
@@ -710,7 +693,6 @@ Confirme:
 
     async function loadAll(){
       clearError();
-
       await detectColumns();
 
       const selectCols = [
@@ -729,11 +711,7 @@ Confirme:
       const { data, error } = await sb.from("obras").select(selectCols).limit(5000);
 
       if(error){
-        showError(
-`Não consegui carregar dados da tabela 'obras'.
-
-Detalhe: ${error.message}`
-        );
+        showError(`Não consegui carregar dados da tabela 'obras'.\n\nDetalhe: ${error.message}`);
         return;
       }
 
@@ -773,13 +751,11 @@ Detalhe: ${error.message}`
       const fCrit = $("fCriterio").value;
 
       let rows = allRows.slice();
-
       if(fBase) rows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === fBase);
       if(fMun) rows = rows.filter(r => (getField(r, COL_MUN) ?? "").toString().trim() === fMun);
       if(fCrit) rows = rows.filter(r => (getField(r, COL_CRIT) ?? "").toString().trim() === fCrit);
 
       const basesToShow = (fBase ? [fBase] : (bases.length ? bases : ["(Sem base)"]));
-
       const container = $("gridBases");
       container.innerHTML = "";
 
@@ -1093,9 +1069,8 @@ Detalhe: ${error.message}`
       setToday();
       setActiveTab("filtros");
 
-      // Pré-preenche com admin, mas permite editar (para @neoenergia.com)
-      $("loginEmail").value = ADMIN_EMAIL;
-      $("loginEmail").readOnly = false;
+      // não mostra e-mail na UI, mas você pode pré-preencher se quiser:
+      // $("loginEmail").value = "";
 
       $("btnReload").addEventListener("click", guardAndRun);
       $("btnHoje").addEventListener("click", ()=>{ setToday(); render(); });
