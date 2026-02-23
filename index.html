@@ -56,7 +56,7 @@
         </div>
         <div class="leading-tight">
           <div class="font-semibold">Neoenergia</div>
-          <div class="text-xs text-slate-500">Painel • Principal / Obras / Notes</div>
+          <div class="text-xs text-slate-500">Painel • obras / Obras / Notes</div>
         </div>
       </div>
 
@@ -80,7 +80,7 @@
           <div>
             <div class="text-xs font-medium text-slate-600">Aba</div>
             <div class="mt-1 inline-flex rounded-xl border border-neo-100 bg-neo-50 p-1">
-              <button data-tab="principal" class="tabBtn px-3 py-1.5 rounded-lg text-sm bg-white shadow-sm border border-neo-100">Principal</button>
+              <button data-tab="obras" class="tabBtn px-3 py-1.5 rounded-lg text-sm bg-white shadow-sm border border-neo-100">obras</button>
               <button data-tab="obras" class="tabBtn px-3 py-1.5 rounded-lg text-sm text-slate-700">Obras</button>
               <button data-tab="notes" class="tabBtn px-3 py-1.5 rounded-lg text-sm text-slate-700">Notes</button>
             </div>
@@ -298,8 +298,8 @@
      * APP STATE
      ************************************************************/
     const state = {
-      tab: localStorage.getItem(LS.tab) || "principal",
-      tableByTab: { principal: "principal", obras: "obras", notes: "notes" }, // <- ajuste se seus nomes forem diferentes
+      tab: localStorage.getItem(LS.tab) || "obras",
+      tableByTab: { obras: "obras", obras: "obras", notes: "notes" }, // <- ajuste se seus nomes forem diferentes
       baseCandidates: ["base", "bases", "regional", "regiao", "cidade", "unidade"],
       dateCandidates: ["data", "date", "created_at", "updated_at", "dt", "dia"],
       columns: [],
@@ -754,7 +754,7 @@
        SUPABASE_URL, SUPABASE_ANON_KEY
 
     2) Se os nomes das tabelas forem diferentes:
-       state.tableByTab = { principal: "SUA_TABELA", obras: "SUA_TABELA", notes: "SUA_TABELA" }
+       state.tableByTab = { obras: "SUA_TABELA", obras: "SUA_TABELA", notes: "SUA_TABELA" }
 
     3) Se quiser fixar as colunas (sem heurística), me diga:
        - nome real da coluna de BASE
