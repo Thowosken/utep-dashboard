@@ -4,61 +4,229 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Acompanhamento de Obras</title>
+
   <style>
     :root{
-      --bg:#071a13; --text:#e8fff4; --muted:#b9e6d2; --line:rgba(232,255,244,.12);
-      --accent:#7CFCB8; --danger:#ff6b6b; --warn:#ffd166;
-      --shadow: 0 10px 35px rgba(0,0,0,.35); --radius:18px;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
+      --bg:#071a13;
+      --text:#e8fff4;
+      --muted:#b9e6d2;
+      --line:rgba(232,255,244,.12);
+      --accent:#7CFCB8;
+      --accent2:#3ddc97;
+      --danger:#ff6b6b;
+      --warn:#ffd166;
+      --shadow: 0 10px 35px rgba(0,0,0,.35);
+      --radius:18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", "Noto Sans", "Liberation Sans", sans-serif;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:var(--sans); color:var(--text); min-height:100vh; padding:22px;
+      margin:0;
+      font-family:var(--sans);
       background: radial-gradient(1200px 800px at 50% -10%, rgba(124,252,184,.20), transparent 55%),
                   radial-gradient(900px 700px at 100% 20%, rgba(61,220,151,.12), transparent 55%),
                   linear-gradient(180deg, var(--bg), #04110c 70%);
+      color:var(--text);
+      min-height:100vh;
+      padding:22px;
     }
-    header{max-width:1200px;margin:0 auto 14px auto;display:flex;gap:14px;align-items:flex-start;justify-content:space-between;}
-    .title h1{margin:0;font-size:34px}
+    header{
+      max-width:1200px;
+      margin:0 auto 14px auto;
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .title h1{margin:0;font-size:34px;letter-spacing:.2px}
     .title .sub{margin-top:6px;color:var(--muted);font-size:14px}
     .rightTop{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:210px;}
     .badgeRow{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
-    .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(124,252,184,.12);
-      border:1px solid rgba(124,252,184,.22); color:var(--text); padding:8px 12px;border-radius:999px;font-size:13px;}
-    .btn{border:0;cursor:pointer;padding:10px 14px;border-radius:12px;
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      background:rgba(124,252,184,.12);
+      border:1px solid rgba(124,252,184,.22);
+      color:var(--text);
+      padding:8px 12px;border-radius:999px;font-size:13px;
+    }
+    .btn{
+      border:0;cursor:pointer;
+      padding:10px 14px;border-radius:12px;
       background:linear-gradient(180deg, rgba(124,252,184,.22), rgba(61,220,151,.16));
-      border:1px solid rgba(124,252,184,.26); color:var(--text); box-shadow:var(--shadow);}
-    .btn.secondary{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);box-shadow:none;}
+      border:1px solid rgba(124,252,184,.26);
+      color:var(--text);
+      box-shadow:var(--shadow);
+      transition:.15s transform ease, .15s opacity ease;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.secondary{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:none;
+    }
     .wrap{max-width:1200px;margin:0 auto;display:grid;gap:14px;}
-    .panel{background:linear-gradient(180deg, rgba(16,56,43,.72), rgba(10,34,26,.66));
-      border:1px solid rgba(232,255,244,.12); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;}
-    .panelHead{padding:14px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);}
+    .panel{
+      background:linear-gradient(180deg, rgba(16,56,43,.72), rgba(10,34,26,.66));
+      border:1px solid rgba(232,255,244,.12);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .panelHead{
+      padding:14px 16px;
+      display:flex;flex-wrap:wrap;gap:12px;
+      align-items:center;justify-content:space-between;
+      border-bottom:1px solid var(--line);
+    }
+    .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .tab{
+      padding:9px 12px;border-radius:12px;
+      border:1px solid rgba(232,255,244,.12);
+      background:rgba(0,0,0,.12);
+      color:var(--text);
+      cursor:pointer;
+      font-size:13px;
+      user-select:none;
+    }
+    .tab.active{
+      border-color:rgba(124,252,184,.35);
+      background:rgba(124,252,184,.14);
+    }
     .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .pane{display:none;}
+    .pane.active{display:block;}
+    .filters{
+      padding:14px 16px;
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap:12px;
+    }
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{color:var(--muted);font-size:13px}
+    input, select{
+      width:100%;
+      background:rgba(0,0,0,.20);
+      border:1px solid rgba(232,255,244,.14);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius:14px;
+      outline:none;
+    }
+    input[type="date"]{color-scheme:dark}
+    .rule{padding:0 16px 14px 16px;color:var(--muted);font-size:13px;}
+    .detailBox{padding:14px 16px 6px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .toggleRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 16px 14px 16px;}
+    .toggle{
+      display:flex;gap:10px;align-items:center;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(232,255,244,.12);
+      background:rgba(0,0,0,.12);
+      cursor:pointer; user-select:none;
+    }
+    .toggle input{width:auto}
     .error{
-      margin:12px 16px; padding:12px 14px; border-radius:14px;
-      border:1px solid rgba(255,107,107,.35); background:rgba(255,107,107,.10);
-      color:#ffeaea; white-space:pre-wrap; font-family:var(--mono); font-size:12px; display:none;
+      margin:0 16px 16px 16px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,107,107,.35);
+      background:rgba(255,107,107,.10);
+      color:#ffeaea;
+      white-space:pre-wrap;
+      font-family:var(--mono);
+      font-size:12px;
+      display:none;
     }
     .gridBases{padding:14px 16px 18px 16px;display:grid;grid-template-columns:1fr;gap:12px;}
     .baseBlock{border:1px solid rgba(232,255,244,.12);background:rgba(0,0,0,.10);border-radius:16px;overflow:hidden;}
-    .baseHead{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);background:rgba(124,252,184,.08);}
+    .baseHead{
+      padding:12px 14px;
+      display:flex;justify-content:space-between;align-items:center;
+      border-bottom:1px solid var(--line);
+      background:rgba(124,252,184,.08);
+    }
+    .baseHead .name{font-weight:700}
+    .baseHead .count{color:var(--muted);font-size:13px}
     table{width:100%;border-collapse:collapse;font-size:13px;}
     th, td{padding:10px 10px;border-bottom:1px solid rgba(232,255,244,.10);vertical-align:top;}
-    th{color:var(--muted);font-weight:600;background:rgba(0,0,0,.10);position:sticky;top:0;z-index:1;text-align:left;}
-    .linkBtn{cursor:pointer;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);color:var(--text);font-size:12px;}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999;}
-    .modal{width:min(560px,100%);background:linear-gradient(180deg, rgba(16,56,43,.92), rgba(10,34,26,.92));
-      border:1px solid rgba(232,255,244,.14);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;}
-    .modalHead{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+    th{
+      text-align:left;color:var(--muted);font-weight:600;
+      background:rgba(0,0,0,.10);position:sticky; top:0;z-index:1;
+    }
+    tr:hover td{background:rgba(124,252,184,.06)}
+    .nowrap{white-space:nowrap}
+    .muted{color:var(--muted)}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 10px;border-radius:999px;
+      background:rgba(124,252,184,.12);
+      border:1px solid rgba(124,252,184,.22);
+      font-size:12px;white-space:nowrap;
+    }
+    .tag.warn{background:rgba(255,209,102,.12);border-color:rgba(255,209,102,.25)}
+    .tag.danger{background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.25)}
+    .linkBtn{
+      cursor:pointer;padding:8px 10px;border-radius:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);font-size:12px;
+    }
+    .footer{max-width:1200px;margin:16px auto 0 auto;text-align:center;color:var(--muted);font-size:12px;}
+    .overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;
+      padding:18px;z-index:9999;
+    }
+    .modal{
+      width:min(760px, 100%);
+      background:linear-gradient(180deg, rgba(16,56,43,.92), rgba(10,34,26,.92));
+      border:1px solid rgba(232,255,244,.14);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding:12px 14px;border-bottom:1px solid var(--line);
+      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+    }
     .modalHead h3{margin:0;font-size:16px}
     .modalBody{padding:14px}
-    .field{display:flex;flex-direction:column;gap:6px}
-    .field label{color:var(--muted);font-size:13px}
-    input{width:100%;background:rgba(0,0,0,.20);border:1px solid rgba(232,255,244,.14);
-      color:var(--text);padding:12px 12px;border-radius:14px;outline:none;}
-    .rule{color:var(--muted);font-size:13px;padding:10px 0 0 0}
+    .modalGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .modalGrid .field:last-child{grid-column:1/-1}
+    textarea{
+      width:100%;min-height:110px;resize:vertical;
+      background:rgba(0,0,0,.20);
+      border:1px solid rgba(232,255,244,.14);
+      color:var(--text);
+      padding:12px 12px;border-radius:14px;outline:none;
+      font-family:var(--sans);
+    }
+    .notesList{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;}
+    .noteItem{
+      border:1px solid rgba(232,255,244,.12);
+      background:rgba(0,0,0,.12);
+      border-radius:14px;
+      padding:10px 12px;margin-top:10px;
+    }
+    .noteMeta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .noteMeta .who{font-weight:700}
+    .noteMeta .when{color:var(--muted);font-size:12px}
+    .noteText{margin-top:8px;color:var(--text);white-space:pre-wrap}
+    .modalFoot{display:flex;gap:10px;justify-content:flex-end;padding:12px 14px;border-top:1px solid var(--line);flex-wrap:wrap;}
+    .checkList{display:grid;grid-template-columns: 1fr 1fr;gap:8px;padding:10px 0 0 0;}
+    .checkItem{
+      display:flex;gap:10px;align-items:center;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(232,255,244,.12);
+      background:rgba(0,0,0,.12);
+    }
+    @media (max-width:900px){
+      .filters{grid-template-columns:1fr}
+      .modalGrid{grid-template-columns:1fr}
+      .checkList{grid-template-columns:1fr}
+      header{flex-direction:column;align-items:flex-start}
+      .rightTop{align-items:flex-start}
+    }
   </style>
 </head>
 
@@ -68,12 +236,14 @@
       <h1>Acompanhamento de Obras</h1>
       <div class="sub">UTEP Nordeste • Supabase + GitHub Pages</div>
     </div>
+
     <div class="rightTop">
       <div class="badgeRow">
         <div class="pill" id="todayPill">Data: --/--/----</div>
         <div class="pill" id="authPill" style="display:none">🔒</div>
         <button class="btn secondary" id="btnLogout" style="display:none">Logout</button>
       </div>
+
       <button class="btn secondary" id="btnReload">Recarregar</button>
     </div>
   </header>
@@ -81,24 +251,162 @@
   <div class="wrap">
     <div class="panel">
       <div class="panelHead">
-        <div class="pill">Obras</div>
+        <div class="tabs">
+          <div class="tab active" id="tabFiltros">Filtros</div>
+          <div class="tab" id="tabDetalhes">Detalhes</div>
+          <button class="btn" id="btnWhats">Exportar WhatsApp</button>
+        </div>
         <div class="actions">
           <button class="btn secondary" id="btnHoje">Hoje</button>
+        </div>
+      </div>
+
+      <div class="pane active" id="paneFiltros">
+        <div class="filters">
+          <div class="field">
+            <label>Data (prazo final)</label>
+            <input type="date" id="fData" />
+          </div>
+
+          <div class="field">
+            <label>Base</label>
+            <select id="fBase"><option value="">Todas</option></select>
+          </div>
+
+          <div class="field">
+            <label>Município</label>
+            <select id="fMunicipio"><option value="">Todos</option></select>
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Critério</label>
+            <select id="fCriterio"><option value="">Todos</option></select>
+          </div>
+        </div>
+
+        <div class="rule">
+          Regras: mostra obras com <b>prazo final</b> na data escolhida.
+          Se não houver, mostra as <b>5 mais próximas dentro de 5 dias</b>, separadas por Base.
+        </div>
+      </div>
+
+      <div class="pane" id="paneDetalhes">
+        <div class="detailBox">
+          <div class="pill">Colunas extras</div>
+          <div class="muted">Ative/desative campos adicionais.</div>
+        </div>
+        <div class="toggleRow">
+          <label class="toggle">
+            <input type="checkbox" id="tShowExtras" />
+            Mostrar colunas extras (Gerência)
+          </label>
         </div>
       </div>
 
       <div id="errBox" class="error"></div>
       <div class="gridBases" id="gridBases"></div>
     </div>
+
+    <div class="footer">UTEP Nordeste • GitHub Pages</div>
   </div>
 
-  <!-- Login -->
-  <div class="overlay" id="overlayLogin">
+  <!-- Modal notas -->
+  <div class="overlay" id="overlayNotes">
     <div class="modal">
       <div class="modalHead">
         <div>
+          <h3 id="modalTitle">Notas</h3>
+          <div class="muted" id="modalSub"></div>
+        </div>
+        <button class="linkBtn" id="btnCloseNotes">Fechar</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="modalGrid">
+          <div class="field">
+            <label>Seu nome</label>
+            <input id="nAutor" placeholder="Ex.: João Silva" />
+          </div>
+
+          <div class="field">
+            <label>Status</label>
+            <select id="nStatus">
+              <option value="executada">Executada</option>
+              <option value="problemas">Houve problemas</option>
+              <option value="nao_executada">Não foi executada</option>
+              <option value="energizada">Energizada</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Adicionar nota</label>
+            <textarea id="nTexto" placeholder="Escreva a observação desta obra..."></textarea>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top:10px">
+          <button class="btn" id="btnSalvarNota">Salvar nota</button>
+          <button class="btn secondary" id="btnRecarregarNotas">Recarregar notas</button>
+        </div>
+
+        <div class="notesList" id="notesList">
+          <div class="muted">Carregando notas…</div>
+        </div>
+      </div>
+
+      <div class="modalFoot">
+        <button class="btn secondary" id="btnCloseNotes2">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal WhatsApp -->
+  <div class="overlay" id="overlayWhats">
+    <div class="modal">
+      <div class="modalHead">
+        <div>
+          <h3>Exportar WhatsApp</h3>
+          <div class="muted">Exporta agrupado por <b>data</b> e <b>base</b>.</div>
+        </div>
+        <button class="linkBtn" id="btnCloseWhats">Fechar</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="modalGrid">
+          <div class="field">
+            <label>De (data inicial)</label>
+            <input type="date" id="wDe" />
+          </div>
+          <div class="field">
+            <label>Até (data final)</label>
+            <input type="date" id="wAte" />
+          </div>
+
+          <div class="field" style="grid-column:1/-1">
+            <label>Bases para exportar</label>
+            <div class="checkList" id="wBases"></div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn secondary" id="btnSelAll">Selecionar todas</button>
+              <button class="btn secondary" id="btnSelNone">Limpar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modalFoot">
+        <button class="btn secondary" id="btnPreviewWhats">Prévia</button>
+        <button class="btn" id="btnSendWhats">Abrir WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Login -->
+  <div class="overlay" id="overlayLogin">
+    <div class="modal" style="width:min(560px,100%)">
+      <div class="modalHead">
+        <div>
           <h3>Login</h3>
-          <div class="rule">Entre com seu e-mail para receber um link de acesso.</div>
+          <div class="muted">Entre com seu e-mail para receber um link (sem senha).</div>
         </div>
       </div>
       <div class="modalBody">
@@ -106,7 +414,7 @@
           <label>E-mail</label>
           <input id="loginEmail" type="email" autocomplete="email" />
         </div>
-        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+        <div class="actions" style="margin-top:10px">
           <button class="btn" id="btnSendMagic">Enviar link</button>
           <button class="btn secondary" id="btnLoginHelp">Ajuda</button>
         </div>
@@ -117,17 +425,116 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // ====== CONFIG ======
     const SUPABASE_URL = "https://yyfhnuafwzeglwcpnmkd.supabase.co".trim();
     const SUPABASE_ANON_KEY = "sb_publishable_7rmfNL9N6limSSFxFcl2Og_MV9xkbjx".trim();
 
-    // Admin (sem mostrar na UI — só usado para liberar features)
+    // admin (não aparece na UI)
     const ADMIN_EMAIL = "mamutevitor@gmail.com";
+    // redirect do magic link (IMPORTANTÍSSIMO)
+    const REDIRECT_TO = "https://thowosken.github.io/utep-dashboard/";
 
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ====== STORAGE FALLBACK (resolve Tracking Prevention) ======
+    function safeStorage(){
+      const mem = new Map();
+      const canUseLocalStorage = (() => {
+        try{
+          const k="__sb_test__"; localStorage.setItem(k,"1"); localStorage.removeItem(k);
+          return true;
+        }catch(e){ return false; }
+      })();
+      const driver = canUseLocalStorage ? localStorage : {
+        getItem: (k) => mem.get(k) ?? null,
+        setItem: (k,v) => mem.set(k, String(v)),
+        removeItem: (k) => mem.delete(k),
+      };
+      return { driver, canUseLocalStorage };
+    }
+    const { driver, canUseLocalStorage } = safeStorage();
+    if(!canUseLocalStorage) console.warn("Storage bloqueado. Sessão pode não persistir.");
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:driver }
+    });
+
+    // ====== STATE ======
+    let showExtras = false;
+    let allRows = [];
+    let bases = [];
+    let municipios = [];
+    let criterios = [];
+    let currentNotaKey = null;
+
+    // cols (auto)
+    let COL_BASE = "base_oper_prog";
+    let COL_PRAZO = "previsao_execucao_fim"; // será detectado
+    let COL_NOTA  = "nota";
+    let COL_MUN   = "municipio";
+    let COL_CRIT  = "criterio";
+    let COL_PROJ  = "projeto";
+    let COL_AGENT = "agente_responsavel";
+
     const $ = (id) => document.getElementById(id);
 
     function show(el, on){ el.style.display = on ? "flex" : "none"; }
     function showInline(el, on){ el.style.display = on ? "inline-flex" : "none"; }
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function fmtDateBR(iso){
+      if(!iso) return "";
+      const d = new Date(iso);
+      if(String(d)==="Invalid Date"){
+        const p = String(iso).slice(0,10).split("-");
+        if(p.length===3) return `${p[2]}/${p[1]}/${p[0]}`;
+        return String(iso);
+      }
+      const dd = String(d.getDate()).padStart(2,"0");
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const yy = d.getFullYear();
+      return `${dd}/${mm}/${yy}`;
+    }
+
+    function fmtDateInput(d){
+      const yy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yy}-${mm}-${dd}`;
+    }
+
+    function parseDateOnly(v){
+      if(!v) return null;
+      const s = String(v).slice(0,10);
+      const d = new Date(s + "T00:00:00");
+      if(String(d)==="Invalid Date") return null;
+      return d;
+    }
+
+    function addDays(d, n){
+      const x = new Date(d);
+      x.setDate(x.getDate()+n);
+      return x;
+    }
+
+    function sameDay(a,b){
+      return a && b &&
+        a.getFullYear()===b.getFullYear() &&
+        a.getMonth()===b.getMonth() &&
+        a.getDate()===b.getDate();
+    }
+
+    function normalizeNota(v){
+      if(v === null || v === undefined) return "";
+      let s = String(v).trim();
+      return s.replace(/\.0$/,"");
+    }
 
     function showError(msg){
       const box = $("errBox");
@@ -140,206 +547,531 @@
       box.textContent = "";
     }
 
-    function fmtDateBR(iso){
-      const d = new Date(iso);
-      if(String(d) === "Invalid Date") return String(iso||"");
-      const dd = String(d.getDate()).padStart(2,"0");
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const yy = d.getFullYear();
-      return `${dd}/${mm}/${yy}`;
-    }
-    function fmtDateInput(d){
-      const yy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      return `${yy}-${mm}-${dd}`;
-    }
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function setToday(){
-      const now = new Date(); now.setHours(0,0,0,0);
-      $("todayPill").textContent = "Data: " + fmtDateBR(now);
-    }
-
-    function setAuthUI(email){
+    function setAuthUI(isAuthed){
       const pill = $("authPill");
       const logout = $("btnLogout");
-      if(email){
-        pill.textContent = "✅ Acesso ativo";
-        showInline(pill, true);
-        showInline(logout, true);
-      }else{
-        pill.textContent = "🔒 Login necessário";
-        showInline(pill, true);
-        showInline(logout, false);
-      }
+      pill.textContent = isAuthed ? "✅ Acesso" : "🔒 Login";
+      showInline(pill, true);
+      showInline(logout, !!isAuthed);
     }
 
-    async function logout(){
-      await sb.auth.signOut();
-      await guard();
+    function emailAllowed(email){
+      const e = (email||"").trim().toLowerCase();
+      if(!e) return false;
+      if(e === ADMIN_EMAIL.toLowerCase()) return true;
+      // permite corporativo
+      return e.endsWith("@neoenergia.com");
     }
 
     async function sendMagicLink(){
-      const email = ($("loginEmail").value || "").trim().toLowerCase();
       const msg = $("loginMsg");
+      const email = ($("loginEmail").value || "").trim().toLowerCase();
 
-      if(!email || !email.includes("@")){
+      if(!email.includes("@")){
         msg.textContent = "Digite um e-mail válido.";
         msg.style.color = "var(--warn)";
         return;
       }
-
-      // redirect fixo para seu GitHub Pages (importante!)
-      const redirectTo = "https://thowosken.github.io/utep-dashboard/";
+      if(!emailAllowed(email)){
+        msg.textContent = "E-mail não autorizado para este acesso.";
+        msg.style.color = "var(--danger)";
+        return;
+      }
 
       msg.textContent = "Enviando link...";
       msg.style.color = "var(--muted)";
 
-      try{
-        const { error } = await sb.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: redirectTo }
-        });
-        if(error) throw error;
-
-        msg.textContent = "Link enviado. Verifique seu e-mail (e spam).";
-        msg.style.color = "var(--accent)";
-      }catch(e){
-        msg.textContent = "Erro ao enviar link: " + (e?.message || e);
-        msg.style.color = "var(--danger)";
-      }
-    }
-
-    async function guard(){
-      clearError();
-      try{
-        const { data: { session } } = await sb.auth.getSession();
-        const email = session?.user?.email?.toLowerCase() || null;
-
-        if(!session){
-          setAuthUI(null);
-          show($("overlayLogin"), true);
-          return false;
-        }
-
-        setAuthUI(email);
-        show($("overlayLogin"), false);
-
-        // Teste de acesso real (RLS): tenta ler 1 item
-        const { error } = await sb.from("obras").select("nota", { count:"exact" }).limit(1);
-        if(error){
-          showError(
-`Logado, mas sem acesso aos dados (RLS/policies).
-
-Erro: ${error.message}
-
-Ajuste no Supabase:
-- policies de SELECT para usuários autenticados/aprovados
-- Redirect URLs (Auth) pro GitHub Pages`
-          );
-          // mantém login fechado porque já está logado, mas mostra erro
-          return false;
-        }
-
-        return true;
-      }catch(e){
-        showError("Erro fatal no app: " + (e?.message || e) + "\n\nDica: abra o Console (F12) e copie o erro.");
-        show($("overlayLogin"), true);
-        return false;
-      }
-    }
-
-    async function loadObras(){
-      clearError();
-      const ok = await guard();
-      if(!ok) return;
-
-      // Carrega colunas fixas (ajuste se suas colunas forem diferentes)
-      const { data, error } = await sb
-        .from("obras")
-        .select("nota,projeto,agente_responsavel,base_oper_prog,municipio,criterio,PREVISAO_EXECUCAO_FIM,titulo,status")
-        .limit(2000);
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: REDIRECT_TO }
+      });
 
       if(error){
-        showError("Erro ao carregar obras: " + error.message);
+        msg.textContent = "Erro ao enviar link: " + error.message;
+        msg.style.color = "var(--danger)";
         return;
       }
 
-      // Agrupa por base
-      const byBase = new Map();
-      for(const r of (data||[])){
-        const base = (r.base_oper_prog || "Sem base").toString().trim() || "Sem base";
-        if(!byBase.has(base)) byBase.set(base, []);
-        byBase.get(base).push(r);
+      msg.textContent = "Link enviado. Verifique seu e-mail (e spam).";
+      msg.style.color = "var(--accent)";
+    }
+
+    async function logout(){
+      await sb.auth.signOut();
+      await guardAndRun();
+    }
+
+    async function guardAndRun(){
+      clearError();
+
+      const { data: { session } } = await sb.auth.getSession();
+      const email = session?.user?.email || null;
+
+      if(!session){
+        setAuthUI(false);
+        show($("overlayLogin"), true);
+        return;
       }
 
+      if(!emailAllowed(email)){
+        setAuthUI(true);
+        show($("overlayLogin"), true);
+        $("loginMsg").textContent = "Conta sem permissão.";
+        $("loginMsg").style.color = "var(--danger)";
+        return;
+      }
+
+      // test RLS
+      const t = await sb.from("obras").select("nota", { count:"exact" }).limit(1);
+      if(t.error){
+        setAuthUI(true);
+        show($("overlayLogin"), false);
+        showError("Logado, mas sem acesso aos dados (RLS/policies):\n\n" + t.error.message);
+        return;
+      }
+
+      setAuthUI(true);
+      show($("overlayLogin"), false);
+      await loadAll();
+    }
+
+    // ====== AUTO DETECT COLUMNS (evita o erro PREVISAO_EXECUCAO_FIM) ======
+    async function detectColumns(){
+      const tests = [
+        { k:"COL_BASE",  cand:["base_oper_prog", "BASE_OPER_PROG", '"BASE_OPER_PROG"'] },
+        { k:"COL_PROJ",  cand:["projeto", "PROJETO", '"PROJETO"'] },
+        { k:"COL_AGENT", cand:["agente_responsavel","AGENTE_RESPONSAVEL",'"AGENTE_RESPONSAVEL"'] },
+        { k:"COL_PRAZO", cand:["previsao_execucao_fim","PREVISAO_EXECUCAO_FIM",'"PREVISAO_EXECUCAO_FIM"'] },
+        { k:"COL_MUN",   cand:["municipio","MUNICIPIO",'"MUNICIPIO"'] },
+        { k:"COL_CRIT",  cand:["criterio","CRITERIO",'"CRITERIO"'] },
+        { k:"COL_NOTA",  cand:["nota","NOTA",'"NOTA"'] },
+      ];
+
+      for(const t of tests){
+        let chosen = null;
+        for(const c of t.cand){
+          const { error } = await sb.from("obras").select(`${c}`, { head:true, count:"exact" }).limit(1);
+          if(!error){ chosen = c; break; }
+        }
+        if(chosen){
+          if(t.k==="COL_BASE")  COL_BASE = chosen;
+          if(t.k==="COL_PROJ")  COL_PROJ = chosen;
+          if(t.k==="COL_AGENT") COL_AGENT = chosen;
+          if(t.k==="COL_PRAZO") COL_PRAZO = chosen;
+          if(t.k==="COL_MUN")   COL_MUN = chosen;
+          if(t.k==="COL_CRIT")  COL_CRIT = chosen;
+          if(t.k==="COL_NOTA")  COL_NOTA = chosen;
+        }
+      }
+    }
+
+    function getField(row, col){
+      const clean = col.replaceAll('"',"");
+      return row?.[clean];
+    }
+
+    async function loadAll(){
+      clearError();
+
+      await detectColumns();
+
+      const cols = [
+        COL_NOTA, COL_PROJ, COL_AGENT, COL_BASE, COL_MUN, COL_CRIT, COL_PRAZO,
+        "titulo", "gerencia", "status"
+      ].join(",");
+
+      const { data, error } = await sb.from("obras").select(cols).limit(5000);
+
+      if(error){
+        showError("Erro ao carregar obras:\n\n" + error.message);
+        return;
+      }
+
+      allRows = data || [];
+      buildFacets();
+      buildWhatsBases();
+      render();
+    }
+
+    function buildFacets(){
+      const setBase = new Set(), setMun = new Set(), setCrit = new Set();
+
+      for(const r of allRows){
+        const b = (getField(r, COL_BASE) ?? "").toString().trim();
+        const m = (getField(r, COL_MUN) ?? "").toString().trim();
+        const c = (getField(r, COL_CRIT) ?? "").toString().trim();
+        if(b) setBase.add(b);
+        if(m) setMun.add(m);
+        if(c) setCrit.add(c);
+      }
+
+      bases = Array.from(setBase).sort((a,b)=>a.localeCompare(b));
+      municipios = Array.from(setMun).sort((a,b)=>a.localeCompare(b));
+      criterios = Array.from(setCrit).sort((a,b)=>a.localeCompare(b));
+
+      $("fBase").innerHTML = `<option value="">Todas</option>` + bases.map(b=>`<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join("");
+      $("fMunicipio").innerHTML = `<option value="">Todos</option>` + municipios.map(m=>`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join("");
+      $("fCriterio").innerHTML = `<option value="">Todos</option>` + criterios.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    }
+
+    function render(){
+      const chosenDate = $("fData").value ? new Date($("fData").value + "T00:00:00") : null;
+      const fBase = $("fBase").value;
+      const fMun = $("fMunicipio").value;
+      const fCrit = $("fCriterio").value;
+
+      let rows = allRows.slice();
+      if(fBase) rows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === fBase);
+      if(fMun) rows = rows.filter(r => (getField(r, COL_MUN) ?? "").toString().trim() === fMun);
+      if(fCrit) rows = rows.filter(r => (getField(r, COL_CRIT) ?? "").toString().trim() === fCrit);
+
+      const basesToShow = (fBase ? [fBase] : (bases.length ? bases : ["(Sem base)"]));
       const container = $("gridBases");
       container.innerHTML = "";
 
-      const bases = Array.from(byBase.keys()).sort((a,b)=>a.localeCompare(b));
-      for(const b of bases){
-        const list = byBase.get(b);
+      for(const b of basesToShow){
+        const baseRows = rows.filter(r => (getField(r, COL_BASE) ?? "").toString().trim() === b);
 
-        const block = document.createElement("div");
-        block.className = "baseBlock";
-        block.innerHTML = `
-          <div class="baseHead">
-            <div><b>${escapeHtml(b)}</b></div>
-            <div style="color:var(--muted);font-size:13px">${list.length} item(ns)</div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Nota</th><th>Projeto</th><th>Agente</th><th>Prazo</th><th>Título</th><th>Município</th><th>Critério</th><th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${list.slice(0,50).map(r=>`
-                <tr>
-                  <td>${escapeHtml(r.nota ?? "—")}</td>
-                  <td>${escapeHtml(r.projeto ?? "—")}</td>
-                  <td>${escapeHtml(r.agente_responsavel ?? "—")}</td>
-                  <td>${escapeHtml(r.PREVISAO_EXECUCAO_FIM ? fmtDateBR(r.PREVISAO_EXECUCAO_FIM) : "—")}</td>
-                  <td>${escapeHtml(r.titulo ?? "—")}</td>
-                  <td>${escapeHtml(r.municipio ?? "—")}</td>
-                  <td>${escapeHtml(r.criterio ?? "—")}</td>
-                  <td>${escapeHtml(r.status ?? "—")}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        `;
-        container.appendChild(block);
+        let showList = [];
+        let label = "";
+
+        if(chosenDate){
+          const inDay = baseRows.filter(r => {
+            const d = parseDateOnly(getField(r, COL_PRAZO));
+            return d && sameDay(d, chosenDate);
+          });
+
+          if(inDay.length){
+            showList = inDay;
+            label = `Obras do dia (${inDay.length})`;
+          }else{
+            const maxDate = addDays(chosenDate, 5);
+            showList = baseRows
+              .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
+              .filter(x => x.d && x.d >= chosenDate && x.d <= maxDate)
+              .sort((x,y)=> x.d - y.d)
+              .slice(0,5)
+              .map(x=>x.r);
+            label = `Sem obras no dia • Próximas até +5 dias (${showList.length})`;
+          }
+        }else{
+          const today = new Date(); today.setHours(0,0,0,0);
+          const maxDate = addDays(today, 5);
+          showList = baseRows
+            .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
+            .filter(x => x.d && x.d >= today && x.d <= maxDate)
+            .sort((x,y)=> x.d - y.d)
+            .slice(0,5)
+            .map(x=>x.r);
+          label = `Próximas até +5 dias (${showList.length})`;
+        }
+
+        container.appendChild(renderBaseBlock(b, label, showList));
       }
     }
 
-    function init(){
-      setToday();
+    function renderBaseBlock(baseName, label, list){
+      const wrap = document.createElement("div");
+      wrap.className = "baseBlock";
 
-      $("btnSendMagic").addEventListener("click", sendMagicLink);
-      $("btnLogout").addEventListener("click", logout);
-      $("btnReload").addEventListener("click", loadObras);
-      $("btnHoje").addEventListener("click", ()=>{ setToday(); });
+      const head = document.createElement("div");
+      head.className = "baseHead";
+      head.innerHTML = `<div class="name">${escapeHtml(baseName || "Sem base")}</div><div class="count">${escapeHtml(label)}</div>`;
+      wrap.appendChild(head);
 
-      $("btnLoginHelp").addEventListener("click", ()=>{
-        alert("Se o link não chega:\n- confira Spam\n- aguarde alguns minutos\n- ou tente outro e-mail.\n\nSe der rate limit, é limitação do provedor.");
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+
+      const fixedCols = [
+        { k: COL_NOTA, label:"Nota", cls:"nowrap" },
+        { k: COL_PROJ, label:"Projeto", cls:"nowrap" },
+        { k: COL_AGENT, label:"Agente responsável", cls:"nowrap" },
+        { k: COL_PRAZO, label:"Prazo final", cls:"nowrap" },
+        { k: "titulo", label:"Título", cls:"" },
+        { k: COL_MUN, label:"Município", cls:"nowrap" },
+        { k: COL_CRIT, label:"Critério", cls:"nowrap" },
+        { k: "status", label:"Status", cls:"nowrap" },
+      ];
+      const extraCols = [{ k: "gerencia", label:"Gerência", cls:"nowrap" }];
+      const cols = showExtras ? fixedCols.concat(extraCols) : fixedCols;
+
+      thead.innerHTML = `<tr>${cols.map(c=>`<th class="${c.cls||""}">${escapeHtml(c.label)}</th>`).join("")}<th class="nowrap">Ações</th></tr>`;
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+
+      if(!list.length){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="${cols.length+1}" class="muted">Nenhuma obra para exibir nesta base.</td>`;
+        tbody.appendChild(tr);
+      }else{
+        list = list.slice().sort((a,b)=>{
+          const da = parseDateOnly(getField(a,COL_PRAZO));
+          const db = parseDateOnly(getField(b,COL_PRAZO));
+          if(!da && !db) return 0;
+          if(!da) return 1;
+          if(!db) return -1;
+          return da - db;
+        });
+
+        for(const row of list){
+          const tr = document.createElement("tr");
+          const cells = cols.map(c=>{
+            let v = (c.k === COL_PRAZO) ? fmtDateBR(getField(row, COL_PRAZO)) : getField(row, c.k);
+            if(c.k === COL_NOTA) v = normalizeNota(v);
+            if(v === null || v === undefined || v === "") v = "—";
+            return `<td class="${c.cls||""}">${escapeHtml(v)}</td>`;
+          }).join("");
+
+          const notaKey = normalizeNota(getField(row, COL_NOTA));
+          const sub = `${notaKey} • ${(getField(row, COL_MUN)||"").toString()} • ${(getField(row, COL_CRIT)||"").toString()}`;
+
+          tr.innerHTML =
+            cells +
+            `<td class="nowrap">
+              <button class="linkBtn" data-nota="${escapeHtml(notaKey)}" data-sub="${escapeHtml(sub)}">Notas</button>
+            </td>`;
+
+          tbody.appendChild(tr);
+        }
+      }
+
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+
+      wrap.querySelectorAll("button[data-nota]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          openNotes(btn.getAttribute("data-nota"), btn.getAttribute("data-sub"));
+        });
       });
 
-      sb.auth.onAuthStateChange(()=> { loadObras(); });
-
-      // start
-      loadObras();
+      return wrap;
     }
 
-    window.addEventListener("load", init);
+    function setActiveTab(tab){
+      const isFiltros = tab === "filtros";
+      $("tabFiltros").classList.toggle("active", isFiltros);
+      $("tabDetalhes").classList.toggle("active", !isFiltros);
+      $("paneFiltros").classList.toggle("active", isFiltros);
+      $("paneDetalhes").classList.toggle("active", !isFiltros);
+    }
+
+    function statusTag(status){
+      if(status==="executada") return `<span class="tag">Executada</span>`;
+      if(status==="problemas") return `<span class="tag warn">Problemas</span>`;
+      if(status==="nao_executada") return `<span class="tag danger">Não executada</span>`;
+      if(status==="energizada") return `<span class="tag">Energizada</span>`;
+      return `<span class="tag">${escapeHtml(status||"—")}</span>`;
+    }
+
+    async function openNotes(notaKey, sub){
+      currentNotaKey = notaKey;
+      $("modalTitle").textContent = `Notas - Nota ${notaKey}`;
+      $("modalSub").textContent = sub || "";
+      show($("overlayNotes"), true);
+      $("nTexto").value = "";
+      await loadNotes();
+    }
+    function closeNotes(){ show($("overlayNotes"), false); currentNotaKey=null; }
+
+    async function loadNotes(){
+      const list = $("notesList");
+      list.innerHTML = `<div class="muted">Carregando notas…</div>`;
+
+      const { data, error } = await sb
+        .from("notes")
+        .select("id, nota, autor, texto, status, created_at")
+        .eq("nota", currentNotaKey)
+        .order("created_at", { ascending:false });
+
+      if(error){
+        list.innerHTML = `<div class="error" style="display:block">Erro ao carregar notas: ${escapeHtml(error.message)}</div>`;
+        return;
+      }
+      if(!data || !data.length){
+        list.innerHTML = `<div class="muted">Nenhuma nota ainda. Adicione a primeira acima.</div>`;
+        return;
+      }
+
+      list.innerHTML = data.map(n=>{
+        const when = n.created_at ? new Date(n.created_at).toLocaleString("pt-BR") : "—";
+        return `
+          <div class="noteItem">
+            <div class="noteMeta">
+              <div class="who">${escapeHtml(n.autor || "—")}</div>
+              ${statusTag(n.status)}
+              <div class="when">${escapeHtml(when)}</div>
+            </div>
+            <div class="noteText">${escapeHtml(n.texto || "")}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function saveNote(){
+      const autor = $("nAutor").value.trim();
+      const texto = $("nTexto").value.trim();
+      const status = $("nStatus").value;
+
+      if(!autor){ alert("Informe seu nome."); return; }
+      if(!texto){ alert("Escreva a nota."); return; }
+
+      const payload = { nota: currentNotaKey, autor, texto, status };
+      const { error } = await sb.from("notes").insert(payload);
+      if(error){ alert("Erro ao salvar nota: " + error.message); return; }
+
+      $("nTexto").value = "";
+      await loadNotes();
+    }
+
+    // ===== Whats =====
+    function openWhatsModal(){
+      const today = new Date(); today.setHours(0,0,0,0);
+      $("wDe").value = fmtDateInput(today);
+      $("wAte").value = fmtDateInput(addDays(today, 5));
+      show($("overlayWhats"), true);
+    }
+    function closeWhatsModal(){ show($("overlayWhats"), false); }
+
+    function buildWhatsBases(){
+      const wrap = $("wBases");
+      wrap.innerHTML = "";
+      const list = bases?.length ? bases : [];
+      if(!list.length){
+        wrap.innerHTML = `<div class="muted">Carregue os dados primeiro.</div>`;
+        return;
+      }
+      for(const b of list){
+        const id = "wb_" + b.replace(/\W+/g,"_");
+        const div = document.createElement("label");
+        div.className = "checkItem";
+        div.innerHTML = `<input type="checkbox" data-base="${escapeHtml(b)}" id="${id}" checked /><span>${escapeHtml(b)}</span>`;
+        wrap.appendChild(div);
+      }
+    }
+    function getSelectedWhatsBases(){
+      return Array.from(document.querySelectorAll('#wBases input[type="checkbox"][data-base]'))
+        .filter(c=>c.checked).map(c=>c.getAttribute("data-base"));
+    }
+
+    function buildWhatsTextRange(fromDate, toDate, basesSelected){
+      const d1 = new Date(fromDate + "T00:00:00");
+      const d2 = new Date(toDate + "T00:00:00");
+      d1.setHours(0,0,0,0); d2.setHours(0,0,0,0);
+
+      if(String(d1)==="Invalid Date" || String(d2)==="Invalid Date") return "Escolha datas válidas.";
+      if(d2 < d1) return "A data final precisa ser maior ou igual à inicial.";
+      if(!basesSelected.length) return "Selecione ao menos uma base.";
+
+      const inRange = allRows
+        .map(r => ({ r, d: parseDateOnly(getField(r, COL_PRAZO)) }))
+        .filter(x => x.d && x.d >= d1 && x.d <= d2)
+        .filter(x => basesSelected.includes((getField(x.r, COL_BASE) ?? "").toString().trim()));
+
+      const map = new Map();
+      for(const x of inRange){
+        const dateKey = fmtDateInput(x.d);
+        if(!map.has(dateKey)) map.set(dateKey, new Map());
+        const b = (getField(x.r, COL_BASE) ?? "Sem base").toString().trim() || "Sem base";
+        const mb = map.get(dateKey);
+        if(!mb.has(b)) mb.set(b, []);
+        mb.get(b).push(x.r);
+      }
+
+      const dateKeys = Array.from(map.keys()).sort((a,b)=>a.localeCompare(b));
+      const header = `📌 Obras planejadas (${fmtDateBR(d1)} → ${fmtDateBR(d2)})`;
+      if(!dateKeys.length) return `${header}\n\nNenhuma obra encontrada no período para as bases selecionadas.`;
+
+      let msg = header + "\n";
+      for(const dk of dateKeys){
+        msg += `\n📅 ${fmtDateBR(dk)}\n`;
+        const mb = map.get(dk);
+        const baseKeys = Array.from(mb.keys()).sort((a,b)=>a.localeCompare(b));
+        for(const b of baseKeys){
+          msg += `\n🏷️ Base: ${b}\n`;
+          const rows = mb.get(b).slice();
+          for(const r of rows){
+            const nota = normalizeNota(getField(r, COL_NOTA)) || "—";
+            const proj = getField(r, COL_PROJ) || "—";
+            const agente = getField(r, COL_AGENT) || "—";
+            const titulo = getField(r, "titulo") || "—";
+            const mun = getField(r, COL_MUN) || "—";
+            const crit = getField(r, COL_CRIT) || "—";
+            msg += `- Nota ${nota} • ${proj} • Agente: ${agente} • ${mun} • ${crit} • ${titulo}\n`;
+          }
+        }
+      }
+      return msg.trim();
+    }
+
+    function openWhatsWithText(text){
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+    }
+    function previewWhats(){
+      const txt = buildWhatsTextRange($("wDe").value, $("wAte").value, getSelectedWhatsBases());
+      alert(txt.length > 1500 ? (txt.slice(0,1500) + "\n\n...(prévia cortada)") : txt);
+    }
+    function sendWhats(){
+      const txt = buildWhatsTextRange($("wDe").value, $("wAte").value, getSelectedWhatsBases());
+      if(txt.startsWith("Escolha") || txt.startsWith("A data") || txt.startsWith("Selecione")){
+        alert(txt); return;
+      }
+      openWhatsWithText(txt);
+    }
+
+    function setToday(){
+      const now = new Date(); now.setHours(0,0,0,0);
+      $("fData").value = fmtDateInput(now);
+      $("todayPill").textContent = "Data: " + fmtDateBR($("fData").value);
+    }
+
+    // ===== INIT =====
+    (function init(){
+      setToday();
+      setActiveTab("filtros");
+
+      // UI
+      $("btnReload").addEventListener("click", guardAndRun);
+      $("btnHoje").addEventListener("click", ()=>{ setToday(); render(); });
+
+      $("fData").addEventListener("change", ()=>{ $("todayPill").textContent = "Data: " + fmtDateBR($("fData").value); render(); });
+      $("fBase").addEventListener("change", render);
+      $("fMunicipio").addEventListener("change", render);
+      $("fCriterio").addEventListener("change", render);
+
+      $("tabFiltros").addEventListener("click", ()=> setActiveTab("filtros"));
+      $("tabDetalhes").addEventListener("click", ()=> setActiveTab("detalhes"));
+
+      $("tShowExtras").addEventListener("change", (e)=>{ showExtras = e.target.checked; render(); });
+
+      // Notes
+      $("btnCloseNotes").addEventListener("click", closeNotes);
+      $("btnCloseNotes2").addEventListener("click", closeNotes);
+      $("overlayNotes").addEventListener("click", (e)=>{ if(e.target === $("overlayNotes")) closeNotes(); });
+      $("btnSalvarNota").addEventListener("click", saveNote);
+      $("btnRecarregarNotas").addEventListener("click", loadNotes);
+
+      // Whats
+      $("btnWhats").addEventListener("click", openWhatsModal);
+      $("btnCloseWhats").addEventListener("click", closeWhatsModal);
+      $("overlayWhats").addEventListener("click", (e)=>{ if(e.target === $("overlayWhats")) closeWhatsModal(); });
+      $("btnPreviewWhats").addEventListener("click", previewWhats);
+      $("btnSendWhats").addEventListener("click", sendWhats);
+      $("btnSelAll").addEventListener("click", ()=>{ document.querySelectorAll('#wBases input[type="checkbox"][data-base]').forEach(c=>c.checked=true); });
+      $("btnSelNone").addEventListener("click", ()=>{ document.querySelectorAll('#wBases input[type="checkbox"][data-base]').forEach(c=>c.checked=false); });
+
+      // Auth
+      $("btnSendMagic").addEventListener("click", sendMagicLink);
+      $("btnLogout").addEventListener("click", logout);
+      $("btnLoginHelp").addEventListener("click", ()=>{
+        alert("Se o link não chega:\n- confira Spam\n- aguarde alguns minutos\n- se der rate limit, espere e tente novamente.\n\nEm alguns PCs, bloqueio de cookies/storage pode afetar o login.");
+      });
+
+      sb.auth.onAuthStateChange(()=>{ guardAndRun(); });
+
+      // Start
+      guardAndRun();
+    })();
   </script>
 </body>
 </html>
