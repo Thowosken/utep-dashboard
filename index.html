@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Neoenergia • Painel (Supabase)</title>
+  <title>Neoenergia • Painel</title>
 
   <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -11,102 +11,76 @@
   <!-- Supabase JS v2 (CDN) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
+  <script>
+    /* Tailwind theme (verde, estilo anterior) */
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neo: {
+              50:  "#f0fdf4",
+              100: "#dcfce7",
+              200: "#bbf7d0",
+              300: "#86efac",
+              400: "#4ade80",
+              500: "#22c55e",
+              600: "#16a34a",
+              700: "#15803d",
+              800: "#166534",
+              900: "#14532d"
+            }
+          },
+          boxShadow: {
+            soft: "0 10px 25px rgba(2,6,23,.08)"
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
-    /* pequenos ajustes */
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    .sticky-head thead th { position: sticky; top: 0; background: rgb(248 250 252); z-index: 10; }
+    .sticky-head thead th { position: sticky; top: 0; background: #f0fdf4; z-index: 10; }
     .scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
-    .scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    .scrollbar::-webkit-scrollbar-thumb { background: #86efac; border-radius: 999px; }
   </style>
 </head>
 
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-neo-50 text-slate-900">
   <!-- TOP BAR -->
-  <header class="border-b bg-white">
+  <header class="border-b bg-white/90 backdrop-blur">
     <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="h-9 w-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">N</div>
+        <div class="h-9 w-9 rounded-xl bg-neo-700 text-white flex items-center justify-center font-bold shadow">
+          N
+        </div>
         <div class="leading-tight">
           <div class="font-semibold">Neoenergia</div>
-          <div class="text-xs text-slate-500">Painel (Principal • Obras • Notes)</div>
+          <div class="text-xs text-slate-500">Painel • Principal / Obras / Notes</div>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <span id="pillUser" class="hidden text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700"></span>
-        <button id="btnLogout" class="hidden px-3 py-1.5 rounded-lg border hover:bg-slate-50 text-sm">Sair</button>
+        <span id="pillStatus" class="text-xs px-2 py-1 rounded-full bg-neo-50 text-neo-800 border border-neo-100">
+          Bloqueado
+        </span>
+        <button id="btnRelock" class="hidden px-3 py-1.5 rounded-lg border hover:bg-neo-50 text-sm">
+          Bloquear
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- LOGIN -->
-  <main id="viewLogin" class="mx-auto max-w-7xl px-4 py-8">
-    <div class="max-w-md mx-auto bg-white border rounded-2xl shadow-sm p-6">
-      <h1 class="text-xl font-semibold">Entrar</h1>
-      <p class="text-sm text-slate-600 mt-1">
-        Login via Supabase Auth. Funciona com senha ou link mágico.
-      </p>
-
-      <div class="mt-5 space-y-3">
-        <label class="block">
-          <div class="text-xs font-medium text-slate-600">Supabase URL</div>
-          <input id="cfgUrl" class="mt-1 w-full px-3 py-2 border rounded-lg mono text-xs" placeholder="https://xxxxx.supabase.co" />
-          <div class="text-[11px] text-slate-500 mt-1">
-            Dica: fica salvo no navegador (localStorage).
-          </div>
-        </label>
-
-        <label class="block">
-          <div class="text-xs font-medium text-slate-600">Anon Key</div>
-          <textarea id="cfgKey" rows="3" class="mt-1 w-full px-3 py-2 border rounded-lg mono text-xs"
-            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
-        </label>
-
-        <hr class="my-3"/>
-
-        <label class="block">
-          <div class="text-xs font-medium text-slate-600">E-mail</div>
-          <input id="email" type="email" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="seu@email.com" />
-        </label>
-
-        <label class="block">
-          <div class="text-xs font-medium text-slate-600">Senha (opcional)</div>
-          <input id="password" type="password" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="••••••••" />
-          <div class="text-[11px] text-slate-500 mt-1">
-            Se deixar vazio, envia link mágico.
-          </div>
-        </label>
-
-        <button id="btnLogin" class="w-full px-4 py-2 rounded-xl bg-slate-900 text-white hover:opacity-90">
-          Entrar / Enviar link
-        </button>
-
-        <div id="loginMsg" class="text-sm text-slate-700"></div>
-
-        <details class="mt-3 text-sm">
-          <summary class="cursor-pointer text-slate-600">Configuração rápida</summary>
-          <div class="mt-2 text-slate-600">
-            <ol class="list-decimal ml-5 space-y-1">
-              <li>Supabase → Settings → API → copie <span class="mono">Project URL</span> e <span class="mono">anon public</span>.</li>
-              <li>Se Auth for por senha: habilite Email/Password no Supabase Auth.</li>
-              <li>Se for por link mágico: habilite Magic Link.</li>
-            </ol>
-          </div>
-        </details>
-      </div>
-    </div>
-  </main>
-
   <!-- APP -->
-  <main id="viewApp" class="hidden mx-auto max-w-7xl px-4 py-6">
+  <main id="viewApp" class="mx-auto max-w-7xl px-4 py-6">
     <!-- CONTROLS -->
-    <section class="bg-white border rounded-2xl shadow-sm p-4">
+    <section class="bg-white border border-neo-100 rounded-2xl shadow-soft p-4">
       <div class="flex flex-col lg:flex-row lg:items-end gap-3 justify-between">
         <div class="flex flex-col md:flex-row md:items-end gap-3">
           <div>
             <div class="text-xs font-medium text-slate-600">Aba</div>
-            <div class="mt-1 inline-flex rounded-xl border bg-slate-50 p-1">
-              <button data-tab="principal" class="tabBtn px-3 py-1.5 rounded-lg text-sm bg-white shadow-sm">Principal</button>
+            <div class="mt-1 inline-flex rounded-xl border border-neo-100 bg-neo-50 p-1">
+              <button data-tab="principal" class="tabBtn px-3 py-1.5 rounded-lg text-sm bg-white shadow-sm border border-neo-100">Principal</button>
               <button data-tab="obras" class="tabBtn px-3 py-1.5 rounded-lg text-sm text-slate-700">Obras</button>
               <button data-tab="notes" class="tabBtn px-3 py-1.5 rounded-lg text-sm text-slate-700">Notes</button>
             </div>
@@ -114,32 +88,36 @@
 
           <div class="min-w-[220px]">
             <div class="text-xs font-medium text-slate-600">Base (filtro)</div>
-            <input id="filterBase" list="baseList" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="Ex: BASE A / Salvador / ..." />
+            <input id="filterBase" list="baseList" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200"
+                   placeholder="Ex: BASE A / Salvador / ..." />
             <datalist id="baseList"></datalist>
           </div>
 
           <div class="min-w-[260px]">
             <div class="text-xs font-medium text-slate-600">Busca geral (todas as colunas)</div>
-            <input id="filterGlobal" class="mt-1 w-full px-3 py-2 border rounded-lg" placeholder="Digite para buscar em tudo…" />
+            <input id="filterGlobal" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200"
+                   placeholder="Digite para buscar em tudo…" />
           </div>
 
           <div class="flex gap-3">
             <div>
               <div class="text-xs font-medium text-slate-600">De</div>
-              <input id="dateFrom" type="date" class="mt-1 px-3 py-2 border rounded-lg" />
+              <input id="dateFrom" type="date" class="mt-1 px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200" />
             </div>
             <div>
               <div class="text-xs font-medium text-slate-600">Até</div>
-              <input id="dateTo" type="date" class="mt-1 px-3 py-2 border rounded-lg" />
+              <input id="dateTo" type="date" class="mt-1 px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200" />
             </div>
           </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <button id="btnRefresh" class="px-3 py-2 rounded-xl border hover:bg-slate-50 text-sm">Atualizar</button>
-          <button id="btnColumns" class="px-3 py-2 rounded-xl border hover:bg-slate-50 text-sm">Colunas</button>
-          <button id="btnExportCsv" class="px-3 py-2 rounded-xl border hover:bg-slate-50 text-sm">Exportar CSV</button>
-          <button id="btnExportEmail" class="px-3 py-2 rounded-xl bg-slate-900 text-white hover:opacity-90 text-sm">Exportar p/ e-mail</button>
+          <button id="btnRefresh" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Atualizar</button>
+          <button id="btnColumns" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Colunas</button>
+          <button id="btnExportCsv" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Exportar CSV</button>
+          <button id="btnExportEmail" class="px-3 py-2 rounded-xl bg-neo-700 text-white hover:opacity-95 text-sm shadow">
+            Exportar p/ e-mail
+          </button>
         </div>
       </div>
 
@@ -151,13 +129,13 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <button id="btnPrev" class="px-3 py-1.5 rounded-lg border hover:bg-slate-50 text-sm">←</button>
+          <button id="btnPrev" class="px-3 py-1.5 rounded-lg border border-neo-100 hover:bg-neo-50 text-sm">←</button>
           <div class="text-sm text-slate-700">
             Página <span id="pageNow" class="font-medium">1</span>
           </div>
-          <button id="btnNext" class="px-3 py-1.5 rounded-lg border hover:bg-slate-50 text-sm">→</button>
+          <button id="btnNext" class="px-3 py-1.5 rounded-lg border border-neo-100 hover:bg-neo-50 text-sm">→</button>
 
-          <select id="pageSize" class="ml-2 px-2 py-1.5 border rounded-lg text-sm">
+          <select id="pageSize" class="ml-2 px-2 py-1.5 border border-neo-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neo-200">
             <option value="25">25</option>
             <option value="50" selected>50</option>
             <option value="100">100</option>
@@ -168,33 +146,33 @@
     </section>
 
     <!-- COLUMN PICKER -->
-    <section id="colPanel" class="hidden mt-4 bg-white border rounded-2xl shadow-sm p-4">
+    <section id="colPanel" class="hidden mt-4 bg-white border border-neo-100 rounded-2xl shadow-soft p-4">
       <div class="flex items-center justify-between gap-3">
         <div>
           <div class="font-semibold">Colunas visíveis</div>
           <div class="text-sm text-slate-600">Marque/desmarque. As colunas também servem para filtro por coluna.</div>
         </div>
         <div class="flex gap-2">
-          <button id="btnAllCols" class="px-3 py-2 rounded-xl border hover:bg-slate-50 text-sm">Marcar tudo</button>
-          <button id="btnNoneCols" class="px-3 py-2 rounded-xl border hover:bg-slate-50 text-sm">Desmarcar tudo</button>
+          <button id="btnAllCols" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Marcar tudo</button>
+          <button id="btnNoneCols" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Desmarcar tudo</button>
         </div>
       </div>
       <div id="colChecklist" class="mt-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"></div>
     </section>
 
     <!-- TABLE -->
-    <section class="mt-4 bg-white border rounded-2xl shadow-sm overflow-hidden">
+    <section class="mt-4 bg-white border border-neo-100 rounded-2xl shadow-soft overflow-hidden">
       <div class="overflow-auto scrollbar">
         <table class="min-w-full text-sm sticky-head" id="dataTable">
           <thead>
-            <tr id="theadRow" class="text-left text-slate-700"></tr>
+            <tr id="theadRow" class="text-left text-neo-900"></tr>
             <tr id="filterRow" class="text-left"></tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
 
-      <div class="border-t bg-slate-50 px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div class="border-t bg-neo-50 px-4 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div class="text-sm text-slate-600">
           Mostrando <span id="countShown" class="font-medium">0</span> linhas nesta página.
         </div>
@@ -203,13 +181,61 @@
     </section>
   </main>
 
+  <!-- LOCK OVERLAY (login por palavra) -->
+  <div id="lockOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm">
+    <div class="w-[92%] max-w-md bg-white rounded-2xl shadow-soft border border-neo-100 p-6">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-neo-700 text-white flex items-center justify-center font-bold shadow">N</div>
+        <div>
+          <div class="text-lg font-semibold">Área restrita</div>
+          <div class="text-sm text-slate-600">Digite a palavra de liberação para acessar.</div>
+        </div>
+      </div>
+
+      <div class="mt-5">
+        <label class="block">
+          <div class="text-xs font-medium text-slate-600">Acesso</div>
+          <input id="unlockInput" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-neo-200"
+                 placeholder="Digite aqui…" autocomplete="off" />
+        </label>
+
+        <div id="unlockMsg" class="mt-2 text-sm text-slate-700"></div>
+
+        <div class="mt-4 flex items-center justify-between gap-2">
+          <button id="btnUnlock" class="px-4 py-2 rounded-xl bg-neo-700 text-white hover:opacity-95 shadow">
+            Liberar
+          </button>
+          <button id="btnClearUnlock" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">
+            Limpar
+          </button>
+        </div>
+
+        <div class="mt-3 text-[12px] text-slate-500">
+          Observação: isso é um bloqueio visual (front-end). Não substitui RLS/segurança do Supabase.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    /***********************
-     * CONFIG / STORAGE
-     ***********************/
+    /************************************************************
+     * CONFIG (ajuste aqui)
+     ************************************************************/
+    // ✅ Coloque o seu Project URL e anon key aqui (sem UI de login).
+    const SUPABASE_URL = "COLE_AQUI_SUA_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "COLE_AQUI_SUA_ANON_KEY";
+
+    // ✅ Palavra para liberar a tela:
+    const UNLOCK_WORD = "neoenergia";
+
+    // ✅ Se quiser “lembrar desbloqueio” (recomendado pro seu uso):
+    const REMEMBER_UNLOCK = true;
+
+    /************************************************************
+     * STORAGE KEYS
+     ************************************************************/
     const LS = {
-      url: "neo_supabase_url",
-      key: "neo_supabase_key",
+      unlocked: "neo_unlocked",
       visibleCols: "neo_visible_cols",
       tab: "neo_tab",
       pageSize: "neo_pagesize",
@@ -218,7 +244,7 @@
     const $ = (id) => document.getElementById(id);
 
     function setMsg(el, text, tone="") {
-      el.className = "text-sm " + (tone==="ok" ? "text-emerald-700" : tone==="bad" ? "text-rose-700" : "text-slate-700");
+      el.className = "text-sm " + (tone==="ok" ? "text-neo-700" : tone==="bad" ? "text-rose-700" : "text-slate-700");
       el.textContent = text;
     }
 
@@ -246,7 +272,6 @@
         await navigator.clipboard.writeText(text);
         return true;
       } catch {
-        // fallback
         const ta = document.createElement("textarea");
         ta.value = text;
         document.body.appendChild(ta);
@@ -257,45 +282,29 @@
       }
     }
 
-    /***********************
-     * SUPABASE CLIENT
-     ***********************/
+    /************************************************************
+     * SUPABASE CLIENT (sem login UI)
+     ************************************************************/
     let supa = null;
-
-    function initSupabaseFromInputs() {
-      const url = ($("cfgUrl").value || "").trim();
-      const key = ($("cfgKey").value || "").trim();
-      if (!url || !key) throw new Error("Preencha Supabase URL e Anon Key.");
-      localStorage.setItem(LS.url, url);
-      localStorage.setItem(LS.key, key);
-      supa = supabase.createClient(url, key);
+    function initSupabase() {
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes("COLE_AQUI")) {
+        throw new Error("Configure SUPABASE_URL e SUPABASE_ANON_KEY no código.");
+      }
+      supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       return supa;
     }
 
-    function initSupabaseFromStorage() {
-      const url = localStorage.getItem(LS.url) || "";
-      const key = localStorage.getItem(LS.key) || "";
-      if (!url || !key) return null;
-      $("cfgUrl").value = url;
-      $("cfgKey").value = key;
-      supa = supabase.createClient(url, key);
-      return supa;
-    }
-
-    /***********************
+    /************************************************************
      * APP STATE
-     ***********************/
+     ************************************************************/
     const state = {
       tab: localStorage.getItem(LS.tab) || "principal",
-      tableByTab: { principal: "principal", obras: "obras", notes: "notes" }, // <- ajuste aqui se seus nomes forem diferentes
-      // tentativa de coluna "base"
+      tableByTab: { principal: "principal", obras: "obras", notes: "notes" }, // <- ajuste se seus nomes forem diferentes
       baseCandidates: ["base", "bases", "regional", "regiao", "cidade", "unidade"],
-      // tentativa de coluna "data"
       dateCandidates: ["data", "date", "created_at", "updated_at", "dt", "dia"],
-      // UI state
       columns: [],
       visible: new Set(),
-      filtersByCol: {}, // { col: "texto" }
+      filtersByCol: {},
       global: "",
       base: "",
       dateFrom: "",
@@ -310,43 +319,69 @@
 
     $("pageSize").value = String(state.pageSize);
 
-    /***********************
-     * AUTH + VIEW SWITCH
-     ***********************/
-    function showLogin() {
-      $("viewLogin").classList.remove("hidden");
-      $("viewApp").classList.add("hidden");
-      $("btnLogout").classList.add("hidden");
-      $("pillUser").classList.add("hidden");
+    /************************************************************
+     * LOCK / UNLOCK
+     ************************************************************/
+    function isUnlocked() {
+      if (!REMEMBER_UNLOCK) return false;
+      return localStorage.getItem(LS.unlocked) === "1";
     }
 
-    function showApp(userEmail) {
-      $("viewLogin").classList.add("hidden");
-      $("viewApp").classList.remove("hidden");
-      $("btnLogout").classList.remove("hidden");
-      $("pillUser").classList.remove("hidden");
-      $("pillUser").textContent = userEmail || "logado";
+    function setUnlocked(v) {
+      if (!REMEMBER_UNLOCK) return;
+      localStorage.setItem(LS.unlocked, v ? "1" : "0");
     }
 
-    async function refreshSessionAndRoute() {
-      if (!supa) return showLogin();
-      const { data } = await supa.auth.getSession();
-      const sess = data?.session;
-      if (!sess) return showLogin();
-      showApp(sess.user?.email);
-      await bootDataLayer();
-      await fetchAndRender();
+    function showLocked() {
+      $("lockOverlay").classList.remove("hidden");
+      $("pillStatus").textContent = "Bloqueado";
+      $("pillStatus").className = "text-xs px-2 py-1 rounded-full bg-neo-50 text-neo-800 border border-neo-100";
+      $("btnRelock").classList.add("hidden");
     }
 
-    /***********************
+    function showUnlocked() {
+      $("lockOverlay").classList.add("hidden");
+      $("pillStatus").textContent = "Liberado";
+      $("pillStatus").className = "text-xs px-2 py-1 rounded-full bg-neo-100 text-neo-900 border border-neo-200";
+      $("btnRelock").classList.remove("hidden");
+    }
+
+    function tryUnlock() {
+      const v = ($("unlockInput").value || "").trim();
+      if (v.toLowerCase() === UNLOCK_WORD) {
+        setUnlocked(true);
+        showUnlocked();
+        setMsg($("unlockMsg"), "Acesso liberado.", "ok");
+        bootAfterUnlock();
+      } else {
+        setMsg($("unlockMsg"), "Palavra incorreta.", "bad");
+      }
+    }
+
+    $("btnUnlock").addEventListener("click", tryUnlock);
+    $("btnClearUnlock").addEventListener("click", () => {
+      $("unlockInput").value = "";
+      setMsg($("unlockMsg"), "");
+      $("unlockInput").focus();
+    });
+    $("unlockInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") tryUnlock();
+    });
+
+    $("btnRelock").addEventListener("click", () => {
+      setUnlocked(false);
+      showLocked();
+    });
+
+    /************************************************************
      * TAB / META / COLUMNS
-     ***********************/
+     ************************************************************/
     function setTab(tab) {
       state.tab = tab;
       localStorage.setItem(LS.tab, tab);
       document.querySelectorAll(".tabBtn").forEach(btn => {
         const on = btn.dataset.tab === tab;
-        btn.className = "tabBtn px-3 py-1.5 rounded-lg text-sm " + (on ? "bg-white shadow-sm" : "text-slate-700");
+        btn.className = "tabBtn px-3 py-1.5 rounded-lg text-sm " + (on ? "bg-white shadow-sm border border-neo-100" : "text-slate-700");
       });
       $("metaLine").textContent = `tab=${state.tab} | table=${state.tableByTab[state.tab]} | pageSize=${state.pageSize}`;
     }
@@ -361,33 +396,24 @@
     }
 
     async function bootDataLayer() {
-      // carrega / descobre colunas do tab atual
       const table = state.tableByTab[state.tab];
 
-      // tenta pegar 1 linha pra inferir colunas
       const { data, error } = await supa.from(table).select("*").limit(1);
       if (error) throw error;
 
       const cols = data?.[0] ? Object.keys(data[0]) : [];
       state.columns = cols;
 
-      // baseCol / dateCol (heurística)
       state.baseCol = guessColumn(cols, state.baseCandidates);
       state.dateCol = guessColumn(cols, state.dateCandidates);
 
-      // colunas visíveis: storage -> fallback = todas
       const saved = localStorage.getItem(LS.visibleCols);
       let vis = null;
-      if (saved) {
-        try { vis = JSON.parse(saved); } catch {}
-      }
+      if (saved) { try { vis = JSON.parse(saved); } catch {} }
       state.visible = new Set(Array.isArray(vis) ? vis.filter(c => cols.includes(c)) : cols);
 
-      // build UI: checklist + header + filter row
       buildColumnChecklist();
       buildTableHeadAndFilters();
-
-      // base datalist (se existir coluna base)
       await populateBaseList();
 
       $("metaLine").textContent = `tab=${state.tab} | table=${table} | baseCol=${state.baseCol ?? "-"} | dateCol=${state.dateCol ?? "-"} | pageSize=${state.pageSize}`;
@@ -400,7 +426,7 @@
         const id = "col_" + col.replace(/[^a-zA-Z0-9_]/g, "_");
         const checked = state.visible.has(col);
         const item = document.createElement("label");
-        item.className = "flex items-center gap-2 border rounded-xl px-3 py-2 bg-slate-50";
+        item.className = "flex items-center gap-2 border border-neo-100 rounded-xl px-3 py-2 bg-neo-50";
         item.innerHTML = `
           <input type="checkbox" id="${id}" ${checked ? "checked" : ""} />
           <span class="text-sm">${col}</span>
@@ -410,7 +436,7 @@
           else state.visible.delete(col);
           localStorage.setItem(LS.visibleCols, JSON.stringify([...state.visible]));
           buildTableHeadAndFilters();
-          renderRows(); // sem refazer query; só muda exibição
+          renderRows();
         });
         wrap.appendChild(item);
       }
@@ -418,22 +444,21 @@
 
     function buildTableHeadAndFilters() {
       const thead = $("theadRow");
-      const frow = $("filterRow");
+      const frow  = $("filterRow");
       thead.innerHTML = "";
-      frow.innerHTML = "";
+      frow.innerHTML  = "";
 
       const cols = state.columns.filter(c => state.visible.has(c));
-
       for (const col of cols) {
         const th = document.createElement("th");
-        th.className = "px-3 py-2 border-b text-xs font-semibold whitespace-nowrap";
+        th.className = "px-3 py-2 border-b border-neo-100 text-xs font-semibold whitespace-nowrap";
         th.textContent = col;
         thead.appendChild(th);
 
         const tf = document.createElement("th");
-        tf.className = "px-3 py-2 border-b";
+        tf.className = "px-3 py-2 border-b border-neo-100";
         const inp = document.createElement("input");
-        inp.className = "w-full px-2 py-1.5 border rounded-lg text-xs";
+        inp.className = "w-full px-2 py-1.5 border border-neo-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-neo-200";
         inp.placeholder = "filtrar…";
         inp.value = state.filtersByCol[col] || "";
         inp.addEventListener("input", () => {
@@ -451,10 +476,9 @@
       dl.innerHTML = "";
       if (!state.baseCol) return;
 
-      // cuidado: notes pode ser gigante. pegamos um sample grande (até 5000) e deduplicamos client-side
       const table = state.tableByTab[state.tab];
       const { data, error } = await supa.from(table).select(state.baseCol).limit(5000);
-      if (error) return; // não trava o app
+      if (error) return;
 
       const uniq = new Set();
       for (const r of (data || [])) {
@@ -470,53 +494,43 @@
       });
     }
 
-    /***********************
+    /************************************************************
      * QUERY BUILDER
-     ***********************/
+     ************************************************************/
     function applyFilters(q) {
       const table = state.tableByTab[state.tab];
 
-      // filtro base
       if (state.baseCol && state.base.trim()) {
         q = q.ilike(state.baseCol, `%${state.base.trim()}%`);
       }
 
-      // filtros por coluna (AND)
       for (const [col, val] of Object.entries(state.filtersByCol)) {
         if (!val || !String(val).trim()) continue;
-        // tenta não filtrar colunas invisíveis que podem ter sumido
         if (!state.columns.includes(col)) continue;
         q = q.ilike(col, `%${String(val).trim()}%`);
       }
 
-      // busca geral (OR em todas as colunas visíveis)
       if (state.global.trim()) {
-        const needle = state.global.trim().replace(/[,]/g, " "); // evita quebrar or=...
+        const needle = state.global.trim().replace(/[,]/g, " ");
         const colsForOr = state.columns.filter(c => state.visible.has(c));
-        // PostgREST OR: or=(col.ilike.%x%,col2.ilike.%x%)
-        // Nota: se alguma coluna for numérica, ilike pode falhar dependendo do schema.
-        // Para isso, a gente tenta com visíveis; se der erro, você pode remover colunas numéricas da visibilidade.
         const orParts = colsForOr.map(c => `${c}.ilike.%${needle}%`);
         if (orParts.length) q = q.or(orParts.join(","));
       }
 
-      // date range
       if (state.dateCol) {
         if (state.dateFrom) q = q.gte(state.dateCol, state.dateFrom);
-        if (state.dateTo) q = q.lte(state.dateCol, state.dateTo);
+        if (state.dateTo)   q = q.lte(state.dateCol, state.dateTo);
       }
 
-      // ordenação: tenta por dateCol desc; senão por 1ª coluna
       if (state.dateCol) q = q.order(state.dateCol, { ascending: false });
       else if (state.columns[0]) q = q.order(state.columns[0], { ascending: false });
 
-      // paginação
       const from = (state.page - 1) * state.pageSize;
-      const to = from + state.pageSize - 1;
+      const to   = from + state.pageSize - 1;
       q = q.range(from, to);
 
-      // debug
-      state.lastQueryDebug = `table=${table} | page=${state.page} | range=${from}-${to} | base=${state.baseCol ?? "-"}:${state.base || "-"} | global=${state.global || "-"} | date=${state.dateCol ?? "-"}:${state.dateFrom || "-"}..${state.dateTo || "-"}`;
+      state.lastQueryDebug =
+        `table=${table} | page=${state.page} | range=${from}-${to} | base=${state.baseCol ?? "-"}:${state.base || "-"} | global=${state.global || "-"} | date=${state.dateCol ?? "-"}:${state.dateFrom || "-"}..${state.dateTo || "-"}`;
 
       return q;
     }
@@ -524,7 +538,6 @@
     async function fetchRows() {
       const table = state.tableByTab[state.tab];
 
-      // Seleciona tudo (você pode reduzir para colunas visíveis se quiser deixar mais leve)
       let q = supa.from(table).select("*");
       q = applyFilters(q);
 
@@ -539,9 +552,9 @@
       setMsg($("statusLine"), "Atualizado.", "ok");
     }
 
-    /***********************
+    /************************************************************
      * RENDER
-     ***********************/
+     ************************************************************/
     function renderRows() {
       const tbody = $("tbody");
       tbody.innerHTML = "";
@@ -551,20 +564,18 @@
 
       for (const r of rows) {
         const tr = document.createElement("tr");
-        tr.className = "border-b last:border-b-0 hover:bg-slate-50";
+        tr.className = "border-b border-neo-100 last:border-b-0 hover:bg-neo-50/60";
 
         for (const col of cols) {
           const td = document.createElement("td");
           td.className = "px-3 py-2 align-top whitespace-nowrap";
           const v = r?.[col];
 
-          // compacta objetos / arrays
           let text = "";
           if (v === null || v === undefined) text = "";
           else if (typeof v === "object") text = JSON.stringify(v);
           else text = String(v);
 
-          // limita visualmente campos gigantes
           if (text.length > 240) text = text.slice(0, 240) + "…";
 
           td.textContent = text;
@@ -589,9 +600,9 @@
       }
     }
 
-    /***********************
+    /************************************************************
      * EXPORT (CSV + EMAIL)
-     ***********************/
+     ************************************************************/
     function makeCsvFromCurrentPage() {
       const cols = state.columns.filter(c => state.visible.has(c));
       const header = cols.map(csvEscape).join(",");
@@ -607,70 +618,26 @@
 
     async function exportEmail() {
       const csv = makeCsvFromCurrentPage();
-      const ok = await copyToClipboard(csv);
+      await copyToClipboard(csv);
 
       const subject = encodeURIComponent(`Export ${state.tab} • página ${state.page} • ${new Date().toISOString().slice(0,10)}`);
       const body = encodeURIComponent(
-        `Colei o CSV no seu clipboard (${ok ? "ok" : "tentei"}).\n\n` +
-        `Resumo:\n${state.lastQueryDebug}\n\n` +
-        `Dica: cole o conteúdo do clipboard no corpo do e-mail, ou em um arquivo .csv.\n\n` +
-        `---\nPrimeiras linhas:\n` +
+        `CSV copiado para o clipboard.\n\nResumo:\n${state.lastQueryDebug}\n\n` +
+        `Cole o conteúdo no corpo do e-mail ou salve como .csv.\n\n---\n` +
         csv.split("\n").slice(0, 20).join("\n")
       );
 
-      // mailto não anexa arquivo; então copiamos o CSV e abrimos o cliente de e-mail
       window.location.href = `mailto:?subject=${subject}&body=${body}`;
     }
 
-    /***********************
+    /************************************************************
      * UI EVENTS
-     ***********************/
-    $("btnLogin").addEventListener("click", async () => {
-      const msg = $("loginMsg");
-      try {
-        initSupabaseFromInputs();
-
-        const email = ($("email").value || "").trim();
-        const password = ($("password").value || "").trim();
-        if (!email) return setMsg(msg, "Informe um e-mail.", "bad");
-
-        setMsg(msg, "Processando…");
-
-        if (password) {
-          const { error } = await supa.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-          setMsg(msg, "Logado.", "ok");
-        } else {
-          const { error } = await supa.auth.signInWithOtp({
-            email,
-            options: { emailRedirectTo: window.location.href }
-          });
-          if (error) throw error;
-          setMsg(msg, "Link mágico enviado. Verifique seu e-mail.", "ok");
-        }
-
-        await refreshSessionAndRoute();
-      } catch (e) {
-        console.error(e);
-        setMsg(msg, e?.message || "Falha no login.", "bad");
-      }
-    });
-
-    $("btnLogout").addEventListener("click", async () => {
-      try {
-        await supa.auth.signOut();
-      } finally {
-        showLogin();
-      }
-    });
-
+     ************************************************************/
     // Tabs
     document.querySelectorAll(".tabBtn").forEach(btn => {
       btn.addEventListener("click", async () => {
         setTab(btn.dataset.tab);
         state.page = 1;
-
-        // IMPORTANTE: colunas/heurísticas mudam por aba
         try {
           await bootDataLayer();
           await fetchAndRender();
@@ -728,10 +695,7 @@
 
     // Tools buttons
     $("btnRefresh").addEventListener("click", () => fetchAndRender());
-
-    $("btnColumns").addEventListener("click", () => {
-      $("colPanel").classList.toggle("hidden");
-    });
+    $("btnColumns").addEventListener("click", () => $("colPanel").classList.toggle("hidden"));
 
     $("btnAllCols").addEventListener("click", () => {
       state.columns.forEach(c => state.visible.add(c));
@@ -752,48 +716,49 @@
     $("btnExportCsv").addEventListener("click", exportCsv);
     $("btnExportEmail").addEventListener("click", exportEmail);
 
-    /***********************
-     * BOOT
-     ***********************/
-    (async function boot() {
-      initSupabaseFromStorage();
+    /************************************************************
+     * BOOT (só carrega dados depois de desbloquear)
+     ************************************************************/
+    let booted = false;
 
-      // restaura tab
-      setTab(state.tab);
+    async function bootAfterUnlock() {
+      if (booted) return;
+      booted = true;
 
-      // restaura filtros visuais
-      $("filterGlobal").value = state.global;
-      $("filterBase").value = state.base;
-      $("dateFrom").value = state.dateFrom;
-      $("dateTo").value = state.dateTo;
+      try {
+        initSupabase();
+        setTab(state.tab);
+        await bootDataLayer();
+        await fetchAndRender();
+      } catch (e) {
+        console.error(e);
+        setMsg($("statusLine"), e?.message || "Falha ao iniciar.", "bad");
+      }
+    }
 
-      if (!supa) return showLogin();
-
-      // listener de auth
-      supa.auth.onAuthStateChange((_event, session) => {
-        if (!session) showLogin();
-        else showApp(session.user?.email);
-      });
-
-      await refreshSessionAndRoute();
+    (function boot() {
+      // Começa bloqueado. Se estiver “lembrado”, já libera.
+      if (isUnlocked()) {
+        showUnlocked();
+        bootAfterUnlock();
+      } else {
+        showLocked();
+        $("unlockInput").focus();
+      }
     })();
   </script>
 
   <!--
-    AJUSTES RÁPIDOS (onde você provavelmente vai mexer):
-    1) Nomes das tabelas:
-       state.tableByTab = { principal: "principal", obras: "obras", notes: "notes" }
+    AJUSTES RÁPIDOS:
+    1) Cole suas credenciais aqui:
+       SUPABASE_URL, SUPABASE_ANON_KEY
 
-    2) Coluna "base" (para divisão por bases):
-       state.baseCandidates = ["base","bases","regional","regiao","cidade","unidade"]
+    2) Se os nomes das tabelas forem diferentes:
+       state.tableByTab = { principal: "SUA_TABELA", obras: "SUA_TABELA", notes: "SUA_TABELA" }
 
-    3) Coluna de data (para calendário / período):
-       state.dateCandidates = ["data","date","created_at","updated_at","dt","dia"]
-
-    4) Notes gigante (700k+):
-       - Já está paginado (range).
-       - Evite deixar "Busca geral" ligada com muitas colunas numéricas (ilike pode falhar).
-       - Se ficar pesado, eu te reduzo o select() só para colunas visíveis.
+    3) Se quiser fixar as colunas (sem heurística), me diga:
+       - nome real da coluna de BASE
+       - nome real da coluna de DATA
   -->
 </body>
 </html>
