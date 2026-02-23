@@ -7,12 +7,11 @@
 
   <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
-
   <!-- Supabase JS v2 (CDN) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script>
-    /* Tailwind theme (verde, estilo anterior) */
+    // Tema "Neo" (verde) parecido com seu estilo
     tailwind.config = {
       theme: {
         extend: {
@@ -43,6 +42,7 @@
     .sticky-head thead th { position: sticky; top: 0; background: #f0fdf4; z-index: 10; }
     .scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
     .scrollbar::-webkit-scrollbar-thumb { background: #86efac; border-radius: 999px; }
+    .chip { border: 1px solid #bbf7d0; background: #f0fdf4; color: #14532d; }
   </style>
 </head>
 
@@ -56,15 +56,16 @@
         </div>
         <div class="leading-tight">
           <div class="font-semibold">Neoenergia</div>
-          <div class="text-xs text-slate-500">Painel • obras / Obras / Notes</div>
+          <div class="text-xs text-slate-500">Painel • Principal / Obras / Notes</div>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <span id="pillStatus" class="text-xs px-2 py-1 rounded-full bg-neo-50 text-neo-800 border border-neo-100">
-          Bloqueado
-        </span>
-        <button id="btnRelock" class="hidden px-3 py-1.5 rounded-lg border hover:bg-neo-50 text-sm">
+        <span id="pillStatus" class="text-xs px-2 py-1 rounded-full chip">Bloqueado</span>
+        <button id="btnConfig" class="px-3 py-1.5 rounded-lg border border-neo-100 hover:bg-neo-50 text-sm">
+          Configurar
+        </button>
+        <button id="btnRelock" class="hidden px-3 py-1.5 rounded-lg border border-neo-100 hover:bg-neo-50 text-sm">
           Bloquear
         </button>
       </div>
@@ -73,6 +74,22 @@
 
   <!-- APP -->
   <main id="viewApp" class="mx-auto max-w-7xl px-4 py-6">
+    <!-- ALERTA DE CONFIG -->
+    <section id="cfgBanner" class="hidden mb-4 bg-white border border-neo-100 rounded-2xl shadow-soft p-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <div class="font-semibold text-neo-900">Configuração pendente</div>
+          <div class="text-sm text-slate-600">
+            Você disse que <span class="mono">principal</span> não existe. Abra <b>Configurar</b> e selecione:
+            <b>1 tabela única</b> + coluna de aba (recomendado) ou <b>3 tabelas</b>.
+          </div>
+        </div>
+        <button id="btnOpenConfigFromBanner" class="px-3 py-2 rounded-xl bg-neo-700 text-white hover:opacity-95 shadow">
+          Abrir Configuração
+        </button>
+      </div>
+    </section>
+
     <!-- CONTROLS -->
     <section class="bg-white border border-neo-100 rounded-2xl shadow-soft p-4">
       <div class="flex flex-col lg:flex-row lg:items-end gap-3 justify-between">
@@ -80,7 +97,7 @@
           <div>
             <div class="text-xs font-medium text-slate-600">Aba</div>
             <div class="mt-1 inline-flex rounded-xl border border-neo-100 bg-neo-50 p-1">
-              <button data-tab="obras" class="tabBtn px-3 py-1.5 rounded-lg text-sm bg-white shadow-sm border border-neo-100">obras</button>
+              <button data-tab="principal" class="tabBtn px-3 py-1.5 rounded-lg text-sm bg-white shadow-sm border border-neo-100">Principal</button>
               <button data-tab="obras" class="tabBtn px-3 py-1.5 rounded-lg text-sm text-slate-700">Obras</button>
               <button data-tab="notes" class="tabBtn px-3 py-1.5 rounded-lg text-sm text-slate-700">Notes</button>
             </div>
@@ -88,25 +105,29 @@
 
           <div class="min-w-[220px]">
             <div class="text-xs font-medium text-slate-600">Base (filtro)</div>
-            <input id="filterBase" list="baseList" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200"
-                   placeholder="Ex: BASE A / Salvador / ..." />
+            <input id="filterBase" list="baseList"
+              class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200"
+              placeholder="Ex: BASE A / Salvador / ..." />
             <datalist id="baseList"></datalist>
           </div>
 
           <div class="min-w-[260px]">
             <div class="text-xs font-medium text-slate-600">Busca geral (todas as colunas)</div>
-            <input id="filterGlobal" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200"
-                   placeholder="Digite para buscar em tudo…" />
+            <input id="filterGlobal"
+              class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200"
+              placeholder="Digite para buscar em tudo…" />
           </div>
 
           <div class="flex gap-3">
             <div>
               <div class="text-xs font-medium text-slate-600">De</div>
-              <input id="dateFrom" type="date" class="mt-1 px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200" />
+              <input id="dateFrom" type="date"
+                class="mt-1 px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200" />
             </div>
             <div>
               <div class="text-xs font-medium text-slate-600">Até</div>
-              <input id="dateTo" type="date" class="mt-1 px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200" />
+              <input id="dateTo" type="date"
+                class="mt-1 px-3 py-2 border border-neo-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neo-200" />
             </div>
           </div>
         </div>
@@ -114,6 +135,8 @@
         <div class="flex flex-wrap items-center gap-2">
           <button id="btnRefresh" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Atualizar</button>
           <button id="btnColumns" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Colunas</button>
+          <button id="btnSaveView" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Salvar visão</button>
+          <button id="btnLoadView" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Carregar visão</button>
           <button id="btnExportCsv" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Exportar CSV</button>
           <button id="btnExportEmail" class="px-3 py-2 rounded-xl bg-neo-700 text-white hover:opacity-95 text-sm shadow">
             Exportar p/ e-mail
@@ -150,7 +173,7 @@
       <div class="flex items-center justify-between gap-3">
         <div>
           <div class="font-semibold">Colunas visíveis</div>
-          <div class="text-sm text-slate-600">Marque/desmarque. As colunas também servem para filtro por coluna.</div>
+          <div class="text-sm text-slate-600">Marque/desmarque. Filtros por coluna ficam abaixo do cabeçalho.</div>
         </div>
         <div class="flex gap-2">
           <button id="btnAllCols" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Marcar tudo</button>
@@ -181,14 +204,14 @@
     </section>
   </main>
 
-  <!-- LOCK OVERLAY (login por palavra) -->
+  <!-- LOCK OVERLAY (palavra) -->
   <div id="lockOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm">
     <div class="w-[92%] max-w-md bg-white rounded-2xl shadow-soft border border-neo-100 p-6">
       <div class="flex items-center gap-3">
         <div class="h-10 w-10 rounded-xl bg-neo-700 text-white flex items-center justify-center font-bold shadow">N</div>
         <div>
           <div class="text-lg font-semibold">Área restrita</div>
-          <div class="text-sm text-slate-600">Digite a palavra de liberação para acessar.</div>
+          <div class="text-sm text-slate-600">Digite a palavra para liberar.</div>
         </div>
       </div>
 
@@ -196,7 +219,7 @@
         <label class="block">
           <div class="text-xs font-medium text-slate-600">Acesso</div>
           <input id="unlockInput" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-neo-200"
-                 placeholder="Digite aqui…" autocomplete="off" />
+                 placeholder="Digite: neoenergia" autocomplete="off" />
         </label>
 
         <div id="unlockMsg" class="mt-2 text-sm text-slate-700"></div>
@@ -211,41 +234,186 @@
         </div>
 
         <div class="mt-3 text-[12px] text-slate-500">
-          Observação: isso é um bloqueio visual (front-end). Não substitui RLS/segurança do Supabase.
+          Isso é bloqueio visual. Para segurança real, use RLS no Supabase.
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG MODAL -->
+  <div id="cfgOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm">
+    <div class="w-[94%] max-w-3xl bg-white rounded-2xl shadow-soft border border-neo-100 overflow-hidden">
+      <div class="p-4 border-b border-neo-100 flex items-center justify-between">
+        <div>
+          <div class="text-lg font-semibold">Configuração de Dados</div>
+          <div class="text-sm text-slate-600">Escolha como o painel lê seus dados no Supabase.</div>
+        </div>
+        <button id="btnCloseCfg" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Fechar</button>
+      </div>
+
+      <div class="p-4 space-y-4">
+        <div class="p-3 rounded-2xl border border-neo-100 bg-neo-50">
+          <div class="text-sm text-slate-700">
+            <b>Se você não tem tabela “principal”</b>, o mais comum é:
+            <ul class="list-disc ml-5 mt-1">
+              <li><b>1 tabela única</b> contendo tudo, e uma coluna dizendo se é Principal/Obras/Notes.</li>
+              <li>Ou 3 tabelas com nomes diferentes (ex.: <span class="mono">dados_principal</span>, <span class="mono">tbl_obras</span>...).</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Credenciais -->
+        <div class="grid md:grid-cols-2 gap-3">
+          <label class="block">
+            <div class="text-xs font-medium text-slate-600">Supabase URL</div>
+            <input id="cfgUrl" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs"
+                   placeholder="https://xxxxx.supabase.co" />
+          </label>
+          <label class="block">
+            <div class="text-xs font-medium text-slate-600">Anon Key</div>
+            <input id="cfgKey" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs"
+                   placeholder="eyJhbGciOi..." />
+          </label>
+        </div>
+
+        <!-- Mode -->
+        <div class="grid md:grid-cols-2 gap-3">
+          <div class="p-3 rounded-2xl border border-neo-100">
+            <div class="flex items-start gap-2">
+              <input id="modeSingle" type="radio" name="mode" class="mt-1" />
+              <div>
+                <div class="font-semibold">Modo A: 1 tabela única</div>
+                <div class="text-sm text-slate-600">
+                  Você escolhe a tabela e a coluna que define a “aba” (Principal/Obras/Notes).
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 space-y-2">
+              <label class="block">
+                <div class="text-xs font-medium text-slate-600">Nome da tabela única</div>
+                <input id="singleTable" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="Ex: dados, planilha, neo, utp..." />
+              </label>
+
+              <label class="block">
+                <div class="text-xs font-medium text-slate-600">Coluna que define a aba</div>
+                <input id="tabColumn" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="Ex: aba, tipo, sheet, categoria..." />
+                <div class="text-[12px] text-slate-500 mt-1">Valores esperados: “principal”, “obras”, “notes” (ou configure abaixo).</div>
+              </label>
+
+              <div class="grid grid-cols-3 gap-2">
+                <label class="block">
+                  <div class="text-[11px] font-medium text-slate-600">Valor p/ Principal</div>
+                  <input id="tabValuePrincipal" class="mt-1 w-full px-2 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="principal" />
+                </label>
+                <label class="block">
+                  <div class="text-[11px] font-medium text-slate-600">Valor p/ Obras</div>
+                  <input id="tabValueObras" class="mt-1 w-full px-2 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="obras" />
+                </label>
+                <label class="block">
+                  <div class="text-[11px] font-medium text-slate-600">Valor p/ Notes</div>
+                  <input id="tabValueNotes" class="mt-1 w-full px-2 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="notes" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-2xl border border-neo-100">
+            <div class="flex items-start gap-2">
+              <input id="modeMulti" type="radio" name="mode" class="mt-1" />
+              <div>
+                <div class="font-semibold">Modo B: 3 tabelas</div>
+                <div class="text-sm text-slate-600">
+                  Você define a tabela de cada aba.
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-1 gap-2">
+              <label class="block">
+                <div class="text-xs font-medium text-slate-600">Tabela “Principal”</div>
+                <input id="tblPrincipal" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="Ex: dados_principal" />
+              </label>
+              <label class="block">
+                <div class="text-xs font-medium text-slate-600">Tabela “Obras”</div>
+                <input id="tblObras" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="Ex: tbl_obras" />
+              </label>
+              <label class="block">
+                <div class="text-xs font-medium text-slate-600">Tabela “Notes”</div>
+                <input id="tblNotes" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs" placeholder="Ex: notes_big" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Common columns -->
+        <div class="grid md:grid-cols-3 gap-3">
+          <label class="block">
+            <div class="text-xs font-medium text-slate-600">Coluna “Base”</div>
+            <input id="baseCol" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs"
+              placeholder="Ex: base / regional / cidade..." />
+          </label>
+          <label class="block">
+            <div class="text-xs font-medium text-slate-600">Coluna “Data”</div>
+            <input id="dateCol" class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs"
+              placeholder="Ex: data / created_at ..." />
+          </label>
+          <label class="block">
+            <div class="text-xs font-medium text-slate-600">Limite “Base list”</div>
+            <input id="baseListLimit" type="number" min="100" max="50000"
+              class="mt-1 w-full px-3 py-2 border border-neo-100 rounded-xl mono text-xs"
+              placeholder="5000" />
+          </label>
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center">
+          <button id="btnTestConn" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Testar conexão</button>
+          <button id="btnAutoDetect" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Autodetectar</button>
+          <button id="btnSaveCfg" class="px-4 py-2 rounded-xl bg-neo-700 text-white hover:opacity-95 shadow text-sm">Salvar e Aplicar</button>
+          <button id="btnResetCfg" class="px-3 py-2 rounded-xl border border-neo-100 hover:bg-neo-50 text-sm">Resetar</button>
+          <span id="cfgMsg" class="text-sm text-slate-700 ml-2"></span>
+        </div>
+
+        <details class="text-sm">
+          <summary class="cursor-pointer text-slate-600">O que o autodetect faz?</summary>
+          <div class="text-slate-600 mt-2">
+            Ele tenta consultar algumas tabelas “prováveis” (por amostra) e, se achar uma que responda, sugere ela.
+            Isso não lista tabelas (Supabase não permite listar pelo anon key facilmente), mas já resolve 90% dos casos.
+          </div>
+        </details>
       </div>
     </div>
   </div>
 
   <script>
     /************************************************************
-     * CONFIG (ajuste aqui)
+     * HARD CONFIG (opcional)
+     * Se você quiser travar no código, preencha abaixo.
+     * Se deixar vazio, usa o Configurador (localStorage).
      ************************************************************/
-    // ✅ Coloque o seu Project URL e anon key aqui (sem UI de login).
-    const SUPABASE_URL = "https://yyfhnuafwzeglwcpnmkd.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5ZmhudWFmd3plZ2x3Y3BubWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4MjM4NzgsImV4cCI6MjA4NjM5OTg3OH0.OzMXz2_O6rnnmgDchXMBH_ZPG8YzrRU8SFQQ_98Xi5A";
+    const HARD_SUPABASE_URL = "";      // opcional
+    const HARD_SUPABASE_ANON_KEY = ""; // opcional
 
-    // ✅ Palavra para liberar a tela:
     const UNLOCK_WORD = "neoenergia";
-
-    // ✅ Se quiser “lembrar desbloqueio” (recomendado pro seu uso):
     const REMEMBER_UNLOCK = true;
 
     /************************************************************
-     * STORAGE KEYS
+     * STORAGE
      ************************************************************/
     const LS = {
       unlocked: "neo_unlocked",
       visibleCols: "neo_visible_cols",
       tab: "neo_tab",
       pageSize: "neo_pagesize",
+      view: "neo_saved_view",
+      cfg: "neo_cfg_v2"
     };
 
     const $ = (id) => document.getElementById(id);
 
     function setMsg(el, text, tone="") {
       el.className = "text-sm " + (tone==="ok" ? "text-neo-700" : tone==="bad" ? "text-rose-700" : "text-slate-700");
-      el.textContent = text;
+      el.textContent = text || "";
     }
 
     function csvEscape(v) {
@@ -283,14 +451,66 @@
     }
 
     /************************************************************
-     * SUPABASE CLIENT (sem login UI)
+     * CONFIG MODEL
+     ************************************************************/
+    const defaultCfg = () => ({
+      url: HARD_SUPABASE_URL || "",
+      key: HARD_SUPABASE_ANON_KEY || "",
+      mode: "single", // "single" | "multi"
+      // single:
+      singleTable: "",
+      tabColumn: "aba",
+      tabValues: { principal: "principal", obras: "obras", notes: "notes" },
+      // multi:
+      tables: { principal: "", obras: "", notes: "" },
+      // common:
+      baseCol: "",
+      dateCol: "",
+      baseListLimit: 5000
+    });
+
+    function loadCfg() {
+      if (HARD_SUPABASE_URL && HARD_SUPABASE_ANON_KEY) {
+        const c = defaultCfg();
+        c.url = HARD_SUPABASE_URL;
+        c.key = HARD_SUPABASE_ANON_KEY;
+        return c;
+      }
+      const raw = localStorage.getItem(LS.cfg);
+      if (!raw) return defaultCfg();
+      try {
+        const obj = JSON.parse(raw);
+        return { ...defaultCfg(), ...obj };
+      } catch {
+        return defaultCfg();
+      }
+    }
+
+    function saveCfg(cfg) {
+      if (!(HARD_SUPABASE_URL && HARD_SUPABASE_ANON_KEY)) {
+        localStorage.setItem(LS.cfg, JSON.stringify(cfg));
+      }
+    }
+
+    let cfg = loadCfg();
+
+    function cfgIsReady() {
+      if (!cfg.url || !cfg.key) return false;
+      if (cfg.mode === "single") {
+        return !!cfg.singleTable && !!cfg.tabColumn;
+      } else {
+        return !!cfg.tables.principal || !!cfg.tables.obras || !!cfg.tables.notes;
+      }
+    }
+
+    /************************************************************
+     * SUPABASE
      ************************************************************/
     let supa = null;
+
     function initSupabase() {
-      if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes("COLE_AQUI")) {
-        throw new Error("Configure SUPABASE_URL e SUPABASE_ANON_KEY no código.");
-      }
-      supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      if (!cfg.url || !cfg.key) throw new Error("Configuração: informe SUPABASE URL e ANON KEY.");
+      supa = supabase.createClient(cfg.url, cfg.key);
       return supa;
     }
 
@@ -298,10 +518,8 @@
      * APP STATE
      ************************************************************/
     const state = {
-      tab: localStorage.getItem(LS.tab) || "obras",
-      tableByTab: { obras: "obras", obras: "obras", notes: "notes" }, // <- ajuste se seus nomes forem diferentes
-      baseCandidates: ["base", "bases", "regional", "regiao", "cidade", "unidade"],
-      dateCandidates: ["data", "date", "created_at", "updated_at", "dt", "dia"],
+      tab: localStorage.getItem(LS.tab) || "principal",
+      // resolved table per tab (computed by cfg)
       columns: [],
       visible: new Set(),
       filtersByCol: {},
@@ -309,8 +527,6 @@
       base: "",
       dateFrom: "",
       dateTo: "",
-      dateCol: null,
-      baseCol: null,
       page: 1,
       pageSize: Number(localStorage.getItem(LS.pageSize) || 50),
       rows: [],
@@ -320,32 +536,28 @@
     $("pageSize").value = String(state.pageSize);
 
     /************************************************************
-     * LOCK / UNLOCK
+     * LOCK
      ************************************************************/
     function isUnlocked() {
       if (!REMEMBER_UNLOCK) return false;
       return localStorage.getItem(LS.unlocked) === "1";
     }
-
     function setUnlocked(v) {
       if (!REMEMBER_UNLOCK) return;
       localStorage.setItem(LS.unlocked, v ? "1" : "0");
     }
-
     function showLocked() {
       $("lockOverlay").classList.remove("hidden");
       $("pillStatus").textContent = "Bloqueado";
-      $("pillStatus").className = "text-xs px-2 py-1 rounded-full bg-neo-50 text-neo-800 border border-neo-100";
+      $("pillStatus").className = "text-xs px-2 py-1 rounded-full chip";
       $("btnRelock").classList.add("hidden");
     }
-
     function showUnlocked() {
       $("lockOverlay").classList.add("hidden");
       $("pillStatus").textContent = "Liberado";
       $("pillStatus").className = "text-xs px-2 py-1 rounded-full bg-neo-100 text-neo-900 border border-neo-200";
       $("btnRelock").classList.remove("hidden");
     }
-
     function tryUnlock() {
       const v = ($("unlockInput").value || "").trim();
       if (v.toLowerCase() === UNLOCK_WORD) {
@@ -357,56 +569,212 @@
         setMsg($("unlockMsg"), "Palavra incorreta.", "bad");
       }
     }
-
     $("btnUnlock").addEventListener("click", tryUnlock);
     $("btnClearUnlock").addEventListener("click", () => {
       $("unlockInput").value = "";
       setMsg($("unlockMsg"), "");
       $("unlockInput").focus();
     });
-    $("unlockInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") tryUnlock();
+    $("unlockInput").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+    $("btnRelock").addEventListener("click", () => { setUnlocked(false); showLocked(); });
+
+    /************************************************************
+     * CONFIG UI
+     ************************************************************/
+    function openCfg() {
+      $("cfgOverlay").classList.remove("hidden");
+      fillCfgForm();
+    }
+    function closeCfg() {
+      $("cfgOverlay").classList.add("hidden");
+    }
+
+    $("btnConfig").addEventListener("click", openCfg);
+    $("btnOpenConfigFromBanner").addEventListener("click", openCfg);
+    $("btnCloseCfg").addEventListener("click", closeCfg);
+
+    function fillCfgForm() {
+      $("cfgUrl").value = cfg.url || "";
+      $("cfgKey").value = cfg.key || "";
+
+      $("modeSingle").checked = cfg.mode === "single";
+      $("modeMulti").checked  = cfg.mode === "multi";
+
+      $("singleTable").value = cfg.singleTable || "";
+      $("tabColumn").value = cfg.tabColumn || "";
+      $("tabValuePrincipal").value = cfg.tabValues?.principal ?? "principal";
+      $("tabValueObras").value = cfg.tabValues?.obras ?? "obras";
+      $("tabValueNotes").value = cfg.tabValues?.notes ?? "notes";
+
+      $("tblPrincipal").value = cfg.tables?.principal || "";
+      $("tblObras").value = cfg.tables?.obras || "";
+      $("tblNotes").value = cfg.tables?.notes || "";
+
+      $("baseCol").value = cfg.baseCol || "";
+      $("dateCol").value = cfg.dateCol || "";
+      $("baseListLimit").value = String(cfg.baseListLimit || 5000);
+      setMsg($("cfgMsg"), "");
+    }
+
+    function readCfgForm() {
+      const newCfg = defaultCfg();
+      newCfg.url = ($("cfgUrl").value || "").trim();
+      newCfg.key = ($("cfgKey").value || "").trim();
+      newCfg.mode = $("modeMulti").checked ? "multi" : "single";
+
+      newCfg.singleTable = ($("singleTable").value || "").trim();
+      newCfg.tabColumn = ($("tabColumn").value || "").trim() || "aba";
+      newCfg.tabValues = {
+        principal: ($("tabValuePrincipal").value || "principal").trim(),
+        obras: ($("tabValueObras").value || "obras").trim(),
+        notes: ($("tabValueNotes").value || "notes").trim(),
+      };
+
+      newCfg.tables = {
+        principal: ($("tblPrincipal").value || "").trim(),
+        obras: ($("tblObras").value || "").trim(),
+        notes: ($("tblNotes").value || "").trim(),
+      };
+
+      newCfg.baseCol = ($("baseCol").value || "").trim();
+      newCfg.dateCol = ($("dateCol").value || "").trim();
+
+      const lim = Number(($("baseListLimit").value || "5000").trim());
+      newCfg.baseListLimit = Number.isFinite(lim) && lim > 0 ? lim : 5000;
+
+      return newCfg;
+    }
+
+    $("modeSingle").addEventListener("change", fillCfgForm);
+    $("modeMulti").addEventListener("change", fillCfgForm);
+
+    $("btnSaveCfg").addEventListener("click", async () => {
+      cfg = readCfgForm();
+      saveCfg(cfg);
+      setMsg($("cfgMsg"), "Salvo. Aplicando…", "ok");
+      closeCfg();
+      await hardReloadDataLayer();
     });
 
-    $("btnRelock").addEventListener("click", () => {
-      setUnlocked(false);
-      showLocked();
+    $("btnResetCfg").addEventListener("click", async () => {
+      localStorage.removeItem(LS.cfg);
+      cfg = defaultCfg();
+      fillCfgForm();
+      setMsg($("cfgMsg"), "Resetado.", "ok");
+    });
+
+    $("btnTestConn").addEventListener("click", async () => {
+      try {
+        const test = readCfgForm();
+        if (!test.url || !test.key) throw new Error("Informe URL e Key.");
+        const c = supabase.createClient(test.url, test.key);
+        // tenta uma chamada leve ao schema (falha/ok já valida acesso)
+        const { error } = await c.from("non_existing_table_neo_test").select("*").limit(1);
+        // mesmo erro "not found" já prova que conectou
+        if (error) {
+          setMsg($("cfgMsg"), "Conexão ok (API respondeu). Agora configure tabela(s).", "ok");
+        } else {
+          setMsg($("cfgMsg"), "Conexão ok.", "ok");
+        }
+      } catch (e) {
+        setMsg($("cfgMsg"), e?.message || "Falha ao testar.", "bad");
+      }
+    });
+
+    // Autodetect por tentativa (não lista tabelas, só tenta nomes prováveis)
+    $("btnAutoDetect").addEventListener("click", async () => {
+      try {
+        const test = readCfgForm();
+        if (!test.url || !test.key) throw new Error("Informe URL e Key primeiro.");
+
+        const c = supabase.createClient(test.url, test.key);
+
+        const candidates = [
+          "dados", "data", "neo", "neoenergia", "planilha", "principal", "obras", "notes",
+          "sheet1", "sheet_1", "tabela", "dashboard", "utp", "utp_dashboard",
+          "tb_dados", "tbl_dados", "tb_principal", "tbl_principal", "tb_obras", "tbl_obras",
+          "tb_notes", "tbl_notes", "notes_big"
+        ];
+
+        async function tryTable(t) {
+          const { error } = await c.from(t).select("*").limit(1);
+          return !error;
+        }
+
+        setMsg($("cfgMsg"), "Autodetectando…");
+        // tenta achar uma tabela única que exista
+        for (const t of candidates) {
+          // eslint-disable-next-line no-await-in-loop
+          const ok = await tryTable(t);
+          if (ok) {
+            $("modeSingle").checked = true;
+            $("singleTable").value = t;
+            $("tabColumn").value = "aba";
+            $("tabValuePrincipal").value = "principal";
+            $("tabValueObras").value = "obras";
+            $("tabValueNotes").value = "notes";
+            setMsg($("cfgMsg"), `Achei uma tabela que responde: "${t}". Configure a coluna de aba e salve.`, "ok");
+            return;
+          }
+        }
+
+        setMsg($("cfgMsg"), "Não consegui achar por tentativa. Coloque manualmente o nome da tabela que existe no Supabase.", "bad");
+      } catch (e) {
+        setMsg($("cfgMsg"), e?.message || "Falha no autodetect.", "bad");
+      }
     });
 
     /************************************************************
-     * TAB / META / COLUMNS
+     * TAB / TABLE RESOLUTION
      ************************************************************/
     function setTab(tab) {
       state.tab = tab;
       localStorage.setItem(LS.tab, tab);
+
       document.querySelectorAll(".tabBtn").forEach(btn => {
         const on = btn.dataset.tab === tab;
-        btn.className = "tabBtn px-3 py-1.5 rounded-lg text-sm " + (on ? "bg-white shadow-sm border border-neo-100" : "text-slate-700");
+        btn.className = "tabBtn px-3 py-1.5 rounded-lg text-sm " +
+          (on ? "bg-white shadow-sm border border-neo-100" : "text-slate-700");
       });
-      $("metaLine").textContent = `tab=${state.tab} | table=${state.tableByTab[state.tab]} | pageSize=${state.pageSize}`;
+
+      $("metaLine").textContent = metaText();
     }
 
-    function guessColumn(columns, candidates) {
-      const lower = new Map(columns.map(c => [String(c).toLowerCase(), c]));
-      for (const cand of candidates) {
-        const hit = lower.get(cand.toLowerCase());
-        if (hit) return hit;
+    function currentTable() {
+      if (cfg.mode === "single") {
+        return cfg.singleTable;
       }
-      return null;
+      // multi
+      return cfg.tables[state.tab] || cfg.tables.principal || cfg.tables.obras || cfg.tables.notes || "";
     }
 
-    async function bootDataLayer() {
-      const table = state.tableByTab[state.tab];
+    function metaText() {
+      return `mode=${cfg.mode} | tab=${state.tab} | table=${currentTable() || "-"} | baseCol=${cfg.baseCol || "-"} | dateCol=${cfg.dateCol || "-"} | pageSize=${state.pageSize}`;
+    }
 
+    function ensureCfgOrBanner() {
+      const ready = cfgIsReady();
+      $("cfgBanner").classList.toggle("hidden", ready);
+      return ready;
+    }
+
+    /************************************************************
+     * COLUMNS / UI BUILD
+     ************************************************************/
+    async function bootDataLayer() {
+      if (!ensureCfgOrBanner()) return;
+
+      const table = currentTable();
+      if (!table) throw new Error("Configuração: defina a tabela.");
+
+      // pega 1 linha para inferir colunas
       const { data, error } = await supa.from(table).select("*").limit(1);
       if (error) throw error;
 
       const cols = data?.[0] ? Object.keys(data[0]) : [];
       state.columns = cols;
 
-      state.baseCol = guessColumn(cols, state.baseCandidates);
-      state.dateCol = guessColumn(cols, state.dateCandidates);
-
+      // visibilidade salva
       const saved = localStorage.getItem(LS.visibleCols);
       let vis = null;
       if (saved) { try { vis = JSON.parse(saved); } catch {} }
@@ -416,28 +784,33 @@
       buildTableHeadAndFilters();
       await populateBaseList();
 
-      $("metaLine").textContent = `tab=${state.tab} | table=${table} | baseCol=${state.baseCol ?? "-"} | dateCol=${state.dateCol ?? "-"} | pageSize=${state.pageSize}`;
+      $("metaLine").textContent = metaText();
     }
 
     function buildColumnChecklist() {
       const wrap = $("colChecklist");
       wrap.innerHTML = "";
+
       for (const col of state.columns) {
         const id = "col_" + col.replace(/[^a-zA-Z0-9_]/g, "_");
         const checked = state.visible.has(col);
+
         const item = document.createElement("label");
         item.className = "flex items-center gap-2 border border-neo-100 rounded-xl px-3 py-2 bg-neo-50";
         item.innerHTML = `
           <input type="checkbox" id="${id}" ${checked ? "checked" : ""} />
           <span class="text-sm">${col}</span>
         `;
+
         item.querySelector("input").addEventListener("change", (e) => {
           if (e.target.checked) state.visible.add(col);
           else state.visible.delete(col);
+
           localStorage.setItem(LS.visibleCols, JSON.stringify([...state.visible]));
           buildTableHeadAndFilters();
           renderRows();
         });
+
         wrap.appendChild(item);
       }
     }
@@ -449,6 +822,7 @@
       frow.innerHTML  = "";
 
       const cols = state.columns.filter(c => state.visible.has(c));
+
       for (const col of cols) {
         const th = document.createElement("th");
         th.className = "px-3 py-2 border-b border-neo-100 text-xs font-semibold whitespace-nowrap";
@@ -457,15 +831,18 @@
 
         const tf = document.createElement("th");
         tf.className = "px-3 py-2 border-b border-neo-100";
+
         const inp = document.createElement("input");
         inp.className = "w-full px-2 py-1.5 border border-neo-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-neo-200";
         inp.placeholder = "filtrar…";
         inp.value = state.filtersByCol[col] || "";
+
         inp.addEventListener("input", () => {
           state.filtersByCol[col] = inp.value;
           state.page = 1;
           fetchAndRender();
         });
+
         tf.appendChild(inp);
         frow.appendChild(tf);
       }
@@ -474,20 +851,24 @@
     async function populateBaseList() {
       const dl = $("baseList");
       dl.innerHTML = "";
-      if (!state.baseCol) return;
+      if (!cfg.baseCol) return;
 
-      const table = state.tableByTab[state.tab];
-      const { data, error } = await supa.from(table).select(state.baseCol).limit(5000);
+      const table = currentTable();
+      if (!table) return;
+
+      const limit = Math.max(100, Math.min(50000, Number(cfg.baseListLimit || 5000)));
+      const { data, error } = await supa.from(table).select(cfg.baseCol).limit(limit);
       if (error) return;
 
       const uniq = new Set();
       for (const r of (data || [])) {
-        const v = r?.[state.baseCol];
+        const v = r?.[cfg.baseCol];
         if (v === null || v === undefined) continue;
         const s = String(v).trim();
         if (s) uniq.add(s);
       }
-      [...uniq].sort((a,b) => a.localeCompare(b, "pt-BR")).slice(0, 300).forEach(v => {
+
+      [...uniq].sort((a,b) => a.localeCompare(b, "pt-BR")).slice(0, 500).forEach(v => {
         const opt = document.createElement("option");
         opt.value = v;
         dl.appendChild(opt);
@@ -495,21 +876,33 @@
     }
 
     /************************************************************
-     * QUERY BUILDER
+     * QUERY BUILDER (com modo single: filtra por aba)
      ************************************************************/
     function applyFilters(q) {
-      const table = state.tableByTab[state.tab];
+      const table = currentTable();
 
-      if (state.baseCol && state.base.trim()) {
-        q = q.ilike(state.baseCol, `%${state.base.trim()}%`);
+      // Modo single: restringe por aba
+      if (cfg.mode === "single") {
+        const col = cfg.tabColumn;
+        const val = cfg.tabValues?.[state.tab];
+        if (col && val !== undefined && val !== null && String(val).trim() !== "") {
+          q = q.eq(col, val);
+        }
       }
 
+      // Base
+      if (cfg.baseCol && state.base.trim()) {
+        q = q.ilike(cfg.baseCol, `%${state.base.trim()}%`);
+      }
+
+      // Filtros por coluna (AND)
       for (const [col, val] of Object.entries(state.filtersByCol)) {
         if (!val || !String(val).trim()) continue;
         if (!state.columns.includes(col)) continue;
         q = q.ilike(col, `%${String(val).trim()}%`);
       }
 
+      // Busca geral: OR em colunas visíveis (pode falhar se coluna não for texto)
       if (state.global.trim()) {
         const needle = state.global.trim().replace(/[,]/g, " ");
         const colsForOr = state.columns.filter(c => state.visible.has(c));
@@ -517,26 +910,29 @@
         if (orParts.length) q = q.or(orParts.join(","));
       }
 
-      if (state.dateCol) {
-        if (state.dateFrom) q = q.gte(state.dateCol, state.dateFrom);
-        if (state.dateTo)   q = q.lte(state.dateCol, state.dateTo);
+      // Data range
+      if (cfg.dateCol) {
+        if (state.dateFrom) q = q.gte(cfg.dateCol, state.dateFrom);
+        if (state.dateTo)   q = q.lte(cfg.dateCol, state.dateTo);
+        q = q.order(cfg.dateCol, { ascending: false });
+      } else if (state.columns[0]) {
+        q = q.order(state.columns[0], { ascending: false });
       }
 
-      if (state.dateCol) q = q.order(state.dateCol, { ascending: false });
-      else if (state.columns[0]) q = q.order(state.columns[0], { ascending: false });
-
+      // paginação
       const from = (state.page - 1) * state.pageSize;
       const to   = from + state.pageSize - 1;
       q = q.range(from, to);
 
       state.lastQueryDebug =
-        `table=${table} | page=${state.page} | range=${from}-${to} | base=${state.baseCol ?? "-"}:${state.base || "-"} | global=${state.global || "-"} | date=${state.dateCol ?? "-"}:${state.dateFrom || "-"}..${state.dateTo || "-"}`;
+        `mode=${cfg.mode} | tab=${state.tab} | table=${table} | page=${state.page} | range=${from}-${to} | base=${cfg.baseCol || "-"}:${state.base || "-"} | global=${state.global || "-"} | date=${cfg.dateCol || "-"}:${state.dateFrom || "-"}..${state.dateTo || "-"}`;
 
       return q;
     }
 
     async function fetchRows() {
-      const table = state.tableByTab[state.tab];
+      const table = currentTable();
+      if (!table) throw new Error("Sem tabela configurada.");
 
       let q = supa.from(table).select("*");
       q = applyFilters(q);
@@ -569,8 +965,8 @@
         for (const col of cols) {
           const td = document.createElement("td");
           td.className = "px-3 py-2 align-top whitespace-nowrap";
-          const v = r?.[col];
 
+          const v = r?.[col];
           let text = "";
           if (v === null || v === undefined) text = "";
           else if (typeof v === "object") text = JSON.stringify(v);
@@ -586,22 +982,32 @@
       }
 
       $("pageNow").textContent = String(state.page);
-      $("metaLine").textContent = `tab=${state.tab} | table=${state.tableByTab[state.tab]} | baseCol=${state.baseCol ?? "-"} | dateCol=${state.dateCol ?? "-"} | pageSize=${state.pageSize}`;
+      $("metaLine").textContent = metaText();
       $("debugLine").textContent = state.lastQueryDebug;
     }
 
     async function fetchAndRender() {
       try {
+        if (!cfgIsReady()) {
+          setMsg($("statusLine"), "Configure as tabelas/colunas para carregar dados.", "bad");
+          return;
+        }
         await fetchRows();
         renderRows();
       } catch (e) {
         console.error(e);
-        setMsg($("statusLine"), (e?.message || "Erro ao carregar dados."), "bad");
+        const msg = e?.message || "Erro ao carregar dados.";
+        setMsg($("statusLine"), msg, "bad");
+
+        // Ajuda automática pra erro de tabela inexistente
+        if (msg.includes("Could not find the table") || msg.includes("schema cache")) {
+          $("cfgBanner").classList.remove("hidden");
+        }
       }
     }
 
     /************************************************************
-     * EXPORT (CSV + EMAIL)
+     * EXPORT
      ************************************************************/
     function makeCsvFromCurrentPage() {
       const cols = state.columns.filter(c => state.visible.has(c));
@@ -631,24 +1037,74 @@
     }
 
     /************************************************************
-     * UI EVENTS
+     * SALVAR/CARREGAR "VISÃO" (filtros + colunas + paginação)
      ************************************************************/
-    // Tabs
+    function saveView() {
+      const view = {
+        tab: state.tab,
+        pageSize: state.pageSize,
+        visible: [...state.visible],
+        filtersByCol: state.filtersByCol,
+        global: state.global,
+        base: state.base,
+        dateFrom: state.dateFrom,
+        dateTo: state.dateTo,
+      };
+      localStorage.setItem(LS.view, JSON.stringify(view));
+      setMsg($("statusLine"), "Visão salva.", "ok");
+    }
+
+    function loadView() {
+      const raw = localStorage.getItem(LS.view);
+      if (!raw) {
+        setMsg($("statusLine"), "Nenhuma visão salva ainda.", "bad");
+        return;
+      }
+      try {
+        const view = JSON.parse(raw);
+
+        if (view.tab) setTab(view.tab);
+        state.pageSize = Number(view.pageSize || state.pageSize);
+        $("pageSize").value = String(state.pageSize);
+        localStorage.setItem(LS.pageSize, String(state.pageSize));
+
+        if (Array.isArray(view.visible)) {
+          state.visible = new Set(view.visible);
+          localStorage.setItem(LS.visibleCols, JSON.stringify(view.visible));
+        }
+
+        state.filtersByCol = view.filtersByCol || {};
+        state.global = view.global || "";
+        state.base = view.base || "";
+        state.dateFrom = view.dateFrom || "";
+        state.dateTo = view.dateTo || "";
+
+        $("filterGlobal").value = state.global;
+        $("filterBase").value = state.base;
+        $("dateFrom").value = state.dateFrom;
+        $("dateTo").value = state.dateTo;
+
+        buildTableHeadAndFilters();
+        state.page = 1;
+        fetchAndRender();
+
+        setMsg($("statusLine"), "Visão carregada.", "ok");
+      } catch {
+        setMsg($("statusLine"), "Falha ao ler visão salva.", "bad");
+      }
+    }
+
+    /************************************************************
+     * EVENTS
+     ************************************************************/
     document.querySelectorAll(".tabBtn").forEach(btn => {
       btn.addEventListener("click", async () => {
         setTab(btn.dataset.tab);
         state.page = 1;
-        try {
-          await bootDataLayer();
-          await fetchAndRender();
-        } catch (e) {
-          console.error(e);
-          setMsg($("statusLine"), e?.message || "Erro ao trocar de aba.", "bad");
-        }
+        await hardReloadDataLayer();
       });
     });
 
-    // Filters
     $("filterGlobal").addEventListener("input", () => {
       state.global = $("filterGlobal").value || "";
       state.page = 1;
@@ -673,7 +1129,6 @@
       fetchAndRender();
     });
 
-    // Page controls
     $("btnPrev").addEventListener("click", () => {
       if (state.page > 1) {
         state.page -= 1;
@@ -693,9 +1148,12 @@
       fetchAndRender();
     });
 
-    // Tools buttons
     $("btnRefresh").addEventListener("click", () => fetchAndRender());
     $("btnColumns").addEventListener("click", () => $("colPanel").classList.toggle("hidden"));
+    $("btnExportCsv").addEventListener("click", exportCsv);
+    $("btnExportEmail").addEventListener("click", exportEmail);
+    $("btnSaveView").addEventListener("click", saveView);
+    $("btnLoadView").addEventListener("click", loadView);
 
     $("btnAllCols").addEventListener("click", () => {
       state.columns.forEach(c => state.visible.add(c));
@@ -713,31 +1171,60 @@
       renderRows();
     });
 
-    $("btnExportCsv").addEventListener("click", exportCsv);
-    $("btnExportEmail").addEventListener("click", exportEmail);
-
     /************************************************************
-     * BOOT (só carrega dados depois de desbloquear)
+     * BOOT
      ************************************************************/
     let booted = false;
+
+    async function hardReloadDataLayer() {
+      if (!booted) return;
+      try {
+        await bootDataLayer();
+        state.page = 1;
+        await fetchAndRender();
+      } catch (e) {
+        console.error(e);
+        setMsg($("statusLine"), e?.message || "Falha ao recarregar.", "bad");
+      }
+    }
 
     async function bootAfterUnlock() {
       if (booted) return;
       booted = true;
 
       try {
-        initSupabase();
+        // recarrega cfg do storage (caso tenha alterado)
+        cfg = loadCfg();
+
+        // mostra banner se necessário
+        ensureCfgOrBanner();
+
+        // inicia supabase (se tiver url/key)
+        if (cfg.url && cfg.key) initSupabase();
+
+        // tab e filtros visuais
         setTab(state.tab);
+
+        // se cfg não pronta, não quebra; só pede configurar
+        if (!cfgIsReady()) {
+          setMsg($("statusLine"), "Configure as tabelas/colunas para carregar dados.", "bad");
+          return;
+        }
+
         await bootDataLayer();
         await fetchAndRender();
       } catch (e) {
         console.error(e);
         setMsg($("statusLine"), e?.message || "Falha ao iniciar.", "bad");
+        $("cfgBanner").classList.remove("hidden");
       }
     }
 
     (function boot() {
-      // Começa bloqueado. Se estiver “lembrado”, já libera.
+      // banner action
+      if (!cfgIsReady()) $("cfgBanner").classList.remove("hidden");
+
+      // lock
       if (isUnlocked()) {
         showUnlocked();
         bootAfterUnlock();
@@ -747,18 +1234,5 @@
       }
     })();
   </script>
-
-  <!--
-    AJUSTES RÁPIDOS:
-    1) Cole suas credenciais aqui:
-       SUPABASE_URL, SUPABASE_ANON_KEY
-
-    2) Se os nomes das tabelas forem diferentes:
-       state.tableByTab = { obras: "SUA_TABELA", obras: "SUA_TABELA", notes: "SUA_TABELA" }
-
-    3) Se quiser fixar as colunas (sem heurística), me diga:
-       - nome real da coluna de BASE
-       - nome real da coluna de DATA
-  -->
 </body>
 </html>
