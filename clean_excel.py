@@ -2,8 +2,8 @@
 clean_excel.py
 Lê um arquivo .xlsx/.xls, remove colunas completamente vazias e salva o resultado.
 
-Se nenhum arquivo for informado, usa o nome do dia atual no formato DDMMzmm4.xls
-(ex: hoje 02/04 -> 0204zmm4.xls).
+Se nenhum arquivo for informado, usa o nome do dia atual no formato DDMMzmm94.XLS
+(ex: hoje 02/04 -> 0204zmm94.XLS).
 
 Uso básico:
     python clean_excel.py                           # abre 0204zmm4.xls automaticamente
@@ -32,7 +32,7 @@ def default_filename() -> Path:
     Mostra onde está procurando para facilitar o diagnóstico.
     """
     today = date.today()
-    name = today.strftime("%d%m") + "zmm4.xls"
+    name = today.strftime("%d%m") + "zmm94.XLS"
 
     candidates = [
         DEFAULT_DIR / name,   # pasta configurada
