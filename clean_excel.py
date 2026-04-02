@@ -100,7 +100,11 @@ def clean_excel(
         sys.exit(f"Arquivo não encontrado: {input_path}")
 
     # --- 1. Leitura ---
-    df = pd.read_excel(input_path, sheet_name=sheet_name, header=None, dtype=str)
+    # .xls (formato antigo) usa xlrd; .xlsx usa openpyxl
+    suffix = Path(input_path).suffix.lower()
+    engine = "xlrd" if suffix == ".xls" else "openpyxl"
+
+    df = pd.read_excel(input_path, sheet_name=sheet_name, header=None, dtype=str, engine=engine)
 
     print(f"Arquivo : {input_path.name}")
     print(f"Linhas totais no arquivo: {len(df)}")
@@ -181,8 +185,7 @@ def main():
         "input", nargs="?", default=None,
         help=(
             "Caminho do arquivo .xls/.xlsx de entrada. "
-            "Se omitido, usa DDMMzmm4.xls com a data de hoje "
-            f"(hoje seria: {default_filename()})"
+            "Se omitido, usa DDMMzmm94.XLS com a data de hoje."
         ),
     )
     parser.add_argument(
