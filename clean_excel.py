@@ -23,11 +23,14 @@ from pathlib import Path
 import pandas as pd
 
 
+DEFAULT_DIR = Path(r"C:\Users\B624173\Desktop\Cji3 e Mb52")
+
+
 def default_filename() -> Path:
-    """Gera o nome de arquivo padrão baseado na data atual: DDMMzmm4.xls"""
+    """Gera o caminho padrão: C:\\Users\\B624173\\Desktop\\Cji3 e Mb52\\DDMMzmm4.xls"""
     today = date.today()
     name = today.strftime("%d%m") + "zmm4.xls"
-    return Path(name)
+    return DEFAULT_DIR / name
 
 
 def _normalize(df: pd.DataFrame) -> pd.DataFrame:
