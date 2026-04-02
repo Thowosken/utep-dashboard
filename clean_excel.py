@@ -27,10 +27,25 @@ DEFAULT_DIR = Path(r"C:\Users\B624173\Desktop\Cji3 e Mb52")
 
 
 def default_filename() -> Path:
-    """Gera o caminho padrão: C:\\Users\\B624173\\Desktop\\Cji3 e Mb52\\DDMMzmm4.xls"""
+    """
+    Procura o arquivo DDMMzmm4.xls na pasta padrão e, se não achar, na pasta atual.
+    Mostra onde está procurando para facilitar o diagnóstico.
+    """
     today = date.today()
     name = today.strftime("%d%m") + "zmm4.xls"
-    return DEFAULT_DIR / name
+
+    candidates = [
+        DEFAULT_DIR / name,   # pasta configurada
+        Path.cwd() / name,    # pasta onde o script está sendo executado
+    ]
+
+    for path in candidates:
+        print(f"Procurando: {path}")
+        if path.exists():
+            return path
+
+    # Não achou — retorna o caminho principal para a mensagem de erro mostrar
+    return candidates[0]
 
 
 def _normalize(df: pd.DataFrame) -> pd.DataFrame:
