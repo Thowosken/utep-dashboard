@@ -113,7 +113,15 @@ def clean_excel(
 
     if _is_html_disguised(Path(input_path)):
         print("Detectado: arquivo HTML exportado pelo SAP (extensão .XLS falsa).")
-        tables = pd.read_html(input_path, encoding="utf-8")
+        for enc in ("latin-1", "cp1252", "utf-8", "utf-8-sig"):
+            try:
+                tables = pd.read_html(input_path, encoding=enc)
+                print(f"Encoding detectado: {enc}")
+                break
+            except UnicodeDecodeError:
+                continue
+        else:
+            sys.exit("Erro: não foi possível ler o arquivo. Encoding desconhecido.")
         # Pega a tabela maior (geralmente é a principal)
         df = max(tables, key=len).astype(str)
     else:
