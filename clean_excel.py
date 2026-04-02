@@ -100,11 +100,26 @@ def clean_excel(
         sys.exit(f"Arquivo não encontrado: {input_path}")
 
     # --- 1. Leitura ---
-    # .xls (formato antigo) usa xlrd; .xlsx usa openpyxl
-    suffix = Path(input_path).suffix.lower()
-    engine = "xlrd" if suffix == ".xls" else "openpyxl"
+    # SAP frequentemente exporta arquivos .XLS que são na verdade HTML disfarçados.
+    # Detectamos isso lendo os primeiros bytes do arquivo.
+    def _is_html_disguised(path: Path) -> bool:
+        try:
+            with open(path, "rb") as f:
+                header = f.read(16)
+            # HTML começa com whitespace, "<", ou tags conhecidas
+            return header.lstrip(b"\r\n\t ").startswith((b"<", b"COE", b"<!"))
+        except Exception:
+            return False
 
-    df = pd.read_excel(input_path, sheet_name=sheet_name, header=None, dtype=str, engine=engine)
+    if _is_html_disguised(Path(input_path)):
+        print("Detectado: arquivo HTML exportado pelo SAP (extensão .XLS falsa).")
+        tables = pd.read_html(input_path, encoding="utf-8")
+        # Pega a tabela maior (geralmente é a principal)
+        df = max(tables, key=len).astype(str)
+    else:
+        suffix = Path(input_path).suffix.lower()
+        engine = "xlrd" if suffix == ".xls" else "openpyxl"
+        df = pd.read_excel(input_path, sheet_name=sheet_name, header=None, dtype=str, engine=engine)
 
     print(f"Arquivo : {input_path.name}")
     print(f"Linhas totais no arquivo: {len(df)}")
