@@ -1,23 +1,33 @@
 """
 clean_excel.py
-Lê um arquivo .xlsx, remove colunas completamente vazias e salva o resultado.
+Lê um arquivo .xlsx/.xls, remove colunas completamente vazias e salva o resultado.
+
+Se nenhum arquivo for informado, usa o nome do dia atual no formato DDMMzmm4.xls
+(ex: hoje 02/04 -> 0204zmm4.xls).
 
 Uso básico:
-    python clean_excel.py arquivo.xlsx
-    python clean_excel.py arquivo.xlsx --output resultado.xlsx
-    python clean_excel.py arquivo.xlsx --sheet "Planilha1"
-    python clean_excel.py arquivo.xlsx --threshold 0.9
+    python clean_excel.py                           # abre 0204zmm4.xls automaticamente
+    python clean_excel.py arquivo.xls
+    python clean_excel.py arquivo.xls --output resultado.xlsx
 
-Apagar linhas do topo + filtrar coluna numérica (ex: relatório ZMM94):
-    python clean_excel.py arquivo.xlsx --delete-rows 6 --filter-numeric Pedido
-    python clean_excel.py arquivo.xlsx --delete-rows 6 --filter-numeric Pedido --output limpo.xlsx
+Relatório ZMM4 completo:
+    python clean_excel.py --delete-rows 6 --filter-numeric Pedido
+    python clean_excel.py --delete-rows 6 --filter-numeric Pedido --output limpo.xlsx
 """
 
 import argparse
 import sys
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
+
+
+def default_filename() -> Path:
+    """Gera o nome de arquivo padrão baseado na data atual: DDMMzmm4.xls"""
+    today = date.today()
+    name = today.strftime("%d%m") + "zmm4.xls"
+    return Path(name)
 
 
 def _normalize(df: pd.DataFrame) -> pd.DataFrame:
@@ -135,7 +145,14 @@ def main():
     parser = argparse.ArgumentParser(
         description="Limpa um arquivo .xlsx: remove colunas vazias e filtra linhas."
     )
-    parser.add_argument("input", help="Caminho do arquivo .xlsx de entrada")
+    parser.add_argument(
+        "input", nargs="?", default=None,
+        help=(
+            "Caminho do arquivo .xls/.xlsx de entrada. "
+            "Se omitido, usa DDMMzmm4.xls com a data de hoje "
+            f"(hoje seria: {default_filename()})"
+        ),
+    )
     parser.add_argument(
         "--output", "-o", default=None,
         help="Caminho do arquivo de saída (opcional; padrão: sobrescreve o original)",
@@ -167,6 +184,10 @@ def main():
     )
     args = parser.parse_args()
 
+    input_path = Path(args.input) if args.input else default_filename()
+    if not args.input:
+        print(f"Nenhum arquivo informado. Usando: {input_path}")
+
     sheet = args.sheet
     try:
         sheet = int(sheet)
@@ -174,7 +195,7 @@ def main():
         pass
 
     clean_excel(
-        input_path=args.input,
+        input_path=input_path,
         output_path=args.output,
         sheet_name=sheet,
         threshold=args.threshold,
