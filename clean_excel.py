@@ -8,9 +8,9 @@ Uso básico:
     python clean_excel.py arquivo.xlsx --sheet "Planilha1"
     python clean_excel.py arquivo.xlsx --threshold 0.9
 
-Pular linhas do topo + filtrar coluna numérica (ex: relatório ZMM94):
-    python clean_excel.py arquivo.xlsx --skip-rows 6 --filter-numeric Pedido
-    python clean_excel.py arquivo.xlsx --skip-rows 6 --filter-numeric Pedido --output limpo.xlsx
+Apagar linhas do topo + filtrar coluna numérica (ex: relatório ZMM94):
+    python clean_excel.py arquivo.xlsx --delete-rows 6 --filter-numeric Pedido
+    python clean_excel.py arquivo.xlsx --delete-rows 6 --filter-numeric Pedido --output limpo.xlsx
 """
 
 import argparse
@@ -50,7 +50,7 @@ def clean_excel(
         output_path:     Caminho de saída. Se None, sobrescreve o original.
         sheet_name:      Nome ou índice da aba (padrão: primeira aba).
         threshold:       Fração de vazios para remover coluna (1.0 = 100%).
-        skip_rows:       Nº de linhas a ignorar no topo antes do cabeçalho.
+        skip_rows:       Nº de linhas a apagar no topo antes do cabeçalho.
         filter_numeric:  Nome da coluna cujos valores devem ser numéricos.
     """
     input_path = Path(input_path)
@@ -58,15 +58,18 @@ def clean_excel(
         sys.exit(f"Arquivo não encontrado: {input_path}")
 
     # --- 1. Leitura ---
-    df = pd.read_excel(
-        input_path,
-        sheet_name=sheet_name,
-        skiprows=skip_rows,     # pula as primeiras N linhas; a N+1 vira header
-        dtype=str,
-    )
+    df = pd.read_excel(input_path, sheet_name=sheet_name, header=None, dtype=str)
 
     print(f"Arquivo : {input_path.name}")
-    print(f"Linhas lidas (após pular {skip_rows}): {len(df)}")
+    print(f"Linhas totais no arquivo: {len(df)}")
+
+    # --- 1b. Apaga as primeiras N linhas e promove a linha seguinte a cabeçalho ---
+    if skip_rows > 0:
+        df = df.iloc[skip_rows:].reset_index(drop=True)  # apaga linhas 0..N-1
+        df.columns = df.iloc[0]                           # linha N vira cabeçalho
+        df = df.iloc[1:].reset_index(drop=True)           # remove a linha de cabeçalho dos dados
+        df.columns.name = None
+        print(f"Linhas após apagar as {skip_rows} primeiras: {len(df)}")
 
     # --- 2. Normaliza espaços / strings vazias ---
     df = _normalize(df)
@@ -149,9 +152,9 @@ def main():
         ),
     )
     parser.add_argument(
-        "--skip-rows", type=int, default=0,
+        "--delete-rows", type=int, default=0,
         dest="skip_rows",
-        help="Nº de linhas a pular no topo antes do cabeçalho (padrão: 0)",
+        help="Nº de linhas a apagar no topo antes do cabeçalho (padrão: 0)",
     )
     parser.add_argument(
         "--filter-numeric", default=None,
