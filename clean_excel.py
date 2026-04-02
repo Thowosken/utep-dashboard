@@ -2,11 +2,15 @@
 clean_excel.py
 Lê um arquivo .xlsx, remove colunas completamente vazias e salva o resultado.
 
-Uso:
+Uso básico:
     python clean_excel.py arquivo.xlsx
     python clean_excel.py arquivo.xlsx --output resultado.xlsx
     python clean_excel.py arquivo.xlsx --sheet "Planilha1"
-    python clean_excel.py arquivo.xlsx --threshold 0.9   # remove colunas com >= 90% vazios
+    python clean_excel.py arquivo.xlsx --threshold 0.9
+
+Pular linhas do topo + filtrar coluna numérica (ex: relatório ZMM94):
+    python clean_excel.py arquivo.xlsx --skip-rows 6 --filter-numeric Pedido
+    python clean_excel.py arquivo.xlsx --skip-rows 6 --filter-numeric Pedido --output limpo.xlsx
 """
 
 import argparse
@@ -16,62 +20,107 @@ from pathlib import Path
 import pandas as pd
 
 
-def clean_empty_columns(
+def _normalize(df: pd.DataFrame) -> pd.DataFrame:
+    """Strip espaços e converte células em branco/nan-string para pd.NA."""
+    df = df.apply(
+        lambda col: col.str.strip() if pd.api.types.is_string_dtype(col) else col
+    )
+    return df.replace({"": pd.NA, "nan": pd.NA, "NaN": pd.NA, "None": pd.NA})
+
+
+def clean_excel(
     input_path: str,
     output_path: str | None = None,
     sheet_name: str | int = 0,
     threshold: float = 1.0,
+    skip_rows: int = 0,
+    filter_numeric: str | None = None,
 ) -> pd.DataFrame:
     """
-    Lê o xlsx, remove colunas vazias e salva.
+    Processa o xlsx conforme os parâmetros:
+
+    1. Pula as primeiras `skip_rows` linhas (a linha seguinte vira cabeçalho).
+    2. Remove colunas cuja fração de vazios >= `threshold`.
+    3. Se `filter_numeric` for informado, mantém apenas as linhas onde essa
+       coluna contém um valor numérico (remove textos, vazios, cabeçalhos extras).
+    4. Salva o resultado.
 
     Args:
-        input_path:  Caminho do arquivo de entrada.
-        output_path: Caminho de saída. Se None, sobrescreve o arquivo original.
-        sheet_name:  Nome ou índice da aba (padrão: primeira aba).
-        threshold:   Fração mínima de valores vazios para remover a coluna.
-                     1.0 = remove só se 100% vazio (padrão).
-                     0.9 = remove se >= 90% dos valores são vazios.
-
-    Returns:
-        DataFrame limpo.
+        input_path:      Caminho do arquivo de entrada.
+        output_path:     Caminho de saída. Se None, sobrescreve o original.
+        sheet_name:      Nome ou índice da aba (padrão: primeira aba).
+        threshold:       Fração de vazios para remover coluna (1.0 = 100%).
+        skip_rows:       Nº de linhas a ignorar no topo antes do cabeçalho.
+        filter_numeric:  Nome da coluna cujos valores devem ser numéricos.
     """
     input_path = Path(input_path)
     if not input_path.exists():
         sys.exit(f"Arquivo não encontrado: {input_path}")
 
-    df = pd.read_excel(input_path, sheet_name=sheet_name, dtype=str)
-
-    total_rows = len(df)
-    cols_before = list(df.columns)
-
-    # Normaliza células: espaços em branco e strings "nan" viram NaN real
-    # pd.api.types.is_string_dtype cobre tanto object quanto StringDtype
-    df = df.apply(
-        lambda col: col.str.strip() if pd.api.types.is_string_dtype(col) else col
+    # --- 1. Leitura ---
+    df = pd.read_excel(
+        input_path,
+        sheet_name=sheet_name,
+        skiprows=skip_rows,     # pula as primeiras N linhas; a N+1 vira header
+        dtype=str,
     )
-    df = df.replace({"": pd.NA, "nan": pd.NA, "NaN": pd.NA, "None": pd.NA})
 
-    # Calcula a fração de valores vazios por coluna
+    print(f"Arquivo : {input_path.name}")
+    print(f"Linhas lidas (após pular {skip_rows}): {len(df)}")
+
+    # --- 2. Normaliza espaços / strings vazias ---
+    df = _normalize(df)
+
+    # --- 3. Remove colunas vazias ---
+    cols_before = list(df.columns)
     empty_fraction = df.isna().mean()
     cols_to_drop = empty_fraction[empty_fraction >= threshold].index.tolist()
-
     df.drop(columns=cols_to_drop, inplace=True)
-    cols_after = list(df.columns)
 
-    removed = [c for c in cols_before if c not in cols_after]
-
-    print(f"Arquivo:    {input_path.name}")
-    print(f"Linhas:     {total_rows}")
-    print(f"Colunas antes:  {len(cols_before)}")
-    print(f"Colunas depois: {len(cols_after)}")
-    if removed:
-        print(f"Removidas ({len(removed)}):")
-        for c in removed:
+    removed_cols = [c for c in cols_before if c not in df.columns]
+    print(f"\nColunas antes : {len(cols_before)}")
+    print(f"Colunas depois: {len(df.columns)}")
+    if removed_cols:
+        print(f"Removidas ({len(removed_cols)}):")
+        for c in removed_cols:
             print(f"  - {c}")
     else:
         print("Nenhuma coluna removida.")
 
+    # --- 4. Filtra linhas com valor numérico na coluna indicada ---
+    if filter_numeric:
+        if filter_numeric not in df.columns:
+            # Tenta busca case-insensitive
+            match = [c for c in df.columns if c.strip().lower() == filter_numeric.lower()]
+            if match:
+                filter_numeric = match[0]
+            else:
+                available = ", ".join(df.columns.tolist())
+                sys.exit(
+                    f"Coluna '{filter_numeric}' não encontrada.\n"
+                    f"Colunas disponíveis: {available}"
+                )
+
+        rows_before = len(df)
+
+        def is_numeric(val):
+            if pd.isna(val):
+                return False
+            try:
+                float(str(val).replace(",", "."))
+                return True
+            except ValueError:
+                return False
+
+        mask = df[filter_numeric].apply(is_numeric)
+        df = df[mask].reset_index(drop=True)
+
+        print(f"\nFiltro numérico em '{filter_numeric}':")
+        print(f"  Linhas antes : {rows_before}")
+        print(f"  Linhas depois: {len(df)}")
+        print(f"  Removidas    : {rows_before - len(df)}")
+
+    # --- 5. Salva ---
     out = Path(output_path) if output_path else input_path
     df.to_excel(out, index=False)
     print(f"\nSalvo em: {out}")
@@ -81,37 +130,53 @@ def clean_empty_columns(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Remove colunas vazias de um arquivo .xlsx"
+        description="Limpa um arquivo .xlsx: remove colunas vazias e filtra linhas."
     )
     parser.add_argument("input", help="Caminho do arquivo .xlsx de entrada")
     parser.add_argument(
-        "--output", "-o", default=None, help="Caminho do arquivo de saída (opcional)"
+        "--output", "-o", default=None,
+        help="Caminho do arquivo de saída (opcional; padrão: sobrescreve o original)",
     )
     parser.add_argument(
         "--sheet", "-s", default=0,
-        help="Nome ou índice da aba (padrão: 0 = primeira aba)"
+        help="Nome ou índice da aba (padrão: 0 = primeira aba)",
     )
     parser.add_argument(
         "--threshold", "-t", type=float, default=1.0,
         help=(
-            "Fração de valores vazios para remover a coluna. "
+            "Fração de vazios para remover coluna. "
             "1.0 = 100%% vazio (padrão). 0.9 = 90%% vazio."
+        ),
+    )
+    parser.add_argument(
+        "--skip-rows", type=int, default=0,
+        dest="skip_rows",
+        help="Nº de linhas a pular no topo antes do cabeçalho (padrão: 0)",
+    )
+    parser.add_argument(
+        "--filter-numeric", default=None,
+        dest="filter_numeric",
+        metavar="COLUNA",
+        help=(
+            "Nome da coluna: mantém apenas linhas onde o valor é numérico. "
+            "Ex: --filter-numeric Pedido"
         ),
     )
     args = parser.parse_args()
 
-    # Converte sheet para int se for número
     sheet = args.sheet
     try:
         sheet = int(sheet)
     except ValueError:
         pass
 
-    clean_empty_columns(
+    clean_excel(
         input_path=args.input,
         output_path=args.output,
         sheet_name=sheet,
         threshold=args.threshold,
+        skip_rows=args.skip_rows,
+        filter_numeric=args.filter_numeric,
     )
 
 
