@@ -44,8 +44,22 @@ def default_filename() -> Path:
         if path.exists():
             return path
 
-    # Não achou — retorna o caminho principal para a mensagem de erro mostrar
-    return candidates[0]
+    # Não achou — lista o conteúdo das pastas para ajudar no diagnóstico
+    print("\nArquivo não encontrado. Listando arquivos nas pastas procuradas:")
+    for path in candidates:
+        folder = path.parent
+        if folder.exists():
+            files = list(folder.iterdir())
+            if files:
+                print(f"\n  {folder}:")
+                for f in sorted(files):
+                    print(f"    {f.name}")
+            else:
+                print(f"\n  {folder}: (pasta vazia)")
+        else:
+            print(f"\n  {folder}: (pasta não existe)")
+
+    sys.exit(1)
 
 
 def _normalize(df: pd.DataFrame) -> pd.DataFrame:
@@ -82,7 +96,7 @@ def clean_excel(
         filter_numeric:  Nome da coluna cujos valores devem ser numéricos.
     """
     input_path = Path(input_path)
-    if not input_path.exists():
+    if not Path(input_path).exists():
         sys.exit(f"Arquivo não encontrado: {input_path}")
 
     # --- 1. Leitura ---
